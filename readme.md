@@ -1,8 +1,21 @@
-# Feedback-driven development plugin for the Eclipse IDE
+# PerformanceHat: A Feedback-driven development plugin for the Eclipse IDE
 
 ## License
 
-License info....
+Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 
 ## Introduction
 
@@ -44,7 +57,7 @@ The plugin update site will be built into the directory:
 
 `cw-feedback-eclipse-p2updatesite/target/repository`
 
-To install the produced Eclipse plugin into your local IDE instance, open Eclipse, open the **Help Menu**, select the entry **Install New Software**. In the newly opened window, click on **Add** and then choose **Local..** on the dialog. Now you can browse to the location of the `cw-feedback-eclipse-p2updatesite/target/repository` folder, and selct it as a root folder for the plugin. Give it an appropriate name (such as Feedback-driven development plugin), click **OK**, and then check all checkboxes that appear, and click on **Next** to proceed and finish the installation procedure.
+To install the produced Eclipse plugin into your local IDE instance, open Eclipse, open the **Help Menu**, select the entry **Install New Software**. In the newly opened window, click on **Add** and then choose **Local..** on the dialog. Now you can browse to the location of the `cw-feedback-eclipse-p2updatesite/target/repository` folder, and select it as a root folder for the plugin. Give it an appropriate name (such as PerformanceHat), click **OK**, and then check all checkboxes that appear, and click on **Next** to proceed and finish the installation procedure.
 
 This process can also be done entirely in command line. For more info, consider for example [this](http://www.lorenzobettini.it/2012/10/installing-eclipse-features-via-the-command-line/) blog entry.
 
