@@ -38,3 +38,6 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+#Performancehat specific
+cw-feedback-eclipse-base/target/
+cw-feedback-eclipse-costs/target/
