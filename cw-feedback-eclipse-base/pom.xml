@@ -27,9 +27,7 @@
 	</parent>
 
 	<!-- Maven Coordinates -->
-	<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
 	<artifactId>eu.cloudwave.wp5.feedback.eclipse.base</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
 	<name>PerformanceHat Base Module</name>
 	<description>Contains the base code that is used by multiple plugins (performance-plugin, cost-plugin).</description>
 
