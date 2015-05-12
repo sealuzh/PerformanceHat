@@ -41,3 +41,4 @@ local.properties
 #Performancehat specific
 cw-feedback-eclipse-base/target/
 cw-feedback-eclipse-costs/target/
+*.class
