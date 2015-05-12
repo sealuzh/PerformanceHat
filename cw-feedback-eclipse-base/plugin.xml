@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>   
+   
+   
+   <!-- Markers and Annotations -->
+   <extension
+         point="org.eclipse.core.resources.markers" 
+         id="eu.cloudwave.wp5.feedback.eclipse.base.markers.FeedbackMarker"
+         name="CloudWave Feedback Problem">
+      <super type="org.eclipse.core.resources.problemmarker"></super>
+      <super type="org.eclipse.core.resources.textmarker"></super>
+      <persistent value="true"></persistent>
+      <attribute name="DESCRIPTION"></attribute>
+      <attribute name="TYPE"></attribute>
+   </extension>
+   
+   <extension
+       id="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation"
+       name="Feedback Marker Annotation"
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="eu.cloudwave.wp5.feedback.eclipse.base.markers.FeedbackMarker"
+            super="org.eclipse.ui.workbench.texteditor.warning"
+            name="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation">
+      </type>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification"
+         id="eu.cloudwave.wp5.feedback.eclipse.base.annotaionspecs.FeedbackAnnotationSpec">
+      <specification
+            annotationType="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation"
+            includeOnPreferencePage="true"
+            overviewRulerPreferenceKey="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation.overview"
+            overviewRulerPreferenceValue="true"
+            textPreferenceKey="eu.cloudwave.wp5.feedback.eclipse.base.FeedbackAnnotation.text"
+            textPreferenceValue="true"
+            icon="icons/marker.png" 
+            highlightPreferenceKey="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation.highlight"
+            highlightPreferenceValue="true"
+            colorPreferenceKey="eu.cloudwave.wp5.feedback.eclipse.base.annotations.FeedbackAnnotation.color"
+            colorPreferenceValue="254,193,27">
+      </specification>
+   </extension>
+
+   <!-- Preferences / Preference Pages -->
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+         <initializer
+               class="eu.cloudwave.wp5.feedback.eclipse.base.core.preferences.FeedbackPreferenceInitializer">
+         </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="eu.cloudwave.wp5.feedback.eclipse.base.ui.preferences.FeedbackMainPreferencePage"
+            id="eu.cloudwave.wp5.feedback.eclipse.base.ui.preferences.FeedbackMainPreferencePage"
+            name="%preferences.pages.main.title">
+      </page>
+   </extension>
+   
+   <!-- Feedback Properties -->
+  <extension point="org.eclipse.ui.propertyPages">
+      <page
+            id="eu.cloudwave.wp5.feedback.eclipse.base.ui.properties.FeedbackMainPropertyPage"
+            class="eu.cloudwave.wp5.feedback.eclipse.base.ui.properties.FeedbackMainPropertyPage"
+            name="%properties.pages.main.title">
+      </page>
+   </extension>
+
+</plugin>

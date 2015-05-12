@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/eu.cloudwave.wp5.feedback.eclipse.feature_1.0.0.qualifier.jar" id="eu.cloudwave.wp5.feedback.eclipse.feature" version="1.0.0.qualifier">
+      <category name="eu.cloudwave.wp5.feedback.eclipse.category"/>
+   </feature>
+   <category-def name="eu.cloudwave.wp5.feedback.eclipse.category" label="CloudWave Feedback"/>
+</site>

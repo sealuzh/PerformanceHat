@@ -1,0 +1,23 @@
+{"metric_data" : {
+  "from" : "2014-09-11T14:02:49+00:00",
+  "to" : "2014-09-11T14:32:49+00:00",
+  "metrics" : [{
+    "name" : "Java/eu.cloudwave.wp5.sampleapp.service.OutputServiceImpl/createOutput",
+    "timeslices" : [{
+      "from" : "2014-09-11T13:59:00+00:00",
+      "to" : "2014-09-11T14:29:00+00:00",
+      "values" : {
+        "average_response_time" : 1.5,
+        "calls_per_minute" : 0,
+        "call_count" : 5,
+        "min_response_time" : 0,
+        "max_response_time" : 0,
+        "average_exclusive_time" : 0,
+        "average_value" : 0,
+        "total_call_time_per_minute" : 0,
+        "requests_per_minute" : 0,
+        "standard_deviation" : 0 }
+      }]
+    }
+  ]}
+}

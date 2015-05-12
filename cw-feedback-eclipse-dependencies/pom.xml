@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- GENERAL -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>ch.uzh.ifi.seal</groupId>
+		<artifactId>performancehat</artifactId>
+		<version>1.0</version>
+		<relativePath>../cw-feedback-eclipse-parent</relativePath>
+	</parent>
+
+	<!-- Maven Coordinates -->
+	<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
+	<artifactId>eu.cloudwave.wp5.feedback.eclipse.dependencies</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>PerformanceHat Dependencies Module</name>
+	<description>Specifies the dependencies of the 'cw-feedback-eclipse'. This is a workaround to overcome the issue of using non-OSGi dependencies inside an Eclipse plug-in.</description>
+
+
+	<!-- DEPENDENCIES -->
+	<dependencies>
+
+		<!-- CloudWave -->
+		<dependency>
+			<groupId>cloudwave</groupId>
+			<artifactId>cw-feedback-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>cloudwave</groupId>
+			<artifactId>cw-feedback-monitoring</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Google Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>17.0</version>
+		</dependency>
+
+		<!-- Google Guice -->
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>4.0-beta4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-assistedinject</artifactId>
+			<version>4.0-beta4</version>
+		</dependency>
+
+		<!-- FreeMarker Template Engine -->
+		<dependency>
+			<groupId>freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.9</version>
+		</dependency>
+
+	</dependencies>
+
+
+	<!-- BUILD -->
+	<build>
+		<!-- <directory>${basedir}/bundles</directory> -->
+
+		<plugins>
+
+			<!-- Maven Bundle Plugin - creates the jar containing all dependencies -->
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<version>2.5.3</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>cw-feedback-eclipse-dependencies</Bundle-SymbolicName>
+						<Bundle-Name>Eclipse CloudWave Feedback Plugin Dependencies</Bundle-Name>
+						<Export-Package>*</Export-Package>
+						<Import-Package>;</Import-Package>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Embed-Dependency>*;scope=runtime|compile;inline=true</Embed-Dependency>
+					</instructions>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Maven Ant Plugin - used to copy the jar file to the eclipse plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy
+									file="${project.build.directory}/eu.cloudwave.wp5.feedback.eclipse.dependencies-1.0.0-SNAPSHOT.jar"
+									tofile="${project.basedir}/../cw-feedback-eclipse-base/lib/eu.cloudwave.wp5.feedback.eclipse.dependencies-1.0.0-SNAPSHOT.jar"
+									overwrite="true" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/5.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ch.uzh.ifi.seal</groupId>
+	<artifactId>performancehat</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0</version>
+	<name>PerformanceHat Parent Project</name>
+
+	<!-- MODULES -->
+	<modules>
+		<module>../cw-feedback-common</module>
+		<module>../cw-feedback-monitoring</module>
+		<module>../cw-feedback-eclipse-dependencies</module>
+		<module>../cw-feedback-eclipse-build</module>
+		<module>../cw-feedback-handler</module>
+	</modules>
+	
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+  				<artifactId>maven-compiler-plugin</artifactId>
+  				<version>2.5.1</version> 
+  				<configuration>
+  				  <source>1.8</source>
+  				  <target>1.8 </target>
+  				</configuration>
+		    </plugin>
+		</plugins>
+	</build>
+	
+</project>

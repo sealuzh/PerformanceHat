@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
+   <extension
+         point="org.eclipse.core.resources.markers" 
+         id="eu.cloudwave.wp5.feedback.eclipse.costs.markers.CostMarker"
+         name="Cost Info">
+      <super type="eu.cloudwave.wp5.feedback.eclipse.base.markers.FeedbackMarker"></super>
+   </extension>
+   
+   <!-- Hovers -->
+   <extension
+         point="org.eclipse.jdt.ui.javaEditorTextHovers">
+      <hover
+            activate="true"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.CostMarkerHover"
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.CostMarkerHover">
+      </hover>
+   </extension>
+   
+   <!-- Natures -->
+   <extension
+         point="org.eclipse.core.resources.natures"
+         id="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNature"
+         name="Microservice Cost Feedback">
+      <requires-nature id="org.eclipse.jdt.core.javanature" />
+      <runtime>
+         <run class="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNature"></run>
+      </runtime>
+      <builder
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.CostBuilder">
+      </builder>
+   </extension>
+
+  <!-- Builders -->
+   <extension
+         point="org.eclipse.core.resources.builders"
+         id="eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.CostBuilder"
+         name="Cost Builder">
+      <builder hasNature="true">
+         <run class="eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.CostBuilder"></run>
+      </builder>
+   </extension>
+   
+   <!-- Properties --> 
+   <extension point="org.eclipse.ui.propertyPages">
+      <page
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.properties.CostPropertyPage"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.properties.CostPropertyPage"
+            category="eu.cloudwave.wp5.feedback.eclipse.base.ui.properties.FeedbackMainPropertyPage"
+            name="Microservice Cost Hat">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
+
+   <!-- Test View --> 
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Test Browser"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.TestView"
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.TestView">
+      </view>
+   </extension>
+   
+   
+   <!-- Command to toggle the Cost Nature -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            name="Toggle Cost Nature"
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.commands.ToggleCostNatureCommand">
+      </command>
+   </extension>
+   
+   
+   <!-- Handlers for the command specified above -->
+   <extension point="org.eclipse.ui.handlers">
+      
+      <handler
+            commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.ToggleCostNatureCommand"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNatureHandler">
+      </handler>
+      
+   </extension>
+   
+   
+   <!-- Menu Contributions to enable/disable Cost Nature -->
+   <extension point="org.eclipse.ui.menus">
+      
+      <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.ToggleCostNatureCommand"
+               label="Disable Microservice Cost Feedback"
+               style="push">
+            <visibleWhen>
+               <with variable="selection">
+                  <count value="1"></count>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.ToggleCostNatureCommand"
+               label="Enable Microservice Cost Feedback"
+               style="push">
+            <visibleWhen>
+               <with variable="selection">
+                  <count value="1"></count>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNature">
+                           </test>
+                        </not>
+                        <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="org.eclipse.jdt.core.javanature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      
+   </extension>
+   
+</plugin>

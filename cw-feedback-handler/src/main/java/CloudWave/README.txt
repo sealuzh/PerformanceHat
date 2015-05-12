@@ -1,0 +1,3 @@
+IMPORTANT: 
+The name of this package has to be 'CloudWave' even though this not fits to the package structure of the project.
+Otherwise JNI doesn't work for some reason...

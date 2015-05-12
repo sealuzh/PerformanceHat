@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>   
+
+
+   <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
+   <extension
+         point="org.eclipse.core.resources.markers" 
+         id="eu.cloudwave.wp5.feedback.eclipse.performance.markers.PerformanceMarker"
+         name="Performance Problem">
+      <super type="eu.cloudwave.wp5.feedback.eclipse.base.markers.FeedbackMarker"></super>
+   </extension>
+   
+   <!-- Hovers -->
+   <extension
+         point="org.eclipse.jdt.ui.javaEditorTextHovers">
+      <hover
+            activate="true"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.ui.hovers.PerformanceMarkerHover"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.hovers.PerformanceMarkerHover">
+      </hover>
+   </extension>
+   
+   
+   <!-- Natures -->
+   <extension
+         point="org.eclipse.core.resources.natures"
+         id="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature"
+         name="%natures.FeedbackProjectNature.name">
+      <requires-nature id="org.eclipse.jdt.core.javanature" />
+      <runtime>
+         <run class="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature"></run>
+      </runtime>
+      <builder
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder">
+      </builder>
+   </extension>
+   
+   
+   <!-- Builders -->
+   <extension
+         point="org.eclipse.core.resources.builders"
+         id="eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder"
+         name="%builders.FeedbackBuilder.name">
+      <builder hasNature="true">
+         <run class="eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder"></run>
+      </builder>
+   </extension>
+   
+ 
+   <!-- Decorators -->
+   <extension point="org.eclipse.ui.decorators">
+      <decorator
+            lightweight="true"
+            label="%decorators.FeedbackProjectNatureEnabledDecorator.label"
+            state="true"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.ui.decorators.FeedbackProjectNatureEnabledDecorator"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.decorators.FeedbackProjectNatureEnabledDecorator">
+         <description>
+            %decorators.FeedbackProjectNatureEnabledDecorator.description
+         </description>
+      </decorator>
+   </extension>
+   
+   
+   <!-- Commands -->
+   <extension point="org.eclipse.ui.commands">
+   
+      <category
+            name="%categories.ToggleProjectNatureCategory.name"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.categories.ToggleProjectNatureCategory">
+      </category>
+      
+      <command
+            name="%commands.ToggleProjectNatureCommand.name"
+            categoryId="eu.cloudwave.wp5.feedback.eclipse.performance.categories.ToggleProjectNatureCategory"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand">
+      </command>
+      
+   </extension>
+   
+   
+   <!-- Handlers -->
+   <extension point="org.eclipse.ui.handlers">
+      
+      <handler
+            commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.core.handlers.ToggleProjectNatureHandler">
+      </handler>
+      
+   </extension>
+   
+   
+   <!-- Menu Contributions -->
+   <extension point="org.eclipse.ui.menus">
+      
+      <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand"
+               label="%menues.EnableProjectNature.label"
+               style="push">
+            <visibleWhen>
+               <with variable="selection">
+                  <count value="1"></count>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand"
+               label="%menues.DisableProjectNature.label"
+               style="push">
+            <visibleWhen>
+               <with variable="selection">
+                  <count value="1"></count>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature">
+                           </test>
+                        </not>
+                        <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="org.eclipse.jdt.core.javanature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+       
+   </extension>
+
+   <!-- Properties / Property Pages -->
+   <extension point="org.eclipse.ui.propertyPages">
+      <page
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.properties.PerformancePropertyPage"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.ui.properties.PerformancePropertyPage"
+            category="eu.cloudwave.wp5.feedback.eclipse.base.ui.properties.FeedbackMainPropertyPage"
+            name="%properties.pages.performance.title">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
+   <extension point="org.eclipse.ui.propertyPages">
+      <page
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.properties.NewRelicPropertyPage"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.ui.properties.NewRelicPropertyPage"
+            category="eu.cloudwave.wp5.feedback.eclipse.base.ui.properties.FeedbackMainPropertyPage"
+            name="%properties.pages.newrelic.title">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
+   
+   <!-- Views -->
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Feedback Browser"
+            icon="icons/chart.png"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.ui.views.FeedbackBrowser"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.views.FeedbackBrowserView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               visible="false"
+               relative="org.eclipse.ui.editorss"
+               relationship="stack"
+               id="eu.cloudwave.wp5.feedback.eclipse.performance.ui.views.FeedbackBrowserView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+
+</plugin>

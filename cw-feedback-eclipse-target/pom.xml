@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
+		<artifactId>eu.cloudwave.wp5.feedback.eclipse.build</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../cw-feedback-eclipse-build/</relativePath>
+	</parent>
+
+	<!-- Maven Coordinates -->
+	<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
+	<artifactId>eu.cloudwave.wp5.feedback.eclipse.target</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>PerformanceHat Target Module</name>
+	<description>Specifies the target platform against which the Eclipse plug-in ('cw-feedback-eclipse-base/performance') is developed.</description>
+
+	<packaging>eclipse-target-definition</packaging>
+
+</project>

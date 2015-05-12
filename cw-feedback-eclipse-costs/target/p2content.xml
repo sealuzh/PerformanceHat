@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='eu.cloudwave.wp5.feedback.eclipse.costs' version='1.0.0.201505121443'>
+    <update id='eu.cloudwave.wp5.feedback.eclipse.costs' range='[0.0.0,1.0.0.201505121443)' severity='0'/>
+    <properties size='4'>
+      <property name='org.eclipse.equinox.p2.name' value='Cloudwave Cost Feedback'/>
+      <property name='maven-groupId' value='eu.cloudwave.wp5.feedback.eclipse'/>
+      <property name='maven-artifactId' value='eu.cloudwave.wp5.feedback.eclipse.costs'/>
+      <property name='maven-version' value='1.0.0-SNAPSHOT'/>
+    </properties>
+    <provides size='3'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='eu.cloudwave.wp5.feedback.eclipse.costs' version='1.0.0.201505121443'/>
+      <provided namespace='osgi.bundle' name='eu.cloudwave.wp5.feedback.eclipse.costs' version='1.0.0.201505121443'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='8'>
+      <required namespace='osgi.bundle' name='eu.cloudwave.wp5.feedback.eclipse.base' range='1.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.ui' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.jdt.core' range='3.9.2'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='3.8.101'/>
+      <required namespace='osgi.bundle' name='org.eclipse.jdt.ui' range='3.9.2'/>
+      <required namespace='osgi.bundle' name='org.eclipse.jface.text' range='3.8.101'/>
+      <required namespace='osgi.bundle' name='org.eclipse.ui.ide' range='3.9.2'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='eu.cloudwave.wp5.feedback.eclipse.costs' version='1.0.0.201505121443'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: eu.cloudwave.wp5.feedback.eclipse.costs;singleton:=true&#xA;Bundle-Version: 1.0.0.201505121443&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>

@@ -1,0 +1,140 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+
+	<!-- GENERAL -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>ch.uzh.ifi.seal</groupId>
+		<artifactId>performancehat</artifactId>
+		<version>1.0</version>
+		<relativePath>../cw-feedback-eclipse-parent</relativePath>
+	</parent>
+
+	<!-- Maven Coordinates -->
+	<groupId>cloudwave</groupId>
+	<artifactId>cw-feedback-handler</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>PerformanceHat Feedback Handler</name>
+	<description>Comprises the code of the Feedback Handler. Runs on a integrated jetty server through maven.</description>
+	<packaging>war</packaging>
+
+
+	<!-- PROPERTIES -->
+	<properties>
+		<spring.version>4.0.6.RELEASE</spring.version>
+	</properties>
+
+
+	<!-- DEPENDENCIES -->
+	<dependencies>
+
+		<!-- Cloudwave -->
+		<dependency>
+			<groupId>cloudwave</groupId>
+			<artifactId>cw-feedback-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>17.0</version>
+		</dependency>
+
+		<!-- Spring Framework -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.5.2.RELEASE</version>
+		</dependency>
+
+		<!-- Javax Servlet -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- JSON support for Spring Web MVC -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.4.2</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-assert</artifactId>
+			<version>1.4</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>4.0.6.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+
+	<!-- BUILD -->
+	<build>
+		<finalName>cw-feedback-handler</finalName>
+
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.2.2.v20140723</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+</project>

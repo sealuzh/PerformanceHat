@@ -1,0 +1,162 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  	<parent>
+    	<groupId>ch.uzh.ifi.seal</groupId>
+    	<artifactId>performancehat</artifactId>
+    	<version>1.0</version>
+    	<relativePath>../cw-feedback-eclipse-parent</relativePath>
+  	</parent>
+  	
+  	<!-- Maven Coordinates -->
+	<groupId>cloudwave</groupId>
+	<artifactId>cw-feedback-monitoring</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>PerformanceHat Monitoring</name>
+	<description>Contains the code that has to be appended in an application that wants to make use of the Feedback Handler / Eclipse plug-in.</description>
+
+	<packaging>jar</packaging>
+
+	<properties>
+		<jdk.version>1.8</jdk.version>
+		<aspectj.version>1.8.2</aspectj.version>
+	</properties>
+
+	<dependencies>
+	  
+	  	<!-- Cloudwave -->
+		<dependency>
+			<groupId>cloudwave</groupId>
+			<artifactId>cw-feedback-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+    	<!-- AspectJ  -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.version}</version>
+		</dependency>
+		
+		<!-- Guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>17.0</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Premain-Class>eu.cloudwave.wp5.monitoring.instrumentation.MonitoringAgent</Premain-Class>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<!-- Maven Ant Plugin - used to copy the jar file to the eclipse test plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy
+									file="${project.build.directory}/cw-feedback-monitoring-0.0.1-SNAPSHOT.jar"
+									tofile="${project.basedir}/../cw-feedback-eclipse-tests/fixtures/cw-feedback-monitoring-0.0.1-SNAPSHOT.jar"
+									overwrite="true" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.7</version>
+				<configuration>
+					<complianceLevel>${jdk.version}</complianceLevel>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<!-- 
+				  aspectjrt and aspectjtools should be included as dependencies for the aspectj-maven-plugin to ensure 
+				  that the same versions of AspectJ used for the AspectJ compilation are used throughout the reactor. 
+					More info: http://mojo.codehaus.org/aspectj-maven-plugin/multimodule/multimodule_strategy.html 
+			  -->
+				<dependencies>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjrt</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjtools</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											aspectj-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.7,)
+										</versionRange>
+										<goals>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+	</build>
+
+</project>

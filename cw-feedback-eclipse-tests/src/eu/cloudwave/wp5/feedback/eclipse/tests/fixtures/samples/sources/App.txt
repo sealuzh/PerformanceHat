@@ -1,0 +1,22 @@
+package eu.cloudwave.wp5.samples.fixture;
+
+public class App {
+
+  private static final String HELLO_WORLD = "Hello World";
+
+  private SampleService sampleService;
+
+  public App() {
+    this.sampleService = new SampleService();
+  }
+
+  public static void main(final String[] args) {
+    final App app = new App();
+    app.printHelloWorld();
+  }
+
+  public void printHelloWorld() {
+    sampleService.print(HELLO_WORLD);
+  }
+
+}

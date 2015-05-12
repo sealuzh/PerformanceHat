@@ -1,0 +1,25 @@
+* {
+	font-family: arial;
+}
+
+body {
+	background-color: #FFFFFF;
+}
+
+h1 {
+	margin-bottom: 5px;
+	padding-bottom: 0px;
+}
+
+.subtitle {
+	font-style: italic;
+	margin-bottom: 40px;
+}
+
+.plot {
+	width: 800px;
+}
+
+.padding-top {
+	padding-top:60px;
+}

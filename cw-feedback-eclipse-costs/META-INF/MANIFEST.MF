@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Cloudwave Cost Feedback
+Bundle-SymbolicName: eu.cloudwave.wp5.feedback.eclipse.costs;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: eu.cloudwave.wp5.feedback.eclipse.costs.core.CostPluginActivator
+Require-Bundle: eu.cloudwave.wp5.feedback.eclipse.base;bundle-version="1.0.0",
+ org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.eclipse.jdt.core;bundle-version="3.9.2",
+ org.eclipse.core.resources;bundle-version="3.8.101",
+ org.eclipse.jdt.ui;bundle-version="3.9.2",
+ org.eclipse.jface.text;bundle-version="3.8.101",
+ org.eclipse.ui.ide;bundle-version="3.9.2"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy

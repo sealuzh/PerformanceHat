@@ -1,0 +1,11 @@
+package eu.cloudwave.wp5.samples.fixture;
+
+import eu.cloudwave.wp5.monitoring.annotations.Trace;
+
+public class SampleService {
+
+  public void print(final String content) {
+    System.out.println(content);
+  }
+
+}

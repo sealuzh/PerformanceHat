@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse CloudWave Feedback Plugin Tests
+Bundle-SymbolicName: eu.cloudwave.wp5.feedback.eclipse.performance.tests
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: eu.cloudwave.wp5.feedback.eclipse.performance;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ClassPath: .,
+ lib/fest-assert-1.4.jar,
+ lib/fest-util-1.1.6.jar
+Require-Bundle: org.junit,
+ org.eclipse.swtbot.eclipse.finder;bundle-version="2.2.1",
+ org.eclipse.swtbot.junit4_x;bundle-version="2.2.1",
+ org.eclipse.swtbot.swt.finder;bundle-version="2.2.1",
+ org.eclipse.jdt.launching;bundle-version="3.7.1"
