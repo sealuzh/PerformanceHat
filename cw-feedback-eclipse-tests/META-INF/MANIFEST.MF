@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse CloudWave Feedback Plugin Tests
-Bundle-SymbolicName: eu.cloudwave.wp5.feedback.eclipse.performance.tests
+Bundle-SymbolicName: eu.cloudwave.wp5.feedback.eclipse.tests
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: eu.cloudwave.wp5.feedback.eclipse.performance;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

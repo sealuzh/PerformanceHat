@@ -26,7 +26,12 @@
 		<relativePath>../cw-feedback-eclipse-build/</relativePath>
 	</parent>
 
-	<artifactId>eu.cloudwave.wp5.feedback.eclipse.tests</artifactId>
+	<!-- Maven Coordinates -->
+  	<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
+  	<artifactId>eu.cloudwave.wp5.feedback.eclipse.tests</artifactId>
+  	<version>1.0.0-SNAPSHOT</version>
+  	<name>PerformanceHat Tests Eclipse-Plugin</name>
+  	<description>Contains the code of the tests eclipse plugin.</description>
 
 	<packaging>eclipse-test-plugin</packaging>
 

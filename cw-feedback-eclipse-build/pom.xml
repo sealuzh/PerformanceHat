@@ -45,6 +45,7 @@
 		<module>../cw-feedback-eclipse-feature</module>
 		<module>../cw-feedback-eclipse-p2updatesite</module>
 		<module>../cw-feedback-eclipse-target</module>
+		<module>../cw-feedback-eclipse-tests</module>
 	</modules>
 	
 	
