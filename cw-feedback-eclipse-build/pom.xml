@@ -56,8 +56,7 @@
     <cw-feedback-eclipse.groupId>eu.cloudwave.wp5.feedback.eclipse</cw-feedback-eclipse.groupId>
     <cw-feedback-eclipse.version>1.0.0-SNAPSHOT</cw-feedback-eclipse.version>
   </properties>
-	
-
+  
   <!-- BUILD -->
 	<build>
 		<plugins>

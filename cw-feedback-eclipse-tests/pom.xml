@@ -34,6 +34,32 @@
   	<description>Contains the code of the tests eclipse plugin.</description>
 
 	<packaging>eclipse-test-plugin</packaging>
+	
+	
+    <profiles>
+        <profile> <!-- MacOS specific vm arguments for UI testing -->
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <ui.test.vmargs>-XstartOnFirstThread</ui.test.vmargs>
+            </properties>
+        </profile>
+        <profile>
+      		<id>non-mac</id>
+      		<activation>
+	        	<os>
+	          		<family>!mac</family>
+	        	</os>
+      		</activation>
+      		<properties>
+        		<ui.test.vmargs></ui.test.vmargs>
+     	 	</properties>
+    	</profile>
+    </profiles>
 
 	<build>
 		<plugins>
@@ -47,6 +73,7 @@
 					<useUIThread>false</useUIThread>
 					<product>org.eclipse.sdk.ide</product>
 					<application>org.eclipse.ui.ide.workbench</application>
+					<argLine>${ui.test.vmargs}</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
