@@ -57,9 +57,25 @@ The plugin update site will be built into the directory:
 
 `cw-feedback-eclipse-p2updatesite/target/repository`
 
-To install the produced Eclipse plugin into your local IDE instance, open Eclipse, open the **Help Menu**, select the entry **Install New Software**. In the newly opened window, click on **Add** and then choose **Local..** on the dialog. Now you can browse to the location of the `cw-feedback-eclipse-p2updatesite/target/repository` folder, and select it as a root folder for the plugin. Give it an appropriate name (such as PerformanceHat), click **OK**, and then check all checkboxes that appear, and click on **Next** to proceed and finish the installation procedure.
+To install the produced Eclipse plugin into your local IDE instance, open Eclipse, open the **Help Menu**, select the entry **Install New Software**.
 
-This process can also be done entirely in command line. For more info, consider for example [this](http://www.lorenzobettini.it/2012/10/installing-eclipse-features-via-the-command-line/) blog entry.
+![Install New Software](https://cloud.githubusercontent.com/assets/4225724/7633066/2aa2b018-fa52-11e4-980f-ded8046976f0.png)
+
+In the newly opened window, click on **Add**
+
+
+![Add](https://cloud.githubusercontent.com/assets/4225724/7633099/5b737ccc-fa52-11e4-8e71-9596fa4b2c3a.png)
+
+and then choose **Local..** on the dialog.
+
+![Local](https://cloud.githubusercontent.com/assets/4225724/7633125/84ea33e8-fa52-11e4-83f7-1e024a0b32c1.png)
+
+Now you can browse to the location of the `cw-feedback-eclipse-p2updatesite/target/repository` folder, and select it as a root folder for the plugin. Give it an appropriate name (such as PerformanceHat), click **OK**, and then check all checkboxes that appear,
+
+![Select all](https://cloud.githubusercontent.com/assets/4225724/7633151/b7f5200e-fa52-11e4-8db6-0c7b2f5e7dd3.png)
+
+and click on **Next** to proceed and finish the installation procedure.
+
 
 ### Running the Feedback Handler Server
 
