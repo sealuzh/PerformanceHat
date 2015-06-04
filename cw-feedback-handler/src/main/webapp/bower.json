@@ -1,0 +1,15 @@
+{
+  "name": "eu.cloudwave.wp5.feedbackhandler.webapp",
+  "version": "0.0.1-SNAPSHOT",
+  "dependencies": {
+    "angular": "~1.4.0",
+    "angular-resource": "~1.4.0",
+    "jquery": "~2.1.4",
+    "semantic-ui": "latest",
+    "angular-material": "~0.9.7",
+    "angular-ui-router": "~0.2.15",
+    "angular-animate": "~1.4.0",
+    "angular-cookies": "~1.4.0",
+    "arbor": "*"
+  }
+}

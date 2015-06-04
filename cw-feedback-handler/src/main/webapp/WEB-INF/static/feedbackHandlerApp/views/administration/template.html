@@ -1,0 +1,83 @@
+<md-content id="administration" class="tab-content md-padding">
+  
+  <section ng-if="!isLoggedIn" class="page-section">
+			<div class="page-section-wrapper">
+					
+					<header class="page-section-header">
+						<h1>Login with existing Feedback Application</h1>
+					</header>
+					
+					<div class="page-section-content">
+						<form class="material-form">
+							<section class="material-form-field">
+									<div class="material-form-field-controls">
+											<div class="form-field-controls-group">
+													<input type="text" ng-model="applicationId" required="required" placeholder="Application Id" class="material-form-field-input">
+											</div>
+									</div>
+							</section>
+
+							<section class="material-form-field">
+									<div class="material-form-field-controls">
+											<div class="form-field-controls-group">
+													<input type="text" ng-model="accessToken" required="required" placeholder="Access Token" class="material-form-field-input">
+											</div>
+									</div>
+							</section>
+
+							<md-button ng-click="login(applicationId, accessToken, $event)" class="md-raised md-accent">Login</md-button>
+						</form>
+					</div>
+			</div>
+	</section>
+	
+	<div ng-if="isLoggedIn">
+
+        <div id="search-container" class="ui icon input loading">
+            <input type="text" placeholder="Search..." ng-model="searchText">
+            <i class="search icon"></i>
+        </div>
+
+        <div ng-show="error" class="ui negative message">
+            <div class="header">Error during update!</div>
+            <p>{{ error }}</p>
+        </div>
+
+        <div ng-show="success" class="ui positive message">
+            <div class="header">{{ success }}</div>
+        </div>
+
+        <div ng-repeat="app in applications | orderBy:'applicationId' | filter:searchText" class="ui form segment">
+
+			  <div class="two fields">
+			    <div class="field">
+			      <label>Application Id</label>
+			      <input value="{{ app.applicationId }}" type="text" disabled>
+			    </div>
+			    <div class="field">
+			      <label>Access Token</label>
+			      <input value="{{ app.accessToken }}" type="text" disabled>
+			    </div>
+			  </div>
+			  <div class="three fields">
+				  <div class="field">
+				    <label>Number of instances</label>
+				    <input ng-model="app.instances" type="text">
+				  </div>
+				  <div class="field">
+				    <label>Maximal number of requests per instance per second</label>
+				    <input ng-model="app.maxRequestsPerInstancePerSecond" type="text">
+				  </div>
+				  <div class="field">
+				    <label>Price per instance per hour in USD </label>
+				    <div class="ui left icon input">
+						<i class="dollar icon"></i>
+				        <input ng-model="app.pricePerInstanceInUSD" type="text">
+				    </div>
+				  </div>
+			  </div>
+			  <div class="ui submit button" ng-click="update(app)">Update {{ app.applicationId }}</div>
+		</div>
+	</div>
+		
+</md-content>

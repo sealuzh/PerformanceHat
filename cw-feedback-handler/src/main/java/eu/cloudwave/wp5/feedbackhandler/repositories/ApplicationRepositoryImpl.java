@@ -1,18 +1,18 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  ******************************************************************************/
 package eu.cloudwave.wp5.feedbackhandler.repositories;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,7 +20,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import eu.cloudwave.wp5.feedbackhandler.model.db.DbApplication;
+import eu.cloudwave.wp5.feedbackhandler.model.db.DbCostApplication;
 import eu.cloudwave.wp5.feedbackhandler.model.db.impl.DbApplicationImpl;
+import eu.cloudwave.wp5.feedbackhandler.model.db.impl.DbCostApplicationImpl;
 
 /**
  * Implementation of {@link ApplicationRepositoryCustom}. It is named according to the naming conventions:
@@ -43,6 +45,23 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom {
   public DbApplication findOne(final String applicationId) {
     final Criteria criteria = new Criteria(APPLICATION_ID).is(applicationId);
     return mongoTemplate.findOne(new Query(criteria), DbApplicationImpl.class);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DbCostApplication findOneCostApplication(final String applicationId) {
+    final Criteria criteria = new Criteria(APPLICATION_ID).is(applicationId);
+    return mongoTemplate.findOne(new Query(criteria), DbCostApplicationImpl.class);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<? extends DbCostApplication> findAllCostApplications() {
+    return mongoTemplate.findAll(DbCostApplicationImpl.class);
   }
 
 }

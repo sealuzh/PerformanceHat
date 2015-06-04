@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,10 +36,10 @@ import eu.cloudwave.wp5.common.dto.model.ProcedureExecutionMetricDto;
 import eu.cloudwave.wp5.common.model.ProcedureExecutionMetric;
 import eu.cloudwave.wp5.common.util.Splitters;
 import eu.cloudwave.wp5.feedbackhandler.advices.RuntimeDataProvider;
+import eu.cloudwave.wp5.feedbackhandler.aggregations.AggregatedAverage;
 import eu.cloudwave.wp5.feedbackhandler.controller.dto.MetricDtoFactory;
 import eu.cloudwave.wp5.feedbackhandler.model.db.DbApplication;
 import eu.cloudwave.wp5.feedbackhandler.repositories.MetricRepository;
-import eu.cloudwave.wp5.feedbackhandler.repositories.aggregations.AggregatedAverage;
 
 @RestController
 public class AnalysisController extends AbstractBaseRestController {

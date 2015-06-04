@@ -1,0 +1,107 @@
+/*******************************************************************************
+ * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+package eu.cloudwave.wp5.feedback.eclipse.base.ui.properties;
+
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import eu.cloudwave.wp5.feedback.eclipse.base.ui.factories.ControlFactory;
+import eu.cloudwave.wp5.feedback.eclipse.base.ui.factories.ControlFactoryImpl;
+
+/**
+ * Implementation of {@link PropertyPageField} for date type properties.
+ */
+public class PropertyPageComboField extends AbstractPropertyPageField implements PropertyPageField {
+
+  private static final String EMPTY = ""; //$NON-NLS-1$
+
+  /**
+   * The width of the property field.
+   */
+  private static final int FIELD_WIDTH = 200;
+
+  private Combo comboField;
+  private String key;
+  private String labelText;
+  private String[] items;
+
+  private ControlFactory controlFactory;
+
+  public PropertyPageComboField(final String key, final String labelText, final String[] items) {
+    this.controlFactory = new ControlFactoryImpl();
+    this.key = key;
+    this.labelText = labelText;
+    this.items = items;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void display(final Composite parent) {
+    createLabel(parent);
+    createToggle(parent);
+  }
+
+  private void createLabel(final Composite parent) {
+    final GridData labelLayoutData = new GridData();
+    labelLayoutData.grabExcessHorizontalSpace = true;
+    labelLayoutData.horizontalAlignment = SWT.FILL;
+    labelLayoutData.widthHint = LABELS_MIN_WIDTH;
+    final Label label = controlFactory.createLabel(parent, labelText);
+    label.setLayoutData(labelLayoutData);
+  }
+
+  public void createToggle(final Composite parent) {
+    GridData grid = new GridData();
+    grid.widthHint = FIELD_WIDTH;
+
+    comboField = new Combo(parent, SWT.READ_ONLY);
+    comboField.setItems(this.items);
+    comboField.setLayoutData(grid);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void loadValue(final IEclipsePreferences propertyStore) {
+    String interval = propertyStore.get(key, EMPTY);
+    for (int i = 0; i < this.items.length; i++) {
+      if (this.items[i].equals(interval)) {
+        comboField.select(i);
+      }
+    }
+  }
+
+  /**
+   * Stores the current aggregation interval
+   */
+  @Override
+  public void storeValue(final IEclipsePreferences propertyStore) {
+    int selectedIndex = comboField.getSelectionIndex();
+    if (selectedIndex != -1) {
+      propertyStore.put(key, comboField.getItem(selectedIndex));
+    }
+    else {
+      propertyStore.remove(key);
+    }
+  }
+}

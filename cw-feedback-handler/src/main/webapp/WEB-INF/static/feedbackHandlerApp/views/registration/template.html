@@ -1,0 +1,24 @@
+<md-content id="registration" class="tab-content md-padding">
+  <section class="page-section">
+		<div class="page-section-wrapper">
+
+			<header class="page-section-header">
+				<h1>Register Feedback Application</h1>
+			</header>
+
+			<div class="page-section-content">
+				<form class="material-form">
+						<section class="material-form-field">
+								<div class="material-form-field-controls">
+										<div class="form-field-controls-group">
+												<input type="text" ng-model="applicationId" required="required" placeholder="Application Id" class="material-form-field-input">
+										</div>
+								</div>
+						</section>
+
+						<md-button ng-click="register(applicationId, $event)" class="md-raised md-accent">Register</md-button>
+				</form>
+			</div>
+		</div>
+	</section>
+</md-content>

@@ -20,8 +20,8 @@ import java.util.List;
 
 /**
  * In order to tell the feedback handler that CW integration should be used, the
- * CW-Mode has to be activated. The mode is activated per default, but can be
- * deactivated with the JVM parameter '-Dnocw'.
+ * CW-Mode has to be activated. The mode is disabled per default, but can be
+ * activated with the JVM parameter '-Dcwenabled'.
  * 
  * This class provides a method to check whether the CW-Mode is active or not.
  */

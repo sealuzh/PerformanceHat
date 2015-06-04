@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,9 +25,9 @@ import eu.cloudwave.wp5.common.model.MetricType;
 import eu.cloudwave.wp5.common.model.Procedure;
 import eu.cloudwave.wp5.common.model.ProcedureExecutionMetric;
 import eu.cloudwave.wp5.common.model.ProcedureMetric;
+import eu.cloudwave.wp5.feedbackhandler.aggregations.AggregatedAverage;
+import eu.cloudwave.wp5.feedbackhandler.aggregations.ProcedureMetricAggregation;
 import eu.cloudwave.wp5.feedbackhandler.model.db.DbApplication;
-import eu.cloudwave.wp5.feedbackhandler.repositories.aggregations.AggregatedAverage;
-import eu.cloudwave.wp5.feedbackhandler.repositories.aggregations.ProcedureMetricAggregation;
 
 /**
  * This class extends the default spring repository with custom methods. It has to be named according to the naming

@@ -2,41 +2,60 @@
 	<#include "style.css">
 </style>
 
-<table>
+<#include "header.ftl">
+
+<table class="theme2">
 	<tr>
-		<td><div class="arrow_box">incoming requests</div></td>
+		<td><div class="arrow_box">overall requests</div></td>
 		<td clas="spacer"></td>
+		<td><div class="service_box">${serviceIdentifier?keep_after_last(".")?cap_first} Service</div></td>
 		<td>
-			<div class="service_box">services.currency</div>
+			<div class="arrow_box">
+				<#if !overallAvg?has_content>no</#if> requests to this method
+			</div>
 		</td>
+		<td clas="spacer"></td>
+		<td><div class="service_box">${serviceMethod}</div></td>
 	</tr>
 	<tr>
 		<td>
-			<ul label="Frequency">
-				<li>Min:	20 req/s</li>
-				<li>Avg:	45 req/s</li>
-				<li>Max:	100 req/s</li>
-			</ul>
-		
-			<ul label="Callers">
-			<#list requests as request>
-				 <li>${request_index + 1}. ${request.getCaller()}<#if request_has_next>,</#if></li>
-			</#list> 
+			<ul label="Overall requests per ${interval}">
+				<li>Min:	${overallMin!0}</li>
+				<li>Avg:	${overallAvg!0}</li>
+				<li>Max:	${overallMax!0}</li>
 			</ul>
 		</td>
+		
 		<td></td>
+		
 		<td class="costs">
-			<ul label="Status">
-				<li>Number of instances: 5</li>
-				<li>Max. req/s per instance: 100</li>
-				<li>Costs per instance hours: USD 0.1</li>
+			<ul label="Cost Factors">
+				<#if instances?has_content><li>${instances} instances</li></#if>
+				<#if maxRequests?has_content><li>Max ${maxRequests} req/s per instance</li></#if>
+				<#if pricePerInstance?has_content><li>USD ${pricePerInstance} per instance hour</li></#if>
 			</ul>
-			
-			<ul label="Expected impact">
-				<li>Additional instances: 5</li>
-				<li>Additional costs per hour: 0.5</li>
-				<li>Cost Trend: +50%</li>
-			</ul>
+		</td>
+		
+		<td>
+			<#if overallAvg?has_content>
+				<ul label="Requests per ${interval}:">
+					<li>Min:	${incomingMin!0}</li>
+					<li>Avg:	${incomingAvg!0}</li>
+					<li>Max:	${incomingMax!0}</li>
+				</ul>
+			</#if>
+		</td>
+		
+		<td></td>
+		
+		<td>
+			<#if requests?has_content>
+				<ul label="Callers (avg. requests)">
+				<#list requests as request>
+					 <li>${request_index + 1}. ${request.getCaller()?keep_after_last(".")?cap_first} (${request.getAvg()} req / ${interval})</li>
+				</#list> 
+				</ul>
+			</#if>
 		</td> 
 	  </tr>
 </table>

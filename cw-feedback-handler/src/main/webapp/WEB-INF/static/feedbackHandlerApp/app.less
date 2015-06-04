@@ -1,0 +1,146 @@
+@materialInputPadding: 0.5em;
+@materialInputWidth: 25em;
+@materialInputFontSize: 1.5em;
+@backgroundColor: #3AADFF;
+@materialInputColour: white;
+
+@headerHeight: 64px;
+@tabHeight: 49px;
+
+@sealBlue: #373a7d;
+@sealOrange: #d1a13f;
+
+@fontFamily: "RobotoDraft", "Roboto", "Helvetica Neue, Helvetica, Arial", sans-serif;
+	
+body {
+	font-family: @fontFamily;
+	color: white;
+}
+
+.abspos(@top:0, @right:0, @bottom:0, @left:0) {
+  position: absolute;
+  top: @top;
+  bottom: @bottom;
+  left: @left;
+  right: @right;
+}
+
+#full-page { .abspos(@headerHeight, 0, 0, 0); }
+#tab-container { .abspos(@tabHeight, 0, 0, 0); }
+.tab-content { .abspos(0, 0, 0, 0); }
+
+/*
+ * General pages styles with forms
+ */
+.page-section {
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+
+    &-header {
+        width: 100%;
+
+        h1 {
+            font-size: 2.5em;
+            margin: 1em;
+            font-weight: 300;
+        }
+    }
+    &-wrapper {
+        width: 100%;
+        padding: 10%;
+        box-sizing: border-box;
+    }
+
+    .material-form {
+
+      button {
+        margin: 3em;
+      }
+
+      &-field {
+        position: relative;
+        max-width: @materialInputWidth;
+        margin: 1em auto;
+
+        &-input {
+          &::-webkit-input-placeholder {
+            font-family: @fontFamily;
+            color: @materialInputColour;
+          }
+          padding: @materialInputPadding 0;
+          font-size: @materialInputFontSize;
+          color: inherit;
+          font-family: inherit;
+          width: 100%;
+          background: transparent;
+          border-width: 0 0 1px 0;
+          transition: 0.4s ease border-color;
+
+          &:focus {
+            &:valid, &:invalid {
+              border-bottom-width: 2px;
+            }
+            &:valid {
+              border-color: green;
+            }
+            &:invalid {
+              border-color: red;
+            }
+          }
+
+          &:focus, &[value], &:valid {
+            &::-webkit-input-placeholder {
+              color: transparent;
+            }
+            & + .material-form-field-label {
+              transform: translateY(-1.1em);
+            }
+          }
+
+          & + .material-form-field-label {
+            transition: 0.4s ease all;
+            cursor: pointer;
+            transform: translateY(0);
+            font-size: @materialInputFontSize;
+            left: 0;
+            top: calc(@materialInputPadding * 1.1);
+            position: absolute;
+            color: @materialInputColour;
+          }
+
+          &:focus {
+            outline: none;
+          }
+        }
+      }
+      & + label {
+        position: absolute;
+        left: 0.5em;
+      }
+    }
+}
+
+/*
+ * view-specific styles
+ * TODO: move to specific view folder and extend Gruntfile.js
+ */
+
+
+// Tab 1
+#registration {
+
+}
+
+// Tab 2
+#administration {
+
+  div#search-container {
+    width: 100%;
+
+    input {
+      width: 100%;
+    }
+  }
+}
+

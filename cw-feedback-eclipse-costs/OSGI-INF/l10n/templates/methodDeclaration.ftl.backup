@@ -1,0 +1,38 @@
+<style>
+	<#include "style.css">
+</style>
+
+<#include "header.ftl">
+
+<table class="theme2">
+	<tr>
+		<td><div class="arrow_box">incoming requests</div></td>
+		<td clas="spacer"></td>
+		<td>
+			<div class="service_box">${serviceIdentifier?keep_after_last(".")?cap_first} Service</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<ul label="Overall Frequency">
+				<li>Min:	${overallMin} requests per ${interval}</li>
+				<li>Avg:	${overallAvg} requests per ${interval}</li>
+				<li>Max:	${overallMax} requests per ${interval}</li>
+			</ul>
+		
+			<ul label="Callers">
+			<#list requests as request>
+				 <li>${request_index + 1}. ${request.getCaller()} (avg of ${request.getAvg()} req / ${interval})<#if request_has_next>,</#if></li>
+			</#list> 
+			</ul>
+		</td>
+		<td></td>
+		<td class="costs">
+			<ul label="Status">
+				<li>Number of instances: 5</li>
+				<li>Max. req/s per instance: 100</li>
+				<li>Costs per instance hours: USD 0.1</li>
+			</ul>
+		</td> 
+	  </tr>
+</table>

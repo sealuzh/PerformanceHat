@@ -1,16 +1,14 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  ******************************************************************************/
 package eu.cloudwave.wp5.common.constants;
 
@@ -35,6 +33,10 @@ public class Urls {
   private static final String MONITORING__QUALIFIER = MONITORING__BASE + SLASH;
 
   public static final String MONITORING__REGISTER = MONITORING__QUALIFIER + "register";
+  public static final String MONITORING__LOGIN = MONITORING__QUALIFIER + "login";
+  public static final String MONITORING__APPLICATION = MONITORING__QUALIFIER + "application";
+  public static final String MONITORING__APPLICATIONS = MONITORING__QUALIFIER + "applications";
+  public static final String MONITORING__UPDATE = MONITORING__QUALIFIER + "update";
   public static final String MONITORING__DATA = MONITORING__QUALIFIER + "data";
 
   /*
@@ -56,8 +58,18 @@ public class Urls {
   private static final String COST__FILTER__QUALIFIER = COST__QUALIFIER + "filter" + SLASH;
 
   public static final String COST__ALL = COST__QUALIFIER + "all";
+
+  private static final String COST__INCOMING__QUALIFIER = COST__QUALIFIER + "incoming" + SLASH;
+  public static final String COST__INCOMING__ALL = COST__INCOMING__QUALIFIER + "all";
+  public static final String COST__INCOMING__FILTER__IDENTIFIER = COST__INCOMING__QUALIFIER + "filter" + SLASH + "identifier";
+  public static final String COST__INCOMING__FILTER__IDENTIFIER__OVERALL = COST__INCOMING__QUALIFIER + "filter" + SLASH + "identifier" + SLASH + "overall";
+
   public static final String COST__FILTER__CALLEE = COST__FILTER__QUALIFIER + "callee";
   public static final String COST__FILTER__CALLER = COST__FILTER__QUALIFIER + "caller";
+
+  public static final String COST__FILTER__CALLEE__OVERALL = COST__FILTER__CALLEE + SLASH + "overall";
+
+  public static final String COST__INVOCATION__CHECK = COST__QUALIFIER + "invocation" + SLASH + "isnew";
 
   /*
    * Plots

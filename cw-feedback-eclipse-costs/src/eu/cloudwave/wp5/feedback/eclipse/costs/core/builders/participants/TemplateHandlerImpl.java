@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +29,7 @@ public class TemplateHandlerImpl extends AbstractTemplateHandlerImpl {
    */
   @Override
   protected void initFreemarkerConfig() {
-    this.freemarkerConfig = new Configuration();
+    this.freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
     freemarkerConfig.setClassForTemplateLoading(this.getClass(), SLASH);
   }
 }
