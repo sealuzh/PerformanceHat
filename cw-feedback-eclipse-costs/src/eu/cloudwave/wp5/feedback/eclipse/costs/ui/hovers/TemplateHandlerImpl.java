@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.participants;
+package eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.AbstractTemplateHandlerImpl;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;

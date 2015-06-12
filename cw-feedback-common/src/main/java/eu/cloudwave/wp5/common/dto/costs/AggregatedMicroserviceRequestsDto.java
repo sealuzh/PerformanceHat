@@ -15,7 +15,7 @@ package eu.cloudwave.wp5.common.dto.costs;
 /**
  * Contains the aggregated values of microservice requests from caller to callee
  */
-public class AggregatedMicroserviceRequestsDto {
+public class AggregatedMicroserviceRequestsDto implements AggregatedRequestsDto {
 
   private String caller;
   private String callee;

@@ -1,17 +1,14 @@
 /*******************************************************************************
  * Copyright 2015 Software Evolution and Architecture Lab, University of Zurich
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.costs.core;
 
@@ -23,8 +20,7 @@ import com.google.inject.Injector;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.ui.hovers.contentprovider.FeedbackInformationControlContentProviderRegistry;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.markers.CostMarkerTypes;
-import eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.ClientInvocationInformationControlContentProvider;
-import eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.MethodDeclarationInformationControlContentProvider;
+import eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.CostInformationControlContentProvider;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -62,8 +58,8 @@ public class CostPluginActivator extends AbstractUIPlugin {
    * Register mapping between Marker Types and Content Providers to the singleton registry of the Base Plugin
    */
   private void registerHoverContentProviders() {
-    FeedbackInformationControlContentProviderRegistry.INSTANCE.register(CostMarkerTypes.METHOD_DECLARATION, new MethodDeclarationInformationControlContentProvider());
-    FeedbackInformationControlContentProviderRegistry.INSTANCE.register(CostMarkerTypes.CLIENT_INVOCATION, new ClientInvocationInformationControlContentProvider());
+    FeedbackInformationControlContentProviderRegistry.INSTANCE.register(CostMarkerTypes.METHOD_DECLARATION, new CostInformationControlContentProvider());
+    FeedbackInformationControlContentProviderRegistry.INSTANCE.register(CostMarkerTypes.CLIENT_INVOCATION, new CostInformationControlContentProvider());
   }
 
   /*

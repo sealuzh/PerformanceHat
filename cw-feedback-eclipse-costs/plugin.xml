@@ -62,18 +62,45 @@
       </page>
    </extension>
 
-   <!-- Test View --> 
+   <!-- Feedback Handler View --> 
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Test Browser"
-            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.TestView"
-            id="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.TestView">
+            name="Feedback Handler Web Client"
+            icon="icons/cloudwave-fh-32px.png"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.FeedbackHandlerWebClient"
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.FeedbackHandlerWebClient">
       </view>
    </extension>
+     <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.FeedbackHandlerWebClient"
+               moveable="true"
+               relationship="top"
+               visible="true">
+         </view>
+      </perspectiveExtension>
+   </extension>
    
+   <!-- Command to open Feedback Handler Web Client + the associated handler -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            name="Feedback Handler Web Client"
+            id="eu.cloudwave.wp5.feedback.eclipse.costs.commands.FeedbackHandlerWebClientCommand">
+      </command>
+   </extension>
    
-   <!-- Command to toggle the Cost Nature -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.FeedbackHandlerWebClientCommand"
+            class="eu.cloudwave.wp5.feedback.eclipse.costs.ui.views.FeedbackHandlerWebClientHandler">
+      </handler>
+   </extension>
+   
+   <!-- Command to toggle the Cost Nature + the associated handler -->
    <extension point="org.eclipse.ui.commands">
       <command
             name="Toggle Cost Nature"
@@ -81,15 +108,11 @@
       </command>
    </extension>
    
-   
-   <!-- Handlers for the command specified above -->
    <extension point="org.eclipse.ui.handlers">
-      
       <handler
             commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.ToggleCostNatureCommand"
             class="eu.cloudwave.wp5.feedback.eclipse.costs.core.natures.CostNatureHandler">
       </handler>
-      
    </extension>
    
    
@@ -138,6 +161,12 @@
                   </iterate>
                </with>
             </visibleWhen>
+         </command>
+         
+         <command
+               commandId="eu.cloudwave.wp5.feedback.eclipse.costs.commands.FeedbackHandlerWebClientCommand"
+               label="Feedback Handler Web Client"
+               style="push">
          </command>
       </menuContribution>
       

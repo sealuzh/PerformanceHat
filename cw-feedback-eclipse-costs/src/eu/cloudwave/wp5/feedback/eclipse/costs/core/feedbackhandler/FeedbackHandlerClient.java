@@ -106,6 +106,7 @@ public interface FeedbackHandlerClient {
    *          Requests with a timestamp in milliseconds >= the given timestamp
    * @param timeRangeTo
    *          Requests with a timestamp in milliseconds <= the given timestamp
+   * 
    * @return An array of {@link AggregatedMicroserviceRequestsDto}
    */
   public AggregatedMicroserviceRequestsDto[] requestsByCaller(
@@ -119,10 +120,15 @@ public interface FeedbackHandlerClient {
    * All incoming microservice requests aggregated by given time interval
    * 
    * @param accessToken
+   *          {@link String} used for auth
    * @param applicationId
+   *          {@link String} used for auth
    * @param aggregationInterval
+   *          {@link AggregationInterval}
    * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
    * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
    * 
    * @return an array of aggregated requests
    */
@@ -134,14 +140,51 @@ public interface FeedbackHandlerClient {
       final String timeRangeTo);
 
   /**
-   * Incoming microservice requests to the given application aggregated by given time interval. Separate statistics for
-   * each service identifier and each service method.
+   * List of incoming microservice requests to the given application aggregated by given time interval. Separate
+   * statistics for each service identifier and each service method.
    * 
    * @param accessToken
+   *          {@link String} used for auth
    * @param applicationId
+   *          {@link String} used for auth (and if requestedApplicationId is null, the applicationId is also used as
+   *          identifier of the microservice which are interested in)
+   * @param requestedApplicationId
+   *          {@link String} with the application id of the microservice which we are interested in
    * @param aggregationInterval
+   *          {@link AggregationInterval}
    * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
    * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
+   * 
+   * @return an array of aggregated requests
+   */
+  public AggregatedIncomingRequestsDto[] incomingRequestsByIdentifier(
+      final String accessToken,
+      final String applicationId,
+      final String requestedApplicationId,
+      final AggregationInterval aggregationInterval,
+      final String timeRangeFrom,
+      final String timeRangeTo);
+
+  /**
+   * List of incoming microservice requests to the given application aggregated by given time interval. Separate
+   * statistics for each service identifier and each service method.<br />
+   * <br />
+   * This method uses the given access token and application id for auth and also as identifier of the microservice we
+   * are interested in (incoming requests).
+   * 
+   * @param accessToken
+   *          {@link String} used for auth
+   * @param applicationId
+   *          {@link String} used for auth (and if requestedApplicationId is null, the applicationId is also used as
+   *          identifier of the microservice which are interested in)
+   * @param aggregationInterval
+   *          {@link AggregationInterval}
+   * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
+   * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
    * 
    * @return an array of aggregated requests
    */
@@ -157,14 +200,51 @@ public interface FeedbackHandlerClient {
    * service method. No separate statistics for each service method, statistics are only grouped by service identifier.
    * 
    * @param accessToken
+   *          {@link String} used for auth
    * @param applicationId
+   *          {@link String} used for auth (and if requestedApplicationId is null, the applicationId is also used as
+   *          identifier of the microservice which are interested in)
+   * @param requestedApplicationId
+   *          {@link String} with the application id of the microservice which we are interested in
    * @param aggregationInterval
+   *          {@link AggregationInterval}
    * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
    * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
    * 
    * @return an aggregated request
    */
-  public AggregatedIncomingRequestsDto incomingRequestsByIdentifierOverall(
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(
+      final String accessToken,
+      final String applicationId,
+      final String requestedApplicationId,
+      final AggregationInterval aggregationInterval,
+      final String timeRangeFrom,
+      final String timeRangeTo);
+
+  /**
+   * Incoming microservice requests to the given application aggregated by given time interval without grouping by
+   * service method. No separate statistics for each service method, statistics are only grouped by service identifier.<br />
+   * <br />
+   * This method uses the given access token and application id for auth and also as identifier of the microservice we
+   * are interested in (incoming requests).
+   * 
+   * @param accessToken
+   *          {@link String} used for auth
+   * @param applicationId
+   *          {@link String} used for auth (and if requestedApplicationId is null, the applicationId is also used as
+   *          identifier of the microservice which are interested in)
+   * @param aggregationInterval
+   *          {@link AggregationInterval}
+   * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
+   * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
+   * 
+   * @return an aggregated request
+   */
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(
       final String accessToken,
       final String applicationId,
       final AggregationInterval aggregationInterval,
@@ -180,6 +260,7 @@ public interface FeedbackHandlerClient {
    *          the application ID which will only be used for auth
    * @param invocation
    *          names of invoked method/class and caller method/class
+   * 
    * @return boolean true means that the invoked method has never been called by the given caller
    */
   public Boolean isNewlyInvoked(final String accessToken, final String applicationId, final InitialInvocationCheckDto invocation);

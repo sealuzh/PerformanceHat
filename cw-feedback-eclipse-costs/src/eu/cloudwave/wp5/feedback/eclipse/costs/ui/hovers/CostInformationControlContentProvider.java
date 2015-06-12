@@ -23,7 +23,7 @@ import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostPluginActivator;
 /**
  * Implementation of {@link FeedbackInformationControlContentProvider}
  */
-public class MethodDeclarationInformationControlContentProvider extends AbstractFeedbackInformationControlContentProvider implements FeedbackInformationControlContentProvider {
+public class CostInformationControlContentProvider extends AbstractFeedbackInformationControlContentProvider implements FeedbackInformationControlContentProvider {
 
   @Override
   protected void fillIndividualContent() {

@@ -16,13 +16,18 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 
 import eu.cloudwave.wp5.common.constants.AggregationInterval;
 import eu.cloudwave.wp5.common.util.AggregationIntervalConverter;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.AbstractFeedbackBuilderParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
+import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostPluginActivator;
+import eu.cloudwave.wp5.feedback.eclipse.costs.core.cache.ApplicationDtoCache;
+import eu.cloudwave.wp5.feedback.eclipse.costs.core.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.costs.ui.Messages;
 
 public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFeedbackBuilderParticipant {
@@ -33,19 +38,25 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
   protected int annotationIndent;
 
   protected String timeRangeFrom;
-  protected String timeRangeFromPrint;
   protected String timeRangeTo;
-  protected String timeRangeToPrint;
 
   protected boolean showExistingInvocationHover;
   protected boolean showNewInvocationHover;
   protected boolean showMethodDeclarationHover;
+
+  protected FeedbackHandlerEclipseClient feedbackHandlerClient;
+  protected TemplateHandler templateHandler;
+  protected ApplicationDtoCache cache;
 
   /**
    * {@inheritDoc}
    */
   @Override
   public void build(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException {
+
+    feedbackHandlerClient = CostPluginActivator.instance(FeedbackHandlerEclipseClient.class);
+    templateHandler = CostPluginActivator.instance(TemplateHandler.class);
+    cache = ApplicationDtoCache.getInstance();
 
     // reload properties before we call buildFile for every file that has to be rebuilt
     this.reloadProperties(project);
@@ -64,6 +75,9 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
    * Helper to extract value of annotation attribute from string
    * 
    * @param annotationContent
+   *          {@link String} with content of all annotations of this node
+   * @param attribute
+   *          name of the attribute we want to extract
    * 
    * @return attribute value
    */
@@ -77,6 +91,25 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
     else {
       return null;
     }
+  }
+
+  /**
+   * Helper to extract value of annotation attribute from {@link IMemberValuePairBinding}
+   * 
+   * @param annotationContent
+   *          {@link IMemberValuePairBinding} with key/value annotation attribute bindings
+   * @param attribute
+   *          name of the attribute we want to extract
+   * 
+   * @return attribute value
+   */
+  protected String extractAttributeValueFromAnnotation(IMemberValuePairBinding[] annotationContent, String attribute) {
+    for (IMemberValuePairBinding binding : annotationContent) {
+      if (binding.getName().equals(attribute)) {
+        return binding.getValue().toString();
+      }
+    }
+    return null;
   }
 
   /**

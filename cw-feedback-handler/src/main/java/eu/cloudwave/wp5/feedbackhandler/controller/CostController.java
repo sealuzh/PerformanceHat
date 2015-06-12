@@ -55,6 +55,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
+    sampleLogger.info("Request to " + Urls.COST__ALL);
     return costDataProvider.getAllAggregatedRequests(AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
 
@@ -66,6 +67,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
+    sampleLogger.info("Request to " + Urls.COST__FILTER__CALLEE);
     final DbApplication application = handleUnauthorized(applicationId, accessToken);
     return costDataProvider.getAggregatedRequestsByCallee(application, AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
@@ -78,6 +80,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
+    sampleLogger.info("Request to " + Urls.COST__FILTER__CALLEE__OVERALL);
     final DbApplication application = handleUnauthorized(applicationId, accessToken);
     return costDataProvider.getOverallAggregatedRequestsByCallee(application, AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
@@ -90,6 +93,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
+    sampleLogger.info("Request to " + Urls.COST__FILTER__CALLER);
     final DbApplication application = handleUnauthorized(applicationId, accessToken);
     return costDataProvider.getAggregatedRequestsByCaller(application, AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
@@ -102,6 +106,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
+    sampleLogger.info("Request to " + Urls.COST__INCOMING__ALL);
     return incomingRequestsDataProvider.getAllIncomingRequests(AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
 
@@ -111,9 +116,25 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.ACCESS_TOKEN) final String accessToken,
       @RequestHeader(Headers.APPLICATION_ID) final String applicationId,
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
+      @RequestHeader(value = Headers.REQUESTED_APPLICATION_ID, required = false) final String requestedApplicationId,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
-    final DbApplication application = handleUnauthorized(applicationId, accessToken);
+    sampleLogger.info("Request to " + Urls.COST__INCOMING__FILTER__IDENTIFIER);
+    DbApplication application;
+    if (requestedApplicationId != null) {
+      // only use access token and associated application id for authorization
+      handleUnauthorized(applicationId, accessToken);
+
+      // use the requested application id for db queries
+      application = applicationRepository.findOne(requestedApplicationId);
+
+      // does the requested application exist?
+      if (application == null)
+        return null;
+    }
+    else {
+      application = handleUnauthorized(applicationId, accessToken);
+    }
     return incomingRequestsDataProvider.getIncomingRequestsByIdentifier(application, AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
 
@@ -123,9 +144,25 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.ACCESS_TOKEN) final String accessToken,
       @RequestHeader(Headers.APPLICATION_ID) final String applicationId,
       @RequestHeader(Headers.AGGREGATION_INTERVAL) final String aggregationInterval,
+      @RequestHeader(value = Headers.REQUESTED_APPLICATION_ID, required = false) final String requestedApplicationId,
       @RequestHeader(value = Headers.TIME_RANGE_FROM, required = false) final Long timeRangeFrom,
       @RequestHeader(value = Headers.TIME_RANGE_TO, required = false) final Long timeRangeTo) {
-    final DbApplication application = handleUnauthorized(applicationId, accessToken);
+    sampleLogger.info("Request to " + Urls.COST__INCOMING__FILTER__IDENTIFIER__OVERALL);
+    DbApplication application;
+    if (requestedApplicationId == null) {
+      application = handleUnauthorized(applicationId, accessToken);
+    }
+    else {
+      // only use access token and associated application id for authorization
+      handleUnauthorized(applicationId, accessToken);
+
+      // use the requested application id for db queries
+      application = applicationRepository.findOne(requestedApplicationId);
+
+      // does the requested application exist?
+      if (application == null)
+        return null;
+    }
     return incomingRequestsDataProvider.getOverallIncomingRequestsByIdentifier(application, AggregationIntervalConverter.fromString(aggregationInterval), timeRangeFrom, timeRangeTo);
   }
 
@@ -138,6 +175,7 @@ public class CostController extends AbstractBaseRestController {
       @RequestHeader(Headers.INVOKED_METHOD) final String invokedMethodName,
       @RequestHeader(Headers.CALLER_CLASS) final String callerClassName,
       @RequestHeader(Headers.CALLER_METHOD) final String callerMethodName) {
+    sampleLogger.info("Request to " + Urls.COST__INVOCATION__CHECK);
     return invocationDataProvider.isNewlyInvoked(invokedClassName, invokedMethodName, callerClassName, callerMethodName);
   }
 }

@@ -11,13 +11,13 @@ module.exports = function(grunt) {
           optimization: 2
         },
         files: {
-            "WEB-INF/static/feedbackHandlerApp/app.css": "WEB-INF/static/feedbackHandlerApp/app.less"
+            "src/main/webapp/WEB-INF/static/feedbackHandlerApp/app.css": "src/main/webapp/WEB-INF/static/feedbackHandlerApp/app.less"
         }
       }
     },
     watch: {
       styles: {
-        files: ['WEB-INF/static/feedbackHandlerApp/**/*.less'], // which files to watch
+        files: ['src/main/webapp/WEB-INF/static/feedbackHandlerApp/**/*.less'], // which files to watch
         tasks: ['less'],
         options: {
           nospawn: true
@@ -27,4 +27,5 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('default', ['less', 'watch']);
+  grunt.registerTask('build', ['less']);
 };

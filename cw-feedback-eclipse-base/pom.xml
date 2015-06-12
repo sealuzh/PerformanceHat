@@ -30,8 +30,6 @@
 	<artifactId>eu.cloudwave.wp5.feedback.eclipse.base</artifactId>
 	<name>PerformanceHat Base Module</name>
 	<description>Contains the base code that is used by multiple plugins (performance-plugin, cost-plugin).</description>
-
-
 	<packaging>eclipse-plugin</packaging>
 
 </project>

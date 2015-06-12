@@ -81,6 +81,26 @@ public interface FeedbackHandlerEclipseClient {
    * 
    * @param project
    *          the project
+   * @param requestedApplicationId
+   * @param aggregationInterval
+   * @param timeRangeFrom
+   * @param timeRangeTo
+   * 
+   * @return an array of aggregated requests
+   */
+  public AggregatedIncomingRequestsDto[] incomingRequestsByIdentifier(
+      FeedbackProject project,
+      final String requestedApplicationId,
+      final AggregationInterval aggregationInterval,
+      final String timeRangeFrom,
+      final String timeRangeTo);
+
+  /**
+   * Incoming microservice requests to the given application aggregated by given time interval. Separate statistics for
+   * each service identifier and each service method.
+   * 
+   * @param project
+   *          the project
    * @param aggregationInterval
    * @param timeRangeFrom
    * @param timeRangeTo
@@ -95,13 +115,33 @@ public interface FeedbackHandlerEclipseClient {
    * 
    * @param project
    *          the project
+   * @param requestedApplicationId
    * @param aggregationInterval
    * @param timeRangeFrom
    * @param timeRangeTo
    * 
    * @return an array of aggregated requests
    */
-  public AggregatedIncomingRequestsDto incomingRequestsByIdentifierOverall(FeedbackProject project, final AggregationInterval aggregationInterval, final String timeRangeFrom, final String timeRangeTo);
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(
+      FeedbackProject project,
+      final String requestedApplicationId,
+      final AggregationInterval aggregationInterval,
+      final String timeRangeFrom,
+      final String timeRangeTo);
+
+  /**
+   * Incoming microservice requests to the given application aggregated by given time interval without grouping by
+   * service method. No separate statistics for each service method, statistics are only grouped by service identifier.
+   * 
+   * @param project
+   *          the project
+   * @param aggregationInterval
+   * @param timeRangeFrom
+   * @param timeRangeTo
+   * 
+   * @return an array of aggregated requests
+   */
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(FeedbackProject project, final AggregationInterval aggregationInterval, final String timeRangeFrom, final String timeRangeTo);
 
   /**
    * Check if the given method has ever been called within the given caller method/class

@@ -97,8 +97,34 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    * {@inheritDoc}
    */
   @Override
-  public AggregatedIncomingRequestsDto incomingRequestsByIdentifierOverall(FeedbackProject project, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
-    return feedbackHandlerClient().incomingRequestsByIdentifierOverall(project.getAccessToken(), project.getApplicationId(), aggregationInterval, timeRangeFrom, timeRangeTo);
+  public AggregatedIncomingRequestsDto[] incomingRequestsByIdentifier(
+      FeedbackProject project,
+      String requestedApplicationId,
+      AggregationInterval aggregationInterval,
+      String timeRangeFrom,
+      String timeRangeTo) {
+    return feedbackHandlerClient().incomingRequestsByIdentifier(project.getAccessToken(), project.getApplicationId(), requestedApplicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(
+      FeedbackProject project,
+      String requestedApplicationId,
+      AggregationInterval aggregationInterval,
+      String timeRangeFrom,
+      String timeRangeTo) {
+    return feedbackHandlerClient().overallIncomingRequestsByIdentifier(project.getAccessToken(), project.getApplicationId(), requestedApplicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(FeedbackProject project, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
+    return feedbackHandlerClient().overallIncomingRequestsByIdentifier(project.getAccessToken(), project.getApplicationId(), aggregationInterval, timeRangeFrom, timeRangeTo);
   }
 
   /**
@@ -114,11 +140,11 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    */
   @Override
   public ApplicationDto currentApplication(FeedbackProject project) {
-    return feedbackHandlerClient.currentApplication(project.getAccessToken(), project.getApplicationId());
+    return feedbackHandlerClient().currentApplication(project.getAccessToken(), project.getApplicationId());
   }
 
   @Override
   public ApplicationDto application(FeedbackProject project, String requestedApplicationId) {
-    return feedbackHandlerClient.application(project.getAccessToken(), project.getApplicationId(), requestedApplicationId);
+    return feedbackHandlerClient().application(project.getAccessToken(), project.getApplicationId(), requestedApplicationId);
   }
 }

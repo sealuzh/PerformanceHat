@@ -69,6 +69,7 @@ public class MonitoringController extends AbstractBaseRestController {
   @RequestMapping(Urls.MONITORING__REGISTER)
   @ResponseStatus(HttpStatus.OK)
   public AccessTokenDto register(@RequestParam(value = Params.APPLICATION_ID, required = true) final String applicationId) {
+    sampleLogger.info("Request to " + Urls.MONITORING__REGISTER);
     checkApplicationId(applicationId);
     final DbApplication application = applicationFactory.create(applicationId);
     applicationRepository.save(application);
@@ -78,6 +79,7 @@ public class MonitoringController extends AbstractBaseRestController {
   @RequestMapping(Urls.MONITORING__LOGIN)
   @ResponseStatus(HttpStatus.OK)
   public ApplicationDto login(@RequestHeader(Headers.ACCESS_TOKEN) final String accessToken, @RequestHeader(Headers.APPLICATION_ID) final String applicationId) {
+    sampleLogger.info("Request to " + Urls.MONITORING__LOGIN);
     final DbCostApplication app = handleUnauthorizedCostApplication(applicationId, accessToken);
     return new ApplicationDto(app.getApplicationId(), app.getAccessToken(), app.getInstances(), app.getPricePerInstanceInUSD(), app.getMaxRequestsPerInstancePerSecond());
   }
@@ -87,15 +89,28 @@ public class MonitoringController extends AbstractBaseRestController {
   public ApplicationDto application(
       @RequestHeader(Headers.ACCESS_TOKEN) final String accessToken,
       @RequestHeader(Headers.APPLICATION_ID) final String applicationId,
-      @RequestHeader(Headers.REQUESTED_APPLICATION_ID) final String requestedApplicationId) {
-    handleUnauthorized(applicationId, accessToken);
-    final DbCostApplication app = applicationRepository.findOneCostApplication(requestedApplicationId);
-    return new ApplicationDto(app.getApplicationId(), app.getAccessToken(), app.getInstances(), app.getPricePerInstanceInUSD(), app.getMaxRequestsPerInstancePerSecond());
+      @RequestHeader(value = Headers.REQUESTED_APPLICATION_ID, required = false) final String requestedApplicationId) {
+    sampleLogger.info(applicationId + " sends request to " + Urls.MONITORING__APPLICATION + " of " + requestedApplicationId);
+    DbCostApplication application = handleUnauthorizedCostApplication(applicationId, accessToken);
+
+    if (requestedApplicationId != null) {
+      // try to find requested application with given id
+      application = applicationRepository.findOneCostApplication(requestedApplicationId);
+
+      // does the requested application exist?
+      if (application == null)
+        throwRequestedApplicationIdNotFoundException();
+    }
+
+    return new ApplicationDto(application.getApplicationId(), application.getAccessToken(), application.getInstances(), application.getPricePerInstanceInUSD(),
+        application.getMaxRequestsPerInstancePerSecond());
   }
 
   @RequestMapping(value = Urls.MONITORING__UPDATE, method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public void data(@RequestBody final ApplicationDto updatedApplication) {
+    sampleLogger.info("Request to " + Urls.MONITORING__UPDATE);
+
     handleUnauthorized(updatedApplication.getApplicationId(), updatedApplication.getAccessToken());
 
     final DbCostApplication application = applicationRepository.findOneCostApplication(updatedApplication.getApplicationId());
@@ -108,6 +123,8 @@ public class MonitoringController extends AbstractBaseRestController {
   @RequestMapping(Urls.MONITORING__APPLICATIONS)
   @ResponseStatus(HttpStatus.OK)
   public ApplicationDto[] applications(@RequestHeader(Headers.ACCESS_TOKEN) final String accessToken, @RequestHeader(Headers.APPLICATION_ID) final String applicationId) {
+    sampleLogger.info("Request to " + Urls.MONITORING__APPLICATIONS);
+
     // Keep in mind: any registered application is able to get a list of all other registered applications
     // This only makes sense in the context of prototyping and demo applications
     handleUnauthorized(applicationId, accessToken);

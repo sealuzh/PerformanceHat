@@ -15,3 +15,4 @@ Require-Bundle: eu.cloudwave.wp5.feedback.eclipse.base;bundle-version="1.0.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: University of Zurich, Software Evolution and Architecture Lab

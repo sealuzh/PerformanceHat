@@ -2,7 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>   
    
-   
    <!-- Markers and Annotations -->
    <extension
          point="org.eclipse.core.resources.markers" 

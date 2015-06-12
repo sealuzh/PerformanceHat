@@ -145,7 +145,22 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
   @Override
   public AggregatedIncomingRequestsDto[] allIncomingRequests(String accessToken, String applicationId, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
     final String url = url(Urls.COST__INCOMING__ALL);
-    return getIncomingRequest(url, accessToken, applicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
+    return getIncomingRequest(url, accessToken, applicationId, null, aggregationInterval, timeRangeFrom, timeRangeTo);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AggregatedIncomingRequestsDto[] incomingRequestsByIdentifier(
+      String accessToken,
+      String applicationId,
+      String requestedApplicationId,
+      AggregationInterval aggregationInterval,
+      String timeRangeFrom,
+      String timeRangeTo) {
+    final String url = url(Urls.COST__INCOMING__FILTER__IDENTIFIER);
+    return getIncomingRequest(url, accessToken, applicationId, requestedApplicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
   }
 
   /**
@@ -154,7 +169,7 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
   @Override
   public AggregatedIncomingRequestsDto[] incomingRequestsByIdentifier(String accessToken, String applicationId, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
     final String url = url(Urls.COST__INCOMING__FILTER__IDENTIFIER);
-    return getIncomingRequest(url, accessToken, applicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
+    return getIncomingRequest(url, accessToken, applicationId, null, aggregationInterval, timeRangeFrom, timeRangeTo);
   }
 
   /**
@@ -162,16 +177,28 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
    * a different url. This helper class performs the GET request and returns the list of results.
    * 
    * @param url
+   *          {@link String}
    * @param accessToken
+   *          {@link String} used for auth
    * @param applicationId
+   *          {@link String} used for auth (and if requestedApplicationId is null, the applicationId is also used as
+   *          identifier of the microservice which are interested in)
+   * @param requestedApplicationId
+   *          {@link String} with the application id of the microservice which we are interested in
+   * @param aggregationInterval
+   *          {@link AggregationInterval}
    * @param timeRangeFrom
+   *          {@link String} that specifies the start time of the time range
    * @param timeRangeTo
+   *          {@link String} that specifies the end time of the time range
+   * 
    * @return An array of {@link AggregatedMicroserviceRequestsDto}
    */
   private AggregatedIncomingRequestsDto[] getIncomingRequest(
       final String url,
       String accessToken,
       String applicationId,
+      String requestedApplicationId,
       final AggregationInterval aggregationInterval,
       final String timeRangeFrom,
       final String timeRangeTo) {
@@ -183,14 +210,26 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
     RestRequestHeader headerTimeFrom = RestRequestHeader.of(Headers.TIME_RANGE_FROM, timeRangeFrom);
     RestRequestHeader headerTimeTo = RestRequestHeader.of(Headers.TIME_RANGE_TO, timeRangeTo);
 
-    return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto[].class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo);
+    if (requestedApplicationId != null && !requestedApplicationId.isEmpty()) {
+      return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto[].class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo,
+          RestRequestHeader.of(Headers.REQUESTED_APPLICATION_ID, requestedApplicationId));
+    }
+    else {
+      return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto[].class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo);
+    }
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public AggregatedIncomingRequestsDto incomingRequestsByIdentifierOverall(String accessToken, String applicationId, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(
+      String accessToken,
+      String applicationId,
+      String requestedApplicationId,
+      AggregationInterval aggregationInterval,
+      String timeRangeFrom,
+      String timeRangeTo) {
     final String url = url(Urls.COST__INCOMING__FILTER__IDENTIFIER__OVERALL);
     final Map<String, String> urlVariables = ImmutableMap.of();
 
@@ -200,7 +239,21 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
     RestRequestHeader headerTimeFrom = RestRequestHeader.of(Headers.TIME_RANGE_FROM, timeRangeFrom);
     RestRequestHeader headerTimeTo = RestRequestHeader.of(Headers.TIME_RANGE_TO, timeRangeTo);
 
-    return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto.class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo);
+    if (requestedApplicationId != null && !requestedApplicationId.isEmpty()) {
+      return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto.class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo,
+          RestRequestHeader.of(Headers.REQUESTED_APPLICATION_ID, requestedApplicationId));
+    }
+    else {
+      return restClient.get(url, urlVariables, AggregatedIncomingRequestsDto.class, headerId, headerToken, headerInterval, headerTimeFrom, headerTimeTo);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public AggregatedIncomingRequestsDto overallIncomingRequestsByIdentifier(String accessToken, String applicationId, AggregationInterval aggregationInterval, String timeRangeFrom, String timeRangeTo) {
+    return overallIncomingRequestsByIdentifier(accessToken, applicationId, null, aggregationInterval, timeRangeFrom, timeRangeTo);
   }
 
   /**

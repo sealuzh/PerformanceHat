@@ -17,10 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Javadoc;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.common.collect.Maps;
@@ -30,40 +28,32 @@ import eu.cloudwave.wp5.common.dto.ApplicationDto;
 import eu.cloudwave.wp5.common.dto.costs.AggregatedIncomingRequestsDto;
 import eu.cloudwave.wp5.common.dto.costs.AggregatedMicroserviceRequestsDto;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.FeedbackBuilderParticipant;
-import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerPosition;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecification;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostIds;
-import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostPluginActivator;
-import eu.cloudwave.wp5.feedback.eclipse.costs.core.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.markers.CostMarkerTypes;
+import eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.CostContextBuilder;
 
 /**
  * A builder participant that is responsible to display warnings for microservice endpoints
  */
 public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedbackBuilderParticipant implements FeedbackBuilderParticipant {
 
-  private FeedbackHandlerEclipseClient feedbackHandlerClient;
-
-  private TemplateHandler templateHandler;
-
+  /**
+   * The name of the template which should be used to display the hover
+   */
   private final static String HOVER_TEMPLATE = "methodDeclaration";
 
-  private String annotationPrefix = "@" + Ids.MICROSERVICE_ENDPOINT_ANNOTATION;
-
   /**
-   * Constructor: initialize dependencies from juice
+   * The name of the annotation which this MicroserviceMethodDeclarationParticipant cares about
    */
-  public MicroserviceMethodDeclarationParticipant() {
-    this.feedbackHandlerClient = CostPluginActivator.instance(FeedbackHandlerEclipseClient.class);
-    this.templateHandler = CostPluginActivator.instance(TemplateHandler.class);
-  }
+  private String targetAnnotation = "@" + Ids.MICROSERVICE_ENDPOINT_ANNOTATION;
 
   /**
-   * Build file in which a service endpoint/method is defined
+   * Building files in which microservice endpoints/methods are defined
    */
   @Override
   protected void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
@@ -78,74 +68,47 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
 
       private AggregatedMicroserviceRequestsDto[] requests;
 
-      private ApplicationDto application;
-
       @Override
       public boolean visit(MethodDeclaration node) {
         Optional<?> annotationCheck = checkMethodDeclarationAnnotation(node.modifiers());
         if (annotationCheck.isPresent()) {
 
-          /*
-           * Positions
-           */
-          int startPosition = node.getStartPosition();
-
-          final Javadoc doc = node.getJavadoc();
-          if (doc != null) {
-            startPosition += doc.getLength() + annotationIndent + 1; // +1 for line break
-          }
-
-          final int line = astRoot.getLineNumber(startPosition);
-          final int endPosition = startPosition + annotationPrefix.length();
-          final MarkerPosition position = new MarkerPosition(line, startPosition, endPosition);
-
-          final String markerInfoTitle = "Microservice Method " + node.getName().toString();
           final String serviceMethodIdentifier = extractAttributeValueFromAnnotation(annotationCheck.get().toString(), Ids.MICROSERVICE_DECLARATION_ANNOTATION_METHOD_ATTRIBUTE);
           final String serviceMethodName = node.getName().getIdentifier();
-          final AggregatedIncomingRequestsDto incomingRequests = getIncomingRequestsByMethod(serviceMethodIdentifier);
 
           /*
-           * Freemarker Template Context
+           * Depending on the user's properties we create and add a marker...
            */
-          final Map<String, Object> context = Maps.newHashMap();
-          context.put("from", timeRangeFrom);
-          context.put("to", timeRangeTo);
-          context.put("interval", aggregationInterval);
-
-          context.put("instances", getApplication().getInstances());
-          context.put("maxRequests", getApplication().getMaxRequestsPerInstancePerSecond());
-          context.put("pricePerInstance", getApplication().getPricePerInstanceInUSD());
-
-          context.put("requests", getRequestsByCallee());
-          if (incomingRequests != null) {
-            context.put("incomingMin", incomingRequests.getMin());
-            context.put("incomingAvg", incomingRequests.getAvg());
-            context.put("incomingMax", incomingRequests.getMax());
-          }
-
-          if (getOverallRequests() != null) {
-            context.put("overallMin", getOverallRequests().getMin());
-            context.put("overallAvg", getOverallRequests().getAvg());
-            context.put("overallMax", getOverallRequests().getMax());
-          }
-
-          context.put("serviceIdentifier", serviceIdentifier);
-          if (serviceMethodIdentifier != null) {
-            context.put("serviceMethod", serviceMethodIdentifier);
-          }
-          else {
-            context.put("serviceMethod", serviceMethodName);
-          }
-
-          final String description = templateHandler.getContent(HOVER_TEMPLATE, context);
-
-          // create marker
           if (showMethodDeclarationHover) {
-            try {
-              javaFile.addMarker(MarkerSpecification.of(CostIds.COST_MARKER, position, IMarker.SEVERITY_INFO, CostMarkerTypes.METHOD_DECLARATION, markerInfoTitle).and(MarkerAttributes.DESCRIPTION,
-                  description));
+
+            // Marker Specification
+            int startPosition = node.getStartPosition();
+            if (node.getJavadoc() != null) {
+              startPosition += node.getJavadoc().getLength() + annotationIndent + 1; // +1 for line break
             }
-            catch (CoreException e) {}
+            final int line = astRoot.getLineNumber(startPosition);
+            final int endPosition = startPosition + targetAnnotation.length();
+            final MarkerPosition position = new MarkerPosition(line, startPosition, endPosition);
+            final String markerInfoTitle = "Microservice Method " + node.getName().toString();
+            MarkerSpecification costMarker = MarkerSpecification.of(CostIds.COST_MARKER, position, IMarker.SEVERITY_INFO, CostMarkerTypes.METHOD_DECLARATION, markerInfoTitle);
+
+            /*
+             * Preparation of the content of the hover which is rendered by Freemarker. The template is specified above
+             * and can be found in the OSGI-INF/l10n/templates folder.
+             */
+            // @formatter:off
+            costMarker = costMarker.and(MarkerAttributes.DESCRIPTION, templateHandler.getContent(HOVER_TEMPLATE, CostContextBuilder.init()
+                .setTimeParameters(timeRangeFrom, timeRangeTo, aggregationInterval)
+                .setApplication(getApplication())
+                .setRequestStats("incoming", getIncomingRequestsByMethod(serviceMethodIdentifier))
+                .setRequestStats("overall", getOverallRequests())
+                .add("serviceIdentifier", serviceIdentifier)  // substring from the properties: (eu.cloudwave.samples.services.) currency
+                .addIfNotNull("serviceMethod", serviceMethodIdentifier, serviceMethodName)
+                .add("requests", getRequestsByCallee())
+                .build()));
+            // @formatter:on
+
+            addMarker(javaFile, costMarker);
           }
         }
         return true; // do not go further to children
@@ -164,13 +127,13 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
       }
 
       /**
-       * Overall request statistics
+       * Overall incoming request statistics to the application of the current project in the workspace.
        * 
        * @return AggregatedIncomingRequestsDto with min, avg and max
        */
       private AggregatedIncomingRequestsDto getOverallRequests() {
         if (overallRequest == null) {
-          overallRequest = feedbackHandlerClient.incomingRequestsByIdentifierOverall(project, aggregationInterval, timeRangeFrom, timeRangeTo);
+          overallRequest = feedbackHandlerClient.overallIncomingRequestsByIdentifier(project, aggregationInterval, timeRangeFrom, timeRangeTo);
         }
         return overallRequest;
       }
@@ -204,16 +167,17 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
        * @return {@link ApplicationDto}
        */
       private ApplicationDto getApplication() {
-        if (application == null) {
-          application = feedbackHandlerClient.currentApplication(project);
+        ApplicationDto app = cache.get(project.getApplicationId());
+        if (app == null) {
+          app = cache.addAndReturn(project.getApplicationId(), feedbackHandlerClient.currentApplication(project));
         }
-        return application;
+        return app;
       }
 
       private Optional<?> checkMethodDeclarationAnnotation(List<?> modifiers) {
         // we do not go through the whole list:
         // the filter is only going to be applied until we reach any valid element
-        return modifiers.stream().filter(modifier -> modifier.toString().startsWith(annotationPrefix)).findAny();
+        return modifiers.stream().filter(modifier -> modifier.toString().startsWith(targetAnnotation)).findAny();
       }
     });
   }

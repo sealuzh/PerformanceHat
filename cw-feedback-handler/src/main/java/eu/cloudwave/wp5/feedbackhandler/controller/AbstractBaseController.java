@@ -25,6 +25,7 @@ public abstract class AbstractBaseController {
   protected static final String EXCEPTION_MESSAGE = "Error executing request to '%s'";
   private static final String INVALID_APPLICATION_ID_ERROR_MSG = "Invalid Application-ID.";
   private static final String INVALID_ACCESS_TOKEN_ERROR_MSG = "Wrong Access-Token specified.";
+  private static final String REQUESTED_APPLICATION_ID_NOT_FOUND_MSG = "The Requested-Application-ID header is invalid. No registered application with the given id can be found on this instance of feedback handler.";
 
   @Autowired
   protected ApplicationRepository applicationRepository;
@@ -39,6 +40,14 @@ public abstract class AbstractBaseController {
     final DbCostApplication application = applicationRepository.findOneCostApplication(applicationId);
     authorize(application, accessToken);
     return application;
+  }
+
+  /**
+   * Throws a {@link RequestException} for requested applications that cannot be found, e.g. in case of external
+   * microservices
+   */
+  protected void throwRequestedApplicationIdNotFoundException() {
+    throw new RequestException(ErrorType.REQUESTED_APPLICATION_ID_NOT_FOUND, REQUESTED_APPLICATION_ID_NOT_FOUND_MSG);
   }
 
   /**

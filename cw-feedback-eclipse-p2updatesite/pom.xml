@@ -27,13 +27,9 @@
 	</parent>
 
 	<!-- Maven Coordinates -->
-	<groupId>eu.cloudwave.wp5.feedback.eclipse</groupId>
 	<artifactId>eu.cloudwave.wp5.feedback.eclipse.p2updatesite</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
 	<name>PerformanceHat P2UpdateSite Module</name>
 	<description>Specifies the update-site providing the feature from 'cw-feedback-eclipse-feature'.</description>
-
-
 
 	<packaging>eclipse-repository</packaging>
 

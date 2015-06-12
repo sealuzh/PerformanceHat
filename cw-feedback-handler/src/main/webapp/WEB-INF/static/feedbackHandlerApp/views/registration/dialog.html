@@ -1,0 +1,26 @@
+<md-dialog aria-label="{{ title }}">
+    <form>
+        <md-dialog-content class="sticky-container">
+            <md-subheader class="md-sticky-no-effect">{{ title }}</md-subheader>
+
+            <div class="ui action input">
+                <input class="token" type="text" value="{{ getToken() }}" disabled>
+                <button clip-copy="getToken()" class="ui lime right labeled icon button">
+                    <i class="copy icon"></i>
+                    Copy
+                </button>
+            </div>
+
+        </md-dialog-content>
+
+        <div class="md-actions" layout="row">
+            <span flex></span>
+            <md-button ng-click="goTo('tabs.administration')" class="md-primary">
+                Go to administration
+            </md-button>
+            <md-button ng-click="cancel()" class="md-primary">
+                Back to registration
+            </md-button>
+        </div>
+    </form>
+</md-dialog>

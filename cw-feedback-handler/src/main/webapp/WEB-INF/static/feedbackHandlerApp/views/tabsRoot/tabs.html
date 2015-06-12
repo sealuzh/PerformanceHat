@@ -1,0 +1,16 @@
+<div id="full-page">
+    <md-tabs md-selected="selectedIndex" md-stretch-tabs md-border-bottom>
+        <md-tab ui-sref="tabs.registration" label="Registration"></md-tab>
+        <md-tab ui-sref="tabs.administration" label="Administration"></md-tab>
+        <md-tab ui-sref="tabs.environment" label="Microservice Environment"></md-tab>
+    </md-tabs>
+
+    <div id="tab-container" ui-view></div>
+
+    <md-button ng-if="isLoggedIn" ng-click="logout()" class="md-primary md-fab md-fab-bottom-right">
+        <md-tooltip>
+            Logout
+        </md-tooltip>
+        <md-icon aria-label="Logout" md-svg-icon="static/images/logout.svg"></md-icon>
+    </md-button>
+</div>

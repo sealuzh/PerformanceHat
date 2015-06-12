@@ -3,68 +3,70 @@
 /**
  * Created by Emanuel Stoeckli on 02.06.15.
  */
-
 angular.module('FeedbackApp')
-    .controller('AdministrationCtrl', function($scope, $mdDialog, $timeout, $cookies, Monitoring, Application) {
-  
-        $scope.isLoggedIn = false;
+    .controller('AdministrationCtrl', function($rootScope, $scope, $mdDialog, $timeout, $cookies, Monitoring, Application) {
 
-        var loginSuccess = function(id, token){
-            console.log('Success');
-            $scope.isLoggedIn = true;
+        $rootScope.isLoggedIn = Monitoring.isLoggedIn();
 
+        var getApplications = function(id, token){
+            console.log('Success: applications received');
             $scope.applications = Application({
                 'Application-ID': id,
                 'Access-Token': token
             }).getAll();
         };
 
-  	  var loginError = function(error){
-	  	  console.log('error');
-    		$scope.isLoggedIn = false;
-  	  };
-  	  
-  	  Monitoring.autologin()
-  	  	.then(loginSuccess($cookies.get('applicationId'), $cookies.get('accessToken')))
-	    .catch(loginError);
+        var loginError = function(error){
+            console.log('error');
+            $rootScope.isLoggedIn = false;
+        };
 
-      $scope.login = function(applicationId, accessToken, ev){
-	      Monitoring.login(applicationId, accessToken)
-	  	  	.then(loginSuccess(applicationId, accessToken))
-	  		.catch(function(error){
-	  			$mdDialog.show(
-			      $mdDialog.alert()
-			        .parent(angular.element(document.body))
-			        .title('Login failed')
-			        .content(error.message)
-			        .ok('Got it!')
-			        .targetEvent(ev)
-			    );
-         		loginError();
-	  		});
-      };
+        Monitoring.autologin()
+            .then(function(data){
+                $rootScope.isLoggedIn = true;
+                getApplications(data.applicationId, data.accessToken);
+            })
+            .catch(loginError);
 
-    $scope.error = '';
-    $scope.success = '';
+        $scope.login = function(applicationId, accessToken, ev){
+            Monitoring.login(applicationId, accessToken)
+                .then(function(data){
+                    $rootScope.isLoggedIn = true;
+                    getApplications(applicationId, accessToken);
+                })
+                .catch(function(error){
+                    $mdDialog.show(
+                        $mdDialog.alert().parent(angular.element(document.body))
+                            .title('Login failed')
+                            .content(error.message)
+                            .ok('Got it!')
+                            .targetEvent(ev)
+                    );
+                    loginError();
+                });
+        };
 
-    $scope.update = function(app){
-        Application({}).update(app).$promise.then(function(){
-            console.log("Update successful.");
-            $scope.success = 'Update successful.';
-            $scope.error = '';
+        $scope.error = '';
+        $scope.success = '';
 
-            $timeout(function(){
-                $scope.success = '';
-            }, 5000);
-
-        }, function(error){
-            console.log("Update error");
-            $scope.error = error;
-            $scope.success = '';
-
-            $timeout(function(){
+        $scope.update = function(app){
+            Application({}).update(app).$promise.then(function(){
+                console.log("Update successful.");
+                $scope.success = 'Update successful.';
                 $scope.error = '';
-            }, 5000);
-        });
-    };
+
+                $timeout(function(){
+                    $scope.success = '';
+                }, 5000);
+
+            }, function(error){
+                console.log("Update error");
+                $scope.error = error;
+                $scope.success = '';
+
+                $timeout(function(){
+                    $scope.error = '';
+                }, 5000);
+            });
+        };
 });

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="eu.cloudwave.wp5.feedback.eclipse.feature"
-      label="Feedback Feature"
-      version="1.0.0.qualifier">
+      label="Feedback Driven Development Feature"
+      version="1.0.0.qualifier"
+      provider-name="University of Zurich, Software Evolution and Architecture Lab">
 
-   <description url="http://www.example.com/description">
+   <description url="http://cloudwave-fp7.eu/">
       [Enter Feature Description here.]
    </description>
 
@@ -13,7 +14,7 @@
    </copyright>
 
    <license url="http://www.apache.org/licenses/LICENSE-2.0.html">
-                                       Apache License
+      Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -21,38 +22,38 @@
 
    1. Definitions.
 
-      "License" shall mean the terms and conditions for use, reproduction,
+      &quot;License&quot; shall mean the terms and conditions for use, reproduction,
       and distribution as defined by Sections 1 through 9 of this document.
 
-      "Licensor" shall mean the copyright owner or entity authorized by
+      &quot;Licensor&quot; shall mean the copyright owner or entity authorized by
       the copyright owner that is granting the License.
 
-      "Legal Entity" shall mean the union of the acting entity and all
+      &quot;Legal Entity&quot; shall mean the union of the acting entity and all
       other entities that control, are controlled by, or are under common
       control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
+      &quot;control&quot; means (i) the power, direct or indirect, to cause the
       direction or management of such entity, whether by contract or
       otherwise, or (ii) ownership of fifty percent (50%) or more of the
       outstanding shares, or (iii) beneficial ownership of such entity.
 
-      "You" (or "Your") shall mean an individual or Legal Entity
+      &quot;You&quot; (or &quot;Your&quot;) shall mean an individual or Legal Entity
       exercising permissions granted by this License.
 
-      "Source" form shall mean the preferred form for making modifications,
+      &quot;Source&quot; form shall mean the preferred form for making modifications,
       including but not limited to software source code, documentation
       source, and configuration files.
 
-      "Object" form shall mean any form resulting from mechanical
+      &quot;Object&quot; form shall mean any form resulting from mechanical
       transformation or translation of a Source form, including but
       not limited to compiled object code, generated documentation,
       and conversions to other media types.
 
-      "Work" shall mean the work of authorship, whether in Source or
+      &quot;Work&quot; shall mean the work of authorship, whether in Source or
       Object form, made available under the License, as indicated by a
       copyright notice that is included in or attached to the work
       (an example is provided in the Appendix below).
 
-      "Derivative Works" shall mean any work, whether in Source or Object
+      &quot;Derivative Works&quot; shall mean any work, whether in Source or Object
       form, that is based on (or derived from) the Work and for which the
       editorial revisions, annotations, elaborations, or other modifications
       represent, as a whole, an original work of authorship. For the purposes
@@ -60,21 +61,21 @@
       separable from, or merely link (or bind by name) to the interfaces of,
       the Work and Derivative Works thereof.
 
-      "Contribution" shall mean any work of authorship, including
+      &quot;Contribution&quot; shall mean any work of authorship, including
       the original version of the Work and any modifications or additions
       to that Work or Derivative Works thereof, that is intentionally
       submitted to Licensor for inclusion in the Work by the copyright owner
       or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
+      the copyright owner. For the purposes of this definition, &quot;submitted&quot;
       means any form of electronic, verbal, or written communication sent
       to the Licensor or its representatives, including but not limited to
       communication on electronic mailing lists, source code control systems,
       and issue tracking systems that are managed by, or on behalf of, the
       Licensor for the purpose of discussing and improving the Work, but
       excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
+      designated in writing by the copyright owner as &quot;Not a Contribution.&quot;
 
-      "Contributor" shall mean Licensor and any individual or Legal Entity
+      &quot;Contributor&quot; shall mean Licensor and any individual or Legal Entity
       on behalf of whom a Contribution has been received by Licensor and
       subsequently incorporated within the Work.
 
@@ -118,7 +119,7 @@
           excluding those notices that do not pertain to any part of
           the Derivative Works; and
 
-      (d) If the Work includes a "NOTICE" text file as part of its
+      (d) If the Work includes a &quot;NOTICE&quot; text file as part of its
           distribution, then any Derivative Works that You distribute must
           include a readable copy of the attribution notices contained
           within such NOTICE file, excluding those notices that do not
@@ -157,7 +158,7 @@
 
    7. Disclaimer of Warranty. Unless required by applicable law or
       agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
+      Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS,
       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
       implied, including, without limitation, any warranties or conditions
       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
@@ -193,24 +194,24 @@
    APPENDIX: How to apply the Apache License to your work.
 
       To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
+      boilerplate notice, with the fields enclosed by brackets &quot;[]&quot;
+      replaced with your own identifying information. (Don&apos;t include
       the brackets!)  The text should be enclosed in the appropriate
       comment syntax for the file format. We also recommend that a
       file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
+      same &quot;printed page&quot; as the copyright notice for easier
       identification within third-party archives.
 
    Copyright [yyyy] [name of copyright owner]
 
-   Licensed under the Apache License, Version 2.0 (the "License");
+   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
        http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
+   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
@@ -267,7 +268,7 @@ For the mod_mime_magic component:
 
 For the  modules\mappers\mod_imap.c component:
 
-  "macmartinized" polygon code copyright 1992 by Eric Haines, erich@eye.com
+  &quot;macmartinized&quot; polygon code copyright 1992 by Eric Haines, erich@eye.com
 
 For the  server\util_md5.c component:
 
@@ -309,7 +310,7 @@ For the  server\util_md5.c component:
  * pertaining to distribution of the software without specific,
  * written prior permission.  Carnegie Mellon University makes no
  * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied
+ * purpose.  It is provided &quot;as is&quot; without express or implied
  * warranty.
  *
  * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
@@ -333,7 +334,7 @@ For the  server\util_md5.c component:
  * material without the specific, prior written permission
  * of an authorized representative of Bellcore.  BELLCORE
  * MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY
- * OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS",
+ * OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED &quot;AS IS&quot;,
  * WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.  
  */
 
@@ -350,18 +351,18 @@ For the  srclib\apr\include\apr_md5.h component:
    rights reserved.
 
    License to copy and use this software is granted provided that it
-   is identified as the "RSA Data Security, Inc. MD5 Message-Digest
-   Algorithm" in all material mentioning or referencing this software
+   is identified as the &quot;RSA Data Security, Inc. MD5 Message-Digest
+   Algorithm&quot; in all material mentioning or referencing this software
    or this function.
 
    License is also granted to make and use derivative works provided
-   that such works are identified as "derived from the RSA Data
-   Security, Inc. MD5 Message-Digest Algorithm" in all material
+   that such works are identified as &quot;derived from the RSA Data
+   Security, Inc. MD5 Message-Digest Algorithm&quot; in all material
    mentioning or referencing the derived work.
 
    RSA Data Security, Inc. makes no representations concerning either
    the merchantability of this software or the suitability of this
-   software for any particular purpose. It is provided "as is"
+   software for any particular purpose. It is provided &quot;as is&quot;
    without express or implied warranty of any kind.
 
    These notices must be retained in any copies of any part of this
@@ -385,18 +386,18 @@ For the  srclib\apr\passwd\apr_md5.c component:
    rights reserved.
 
    License to copy and use this software is granted provided that it
-   is identified as the "RSA Data Security, Inc. MD5 Message-Digest
-   Algorithm" in all material mentioning or referencing this software
+   is identified as the &quot;RSA Data Security, Inc. MD5 Message-Digest
+   Algorithm&quot; in all material mentioning or referencing this software
    or this function.
 
    License is also granted to make and use derivative works provided
-   that such works are identified as "derived from the RSA Data
-   Security, Inc. MD5 Message-Digest Algorithm" in all material
+   that such works are identified as &quot;derived from the RSA Data
+   Security, Inc. MD5 Message-Digest Algorithm&quot; in all material
    mentioning or referencing the derived work.
 
    RSA Data Security, Inc. makes no representations concerning either
    the merchantability of this software or the suitability of this
-   software for any particular purpose. It is provided "as is"
+   software for any particular purpose. It is provided &quot;as is&quot;
    without express or implied warranty of any kind.
 
    These notices must be retained in any copies of any part of this
@@ -406,7 +407,7 @@ For the  srclib\apr\passwd\apr_md5.c component:
  * The apr_md5_encode() routine uses much code obtained from the FreeBSD 3.0
  * MD5 crypt() function, which is licenced as follows:
  * ----------------------------------------------------------------------------
- * "THE BEER-WARE LICENSE" (Revision 42):
+ * &quot;THE BEER-WARE LICENSE&quot; (Revision 42):
  * phk@login.dknet.dk wrote this file.  As long as you retain this notice you
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.  Poul-Henning Kamp
@@ -422,18 +423,18 @@ For the srclib\apr-util\crypto\apr_md4.c component:
  * rights reserved.
  *
  * License to copy and use this software is granted provided that it
- * is identified as the "RSA Data Security, Inc. MD4 Message-Digest
- * Algorithm" in all material mentioning or referencing this software
+ * is identified as the &quot;RSA Data Security, Inc. MD4 Message-Digest
+ * Algorithm&quot; in all material mentioning or referencing this software
  * or this function.
  *
  * License is also granted to make and use derivative works provided
- * that such works are identified as "derived from the RSA Data
- * Security, Inc. MD4 Message-Digest Algorithm" in all material
+ * that such works are identified as &quot;derived from the RSA Data
+ * Security, Inc. MD4 Message-Digest Algorithm&quot; in all material
  * mentioning or referencing the derived work.
  *
  * RSA Data Security, Inc. makes no representations concerning either
  * the merchantability of this software or the suitability of this
- * software for any particular purpose. It is provided "as is"
+ * software for any particular purpose. It is provided &quot;as is&quot;
  * without express or implied warranty of any kind.
  *
  * These notices must be retained in any copies of any part of this
@@ -450,18 +451,18 @@ For the srclib\apr-util\include\apr_md4.h component:
  * rights reserved.
  *
  * License to copy and use this software is granted provided that it
- * is identified as the "RSA Data Security, Inc. MD4 Message-Digest
- * Algorithm" in all material mentioning or referencing this software
+ * is identified as the &quot;RSA Data Security, Inc. MD4 Message-Digest
+ * Algorithm&quot; in all material mentioning or referencing this software
  * or this function.
  *
  * License is also granted to make and use derivative works provided
- * that such works are identified as "derived from the RSA Data
- * Security, Inc. MD4 Message-Digest Algorithm" in all material
+ * that such works are identified as &quot;derived from the RSA Data
+ * Security, Inc. MD4 Message-Digest Algorithm&quot; in all material
  * mentioning or referencing the derived work.
  *
  * RSA Data Security, Inc. makes no representations concerning either
  * the merchantability of this software or the suitability of this
- * software for any particular purpose. It is provided "as is"
+ * software for any particular purpose. It is provided &quot;as is&quot;
  * without express or implied warranty of any kind.
  *
  * These notices must be retained in any copies of any part of this
@@ -491,21 +492,21 @@ For the srclib\apr-util\test\testdbm.c component:
  *
  * 3. The end-user documentation included with the redistribution,
  *    if any, must include the following acknowledgment:
- *       "This product includes software developed by the
- *        Apache Software Foundation (http://www.apache.org/)."
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
  *    Alternately, this acknowledgment may appear in the software itself,
  *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache" and "Apache Software Foundation" must
+ * 4. The names &quot;Apache&quot; and &quot;Apache Software Foundation&quot; must
  *    not be used to endorse or promote products derived from this
  *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache",
- *    nor may "Apache" appear in their name, without prior written
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
  *    permission of the Apache Software Foundation.
  *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * THIS SOFTWARE IS PROVIDED ``AS IS&apos;&apos; AND ANY EXPRESSED OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
@@ -526,9 +527,16 @@ For the srclib\apr-util\test\testdbm.c component:
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-   
+
    <plugin
          id="eu.cloudwave.wp5.feedback.eclipse.performance"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="eu.cloudwave.wp5.feedback.eclipse.costs"
          download-size="0"
          install-size="0"
          version="0.0.0"

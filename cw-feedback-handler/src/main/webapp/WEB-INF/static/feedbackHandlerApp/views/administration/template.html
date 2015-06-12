@@ -1,12 +1,12 @@
 <md-content id="administration" class="tab-content md-padding">
-  
+
   <section ng-if="!isLoggedIn" class="page-section">
 			<div class="page-section-wrapper">
-					
+
 					<header class="page-section-header">
 						<h1>Login with existing Feedback Application</h1>
 					</header>
-					
+
 					<div class="page-section-content">
 						<form class="material-form">
 							<section class="material-form-field">
@@ -30,7 +30,7 @@
 					</div>
 			</div>
 	</section>
-	
+
 	<div ng-if="isLoggedIn">
 
         <div id="search-container" class="ui icon input loading">
@@ -65,7 +65,7 @@
 				    <input ng-model="app.instances" type="text">
 				  </div>
 				  <div class="field">
-				    <label>Maximal number of requests per instance per second</label>
+				    <label>Max. requests per instance per second</label>
 				    <input ng-model="app.maxRequestsPerInstancePerSecond" type="text">
 				  </div>
 				  <div class="field">
@@ -79,5 +79,4 @@
 			  <div class="ui submit button" ng-click="update(app)">Update {{ app.applicationId }}</div>
 		</div>
 	</div>
-		
 </md-content>

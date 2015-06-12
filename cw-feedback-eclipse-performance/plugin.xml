@@ -2,7 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>   
 
-
    <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
    <extension
          point="org.eclipse.core.resources.markers" 

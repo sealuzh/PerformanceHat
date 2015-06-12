@@ -13,26 +13,24 @@
 package eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.participants;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
-import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
-import com.google.common.collect.Maps;
-
 import eu.cloudwave.wp5.common.constants.Ids;
 import eu.cloudwave.wp5.common.dto.ApplicationDto;
+import eu.cloudwave.wp5.common.dto.costs.AggregatedIncomingRequestsDto;
 import eu.cloudwave.wp5.common.dto.costs.AggregatedMicroserviceRequestsDto;
+import eu.cloudwave.wp5.common.dto.costs.AggregatedRequestsDto;
 import eu.cloudwave.wp5.common.dto.costs.InitialInvocationCheckDto;
+import eu.cloudwave.wp5.common.model.Prediction;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.FeedbackBuilderParticipant;
-import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
@@ -40,25 +38,45 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerPosition;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecification;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostIds;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.CostPluginActivator;
-import eu.cloudwave.wp5.feedback.eclipse.costs.core.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.costs.core.markers.CostMarkerTypes;
+import eu.cloudwave.wp5.feedback.eclipse.costs.core.predictions.PredictionStrategy;
+import eu.cloudwave.wp5.feedback.eclipse.costs.ui.hovers.CostContextBuilder;
 
 /**
- * A builder participant that is responsible to display warnings for microservice client request calls.
+ * A builder participant that is responsible for the client invocation hovers. A hover will be added whenever you call a
+ * method of a class that is marked as {@link Ids#MICROSERVICE_CLIENT_REQUEST_ANNOTATION}. <br />
+ * <br />
+ * The {@link FeedbackBuilderParticipant} calls the
+ * {@link MicroserviceClientInvocationParticipant#buildFile(FeedbackJavaProject, FeedbackJavaFile, CompilationUnit)}
+ * method for every file in your workspace that is built.
  */
 public class MicroserviceClientInvocationParticipant extends AbstractCostFeedbackBuilderParticipant implements FeedbackBuilderParticipant {
 
-  private FeedbackHandlerEclipseClient feedbackHandlerClient;
-
-  private TemplateHandler templateHandler;
-
+  /**
+   * The name of the template which should be used to display the hover
+   */
   private final static String HOVER_TEMPLATE = "clientInvocation";
 
+  /**
+   * The name of the annotation which this MicroserviceClientInvocationParticipant cares about
+   */
+  private final static String targetAnnotation = "@" + Ids.MICROSERVICE_CLIENT_REQUEST_ANNOTATION;
+
+  /**
+   * The prediction strategy that predicts cost impacts of changes
+   */
+  private PredictionStrategy strategy;
+
+  /**
+   * Constructor that initializes implementation of cost prediction strategy
+   */
   public MicroserviceClientInvocationParticipant() {
-    this.feedbackHandlerClient = CostPluginActivator.instance(FeedbackHandlerEclipseClient.class);
-    this.templateHandler = CostPluginActivator.instance(TemplateHandler.class);
+    strategy = CostPluginActivator.instance(PredictionStrategy.class);
   }
 
+  /**
+   * Building files in which microservice client methods are invoked
+   */
   @Override
   protected void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
     // System.out.println("ClientRequestParticipant buildFile");
@@ -71,91 +89,85 @@ public class MicroserviceClientInvocationParticipant extends AbstractCostFeedbac
 
       @Override
       public boolean visit(MethodInvocation node) {
-        String name = node.getName().getIdentifier();
+        String invokedMethodName = node.getName().getIdentifier();
+        IAnnotationBinding[] annotationsOfNode = node.resolveMethodBinding().getMethodDeclaration().getAnnotations();
 
-        IAnnotationBinding[] annotations = node.resolveMethodBinding().getMethodDeclaration().getAnnotations();
-        String prefix = "@" + Ids.MICROSERVICE_CLIENT_REQUEST_ANNOTATION;
-
+        // Does the current node really have a MicroserviceClientInvocation Annotation?
         // we do not go through the whole list, the filter is only going to be applied until we reach any valid element
-        Optional<IAnnotationBinding> annotationCheck = Arrays.asList(annotations).stream().filter(m -> m.toString().startsWith(prefix)).findAny();
+        Optional<IAnnotationBinding> annotationCheck = Arrays.asList(annotationsOfNode).stream().filter(m -> m.toString().startsWith(targetAnnotation)).findAny();
 
         if (annotationCheck.isPresent()) {
-          System.out.println("Client " + name + " is called within the method " + this.currentMethodDeclaration);
-
-          final int startPosition = node.getStartPosition() + node.getExpression().getLength() + 1; // +1 for the dot
-          final int line = astRoot.getLineNumber(startPosition);
-          final int endPosition = startPosition + node.getName().getLength();
-          final MarkerPosition position = new MarkerPosition(line, startPosition, endPosition);
-          final String markerInfoTitle = "Microservice Client Invocation " + node.getName().toString();
-
-          // prepare context for freemarker template
-          final Map<String, Object> context = Maps.newHashMap();
-
-          context.put("from", timeRangeFrom);
-          context.put("to", timeRangeTo);
-          context.put("interval", aggregationInterval);
-
-          context.put("overallMin", getOverallRequestsByCallee().getMin());
-          context.put("overallAvg", getOverallRequestsByCallee().getAvg());
-          context.put("overallMax", getOverallRequestsByCallee().getMax());
-
-          // substring from the properties: (eu.cloudwave.samples.services.) currency
-          context.put("serviceIdentifier", serviceIdentifier);
+          System.out.println("Client " + invokedMethodName + " is called within the method " + this.currentMethodDeclaration);
 
           // YahooClient
           String invokedClassname = node.getExpression().resolveTypeBinding().getQualifiedName();
-          context.put("invokedClassname", invokedClassname);
+          String invokedServiceIdentifier = extractAttributeValueFromAnnotation(annotationCheck.get().getAllMemberValuePairs(), Ids.MICROSERVICE_CLIENT_REQUEST_ANNOTATION_TO_ATTRIBUTE);
 
-          ApplicationDto app;
+          /*
+           * This participant looks for client invocations. This means we call a class which is a client of another
+           * Microservice x. In the following lines we'll try to detect the status of this service x (number of
+           * instances, price per instance, etc.)
+           */
+          ApplicationDto app = getApplication(invokedServiceIdentifier);
 
-          try {
-            String invokedServiceIdentifier = "";
+          AggregatedRequestsDto requestsToInvokedService = getOverallRequestsOfApplication(invokedServiceIdentifier);
 
-            for (IMemberValuePairBinding binding : annotationCheck.get().getAllMemberValuePairs()) {
-              if (binding.getName().equals(Ids.MICROSERVICE_CLIENT_REQUEST_ANNOTATION_TO_ATTRIBUTE)) {
-                invokedServiceIdentifier = binding.getValue().toString();
-              }
-            }
-
-            app = getApplication(invokedServiceIdentifier);
-
-            context.put("instances", app.getInstances());
-            context.put("maxRequests", app.getMaxRequestsPerInstancePerSecond());
-            context.put("pricePerInstance", app.getPricePerInstanceInUSD());
+          List<Prediction> predictions = null;
+          boolean isNewlyInvoked = checkIfMethodInvocationIsNew(new InitialInvocationCheckDto(invokedClassname, invokedMethodName, currentMethodDeclarationClassname, currentMethodDeclaration));
+          if (isNewlyInvoked) {
+            predictions = strategy.predict(app, requestsToInvokedService, getOverallRequestsByCallee());
           }
-          catch (Exception e) {}
 
-          // getCHFtoEUR
-          context.put("invokedMethodName", name);
-
-          boolean isNewlyInvoked = checkIfMethodInvocationIsNew(new InitialInvocationCheckDto(invokedClassname, name, currentMethodDeclarationClassname, currentMethodDeclaration));
-          context.put("isNew", isNewlyInvoked);
-
-          final String description = templateHandler.getContent(HOVER_TEMPLATE, context);
-
+          /*
+           * Depending on the user's properties we create and add a marker...
+           */
           if ((showNewInvocationHover && isNewlyInvoked) || (showExistingInvocationHover && !isNewlyInvoked)) {
-            try {
-              javaFile.addMarker(MarkerSpecification.of(CostIds.COST_MARKER, position, IMarker.SEVERITY_INFO, CostMarkerTypes.CLIENT_INVOCATION, markerInfoTitle).and(MarkerAttributes.DESCRIPTION,
-                  description));
-            }
-            catch (CoreException e) {}
+
+            // Marker Specification
+            final int startPosition = node.getStartPosition() + node.getExpression().getLength() + 1; // +1 for the dot
+            final int line = astRoot.getLineNumber(startPosition);
+            final int endPosition = startPosition + node.getName().getLength();
+            final MarkerPosition position = new MarkerPosition(line, startPosition, endPosition);
+            final String markerInfoTitle = "Microservice Client Invocation " + node.getName().toString();
+            MarkerSpecification costMarker = MarkerSpecification.of(CostIds.COST_MARKER, position, IMarker.SEVERITY_INFO, CostMarkerTypes.CLIENT_INVOCATION, markerInfoTitle);
+
+            /*
+             * Preparation of the hover content which is rendered by Freemarker. The template file is specified above
+             * and can be found in the OSGI-INF/l10n/templates folder.
+             */
+            // @formatter:off
+            costMarker = costMarker.and(MarkerAttributes.DESCRIPTION, templateHandler.getContent(HOVER_TEMPLATE, CostContextBuilder.init()
+                .setTimeParameters(timeRangeFrom, timeRangeTo, aggregationInterval)
+                .setRequestStats("overall", getOverallRequestsByCallee())
+                .setApplication(app)
+                 // substring from the properties: (eu.cloudwave.samples.services.) currency
+                .add("serviceIdentifier", serviceIdentifier) 
+                .add("invokedClassname", invokedClassname)
+                .add("invokedMethodName", invokedMethodName)
+                .add("isNew", isNewlyInvoked)
+                .addIfNotNull("predictions", predictions)
+                .build()));
+            // @formatter:on
+
+            addMarker(javaFile, costMarker);
           }
         }
         return false; // do not go further to children
       }
 
       /**
-       * It looks like this is the cheapest way to always know the name of the method which is responsible for the
-       * MethodInvocation of our client
+       * It looks like this is the easiest way to know the name of the method which is responsible for the current
+       * MethodInvocation
        * 
        * @param node
-       * @return true
+       * 
+       * @return true which means "go further to children"
        */
       @Override
       public boolean visit(MethodDeclaration node) {
         currentMethodDeclaration = node.getName().getIdentifier();
         currentMethodDeclarationClassname = node.resolveBinding().getDeclaringClass().getQualifiedName();
-        return true; // go further to children
+        return true;
       }
 
       /**
@@ -176,7 +188,18 @@ public class MicroserviceClientInvocationParticipant extends AbstractCostFeedbac
        * @return {@link ApplicationDto}
        */
       private ApplicationDto getApplication(final String applicationId) {
-        return feedbackHandlerClient.application(project, applicationId);
+        ApplicationDto app = cache.get(applicationId);
+        if (app == null) {
+          try {
+            app = cache.addAndReturn(applicationId, feedbackHandlerClient.application(project, applicationId));
+          }
+          catch (Exception e) {}
+        }
+        return app;
+      }
+
+      private AggregatedIncomingRequestsDto getOverallRequestsOfApplication(final String applicationId) {
+        return feedbackHandlerClient.overallIncomingRequestsByIdentifier(project, applicationId, aggregationInterval, timeRangeFrom, timeRangeTo);
       }
 
       /**

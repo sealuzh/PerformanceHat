@@ -15,7 +15,7 @@ package eu.cloudwave.wp5.common.dto.costs;
 /**
  * Contains the aggregated values and details about the service which receives the requests
  */
-public class AggregatedIncomingRequestsDto {
+public class AggregatedIncomingRequestsDto implements AggregatedRequestsDto {
 
   private String identifier;
   private String method;
