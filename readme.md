@@ -30,7 +30,7 @@ In this project, the abstract FDD concept is instantiated in the form of a plugi
 
 ### Requirements
 
-Please make sure you have [Maven](https://maven.apache.org/) installed on your system and have a distribution of the [Eclipse IDE](https://eclipse.org/downloads/).
+Please make sure you have at least [Maven](https://maven.apache.org/) version 3.1 installed on your system and have a distribution of the [Eclipse IDE](https://eclipse.org/downloads/).
 
 ### Building
 
