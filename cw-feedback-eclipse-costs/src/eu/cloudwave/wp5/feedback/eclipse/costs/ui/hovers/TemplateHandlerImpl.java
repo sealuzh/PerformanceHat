@@ -29,7 +29,7 @@ public class TemplateHandlerImpl extends AbstractTemplateHandlerImpl {
    */
   @Override
   protected void initFreemarkerConfig() {
-    this.freemarkerConfig = new Configuration(Configuration.VERSION_2_3_22);
+    this.freemarkerConfig = new Configuration();
     freemarkerConfig.setClassForTemplateLoading(this.getClass(), SLASH);
   }
 }
