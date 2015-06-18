@@ -91,9 +91,14 @@ directly from the parent module in **cw-feedback-eclipse-parent**.
 
 To see the plugin in action, you will need an example application (target) that will be analyzed by the plugin to give performance hints while modifying the code of the example application.
 
-The code for the example application is located in the  **cw-feedback-example-application** submodule. This module is build together with all other modules as described above. During the build, the monitoring code (found in **cw-feedback-eclipse-monitoring**) is weaved into the example code using [AspectJ](https://eclipse.org/aspectj/).
+The code for the example application is located in the  **cw-feedback-example-application** submodule.
 
 To use the plugin (installed by the instructions in the previous sections), you will have to do the following steps.
+
+### Build the injected monitoring component
+
+ The injection of monitoring code into the example application is done by running `mvn install` in the folder **cw-feedback-example-application**. During this build, the monitoring code (found in **cw-feedback-eclipse-monitoring**) is weaved into the example code using [AspectJ](https://eclipse.org/aspectj/). It is important that the build/install of the **cw-feedback-eclipse-parent** parent project is done prior to this step, as described in the sections above. Otherwise the **cw-feedback-eclipse-monitoring** will not be available as a local maven repo entry, and hence can not be added to the example application in **cw-feedback-example-application**.
+
 
 ### Register the application
 
@@ -108,7 +113,7 @@ In the eclipse instance where you installed the plugin, open **Window** > **Pref
 
 In Eclipse, right click on **cw-feedback-example-application**, then choose **Configure** in the context menu and click on **Enable Feedback Nature**. The Icon of the module in the project explorer of Eclipse should change now.
 
-Now, you have to modify the file in **cw-feedback-example-application** under the path `src/main/resources/config.properties` and replace the **monitoring.app_id** placeholder with the application name / id you used in the registration step before. Also, replace the **monitoring.access_token** placeholder by the access token you got from the server and wrote downn.
+Now, you have to modify the file in **cw-feedback-example-application** under the path `src/main/resources/config.properties` and replace the **monitoring.app_id** placeholder with the application name / id you used in the registration step before. Also, replace the **monitoring.access_token** placeholder by the access token you got from the server and wrote down.
 
 Now, right click on **cw-feedback-example-application** and open **Properties**. Look for the **Feedback-Driven Development** entry on the left side, and enter the app id and access token from before again. Then, on the left side, under **Feedback-Driven Development**, you should see an entry named **Performance Hat**. Open that entry and enter some time values for the two options (for example 200 ms and 200 ms).
 
