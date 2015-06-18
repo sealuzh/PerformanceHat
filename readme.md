@@ -30,24 +30,19 @@ In this project, the abstract FDD concept is instantiated in the form of a plugi
 
 ### Requirements
 
-Please make sure you have at least [Maven](https://maven.apache.org/) version 3.1 installed on your system and have a distribution of the [Eclipse IDE](https://eclipse.org/downloads/).
+* [Maven](https://maven.apache.org/) at least version 3.1
+* [MongoDB](https://www.mongodb.org/) installed and running
+* [Eclipse IDE](https://eclipse.org/downloads/) installed
+* An internet connection to resolve Maven dependencies
+
 
 ### Building
 
 The code is structured as a [multi-module Maven](http://books.sonatype.com/mvnex-book/reference/multimodule.html) project.
-The parent project incorporating the build process of all submodules is found in the folder **cw-feedback-eclipse-parent** .
 
-To build the entire project, open a terminal in the **cw-feedback-eclipse-parent** directory. To execute the build defined in the **pom.xml** run:
+* Parent project is **cw-feedback-eclipse-parent**
+* Build everything: In **cw-feedback-eclipse-parent** , run `mvn install`
 
-`mvn install`
-
-Make sure you have an internet connection, since Maven resolves dependencies over the network.
-
-If the build is successfull, you will receive an output indicating that all of the submodules report `SUCCESS` and the overall parent build will also report a `BUILD SUCCESS` at the end.
-
-If you receive errors during `mvn install` you can execute the command with the `-e` argument to see exception error messages or/and with the `-X` argument to set the log level of the command to DEBUG: `mvn install -X -e`.
-
-This will go through all the necessary submodules, inspect their respective child **pom.xml** and resolve all dependencies such as Java libraries, other submodules etc. It also executes the build of the actual Eclipse plugin update site which can then be used to install the plugin in an instance of the Eclipse. This build is defined in the submodule under **cw-feedback-eclipse-p2updatesite** .
 
 ## Running
 
@@ -79,48 +74,39 @@ and click on **Next** to proceed and finish the installation procedure.
 
 ### Running the Feedback Handler Server
 
-The plugin needs a server as a data source for runtime monitoring data of deployed instances. We plan to develop connectors for services such as [NewRelic](http://newrelic.com/). For now, you can use the embedded server under the **cw-feedback-handler** submodule.
 
-In order to run the embedded [Jetty](http://eclipse.org/jetty/) server instance you can run
 
-``mvn -pl ../cw-feedback-handler jetty:run``
-
-directly from the parent module in **cw-feedback-eclipse-parent**.
+* The plugin needs a server as a data source for runtime monitoring data of deployed instances.
+* This component is located in the **cw-feedback-handler** submodule.
+* Run it with `mvn jetty:run` in **cw-feedback-handler**
 
 ## Usage in an example application
 
+### Requirements
+
+* Completed previous steps of this readme
+* **cw-feedback-handler** is still running (`mvn jetty:run`)
+
 To see the plugin in action, you will need an example application (target) that will be analyzed by the plugin to give performance hints while modifying the code of the example application.
+* The code for the example application is located in the **cw-feedback-example-application** submodule.
 
-The code for the example application is located in the  **cw-feedback-example-application** submodule.
+To use the plugin in the example application do the following steps
 
-To use the plugin (installed by the instructions in the previous sections), you will have to do the following steps.
+* Run `mvn install` in **cw-feedback-example-application**
+* Choose an application id for your example application
+* Open `http://localhost:8080/monitoring/register?applicationId=YOUR_APPLICATION_ID` in the browser and replace `YOUR_APPLICATION_ID` with the application id you chose
+* Note / write down the access token you get from the step above
+* In Eclipse: open **Window** > **Preferences** and look for the **Feedback-Driven Development** entry on the left side. Click on it, and enter `http://localhost:8080/` as Feedback Handler URL.
+* In Eclipse: right click on **cw-feedback-example-application**, then choose **Configure** in the context menu and click on **Enable Feedback Nature**.
+* Modify `src/main/resources/config.properties` in **cw-feedback-example-application**: Replace the **monitoring.app_id** placeholder with the application name / id you used in the registration step before. Also, replace the **monitoring.access_token** placeholder by the access token you got from the server and wrote down.
+* In Eclipse: right click on **cw-feedback-example-application** and open **Properties**. Look for the **Feedback-Driven Development** entry on the left side, and enter the app id and access token from before again. Then, on the left side, under **Feedback-Driven Development**, you should see an entry named **Performance Hat**. Open that entry and enter some time values for the two options (for example 200 ms and 200 ms).
 
-### Build the injected monitoring component
 
- The injection of monitoring code into the example application is done by running `mvn install` in the folder **cw-feedback-example-application**. During this build, the monitoring code (found in **cw-feedback-eclipse-monitoring**) is weaved into the example code using [AspectJ](https://eclipse.org/aspectj/). It is important that the build/install of the **cw-feedback-eclipse-parent** parent project is done prior to this step, as described in the sections above. Otherwise the **cw-feedback-eclipse-monitoring** will not be available as a local maven repo entry, and hence can not be added to the example application in **cw-feedback-example-application**.
-
-
-### Register the application
-
-Run the feedback handler server (submodule **cw-feedback-handler**) by using the isntructions from previous sections. Then, open a browser and navigate to the URL `http://localhost:8080/monitoring/register?applicationId=YOUR_APPLICATION_ID` where your replace `YOUR_APPLICATION_ID` with an arbitrarily chosen name or identifier for the example application (no white spaces!). You should get a Message containing an access token for the example application. It will look like this:
-``{"accessToken":"gvkr7bg4use0ponuunt3pekdjq"}``. Remember / write down this token.
-
-### Configure Eclipse
-
-In the eclipse instance where you installed the plugin, open **Window** > **Preferences** and look for the **Feedback-Driven Development** entry on the left side. Click on it, and enter `http://localhost:8080/` as Feedback Handler URL. The second entry on the properties page is optional and can be left empty.
-
-### Configure Example Application
-
-In Eclipse, right click on **cw-feedback-example-application**, then choose **Configure** in the context menu and click on **Enable Feedback Nature**. The Icon of the module in the project explorer of Eclipse should change now.
-
-Now, you have to modify the file in **cw-feedback-example-application** under the path `src/main/resources/config.properties` and replace the **monitoring.app_id** placeholder with the application name / id you used in the registration step before. Also, replace the **monitoring.access_token** placeholder by the access token you got from the server and wrote down.
-
-Now, right click on **cw-feedback-example-application** and open **Properties**. Look for the **Feedback-Driven Development** entry on the left side, and enter the app id and access token from before again. Then, on the left side, under **Feedback-Driven Development**, you should see an entry named **Performance Hat**. Open that entry and enter some time values for the two options (for example 200 ms and 200 ms).
-
-### Running the Example Applicatoin
 Be sure that the Feedback Handler is still running at this point. Otherwise start it again prior to running the Example Application.
 
-Now run the Example Application by executing the main method in **cw-feedback-example-application** in the class `uzh.ifi.seal.performancehat.example.Application`. After the webapplication has started, go to a browser and open the following two urls:
+* run the Example Application by executing the main method in **cw-feedback-example-application** in the class `uzh.ifi.seal.performancehat.example.Application`
+
+* After the webapplication has started, go to a browser and open the following two urls:
 `http://localhost:9000/example`
 `http://localhost:9000/users`
 
@@ -129,4 +115,7 @@ Don't worry if the pages take very long time to open, this is a wanted behavior.
 While you have run those two pages, the Feedback Handler has recorded all the performance metrics behind those two requests. This means, the Feedback Handler has now data to feed into the plugin in order to display it to you in the IDE.
 
 ### Using the plugin
-To see the performance plugin in action, open the class `uzh.ifi.seal.performancehat.example.controllers.ExampleController.java`. Do some change (add a new line or so) and save, in order to force Eclipse to rebuild it. After rebuilding it, spots in the code that exceed the performance limits which you set before in milliseconds, are highlighted in orange. You can hover over these spots and if everything has worked fine, you should see a popup telling you how long the respective method or loop takes to execute.
+* To see the performance plugin in action, open the class `uzh.ifi.seal.performancehat.example.controllers.ExampleController.java`.
+* Do some change (add a new line or so) and save, in order to force Eclipse to rebuild it.
+* After rebuilding it, spots in the code that exceed the performance limits which you set before in milliseconds, are highlighted in orange.
+* You can hover over these spots and if everything has worked fine, you should see a popup telling you how long the respective method or loop takes to execute.
