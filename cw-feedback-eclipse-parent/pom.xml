@@ -30,8 +30,7 @@
 		<module>../cw-feedback-eclipse-dependencies</module>
 		<module>../cw-feedback-eclipse-build</module>
 		<module>../cw-feedback-handler</module>
-		<module>../cw-feedback-example-application</module>
-	</modules>
+ 	</modules>
 	
 	
 	<build>

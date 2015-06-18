@@ -14,13 +14,6 @@
 		<aspectj.version>1.8.2</aspectj.version>
 	</properties>
 
-	<parent>
-    	<groupId>ch.uzh.ifi.seal</groupId>
-    	<artifactId>performancehat</artifactId>
-    	<version>1.0</version>
-    	<relativePath>../cw-feedback-eclipse-parent</relativePath>
-  	</parent>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
