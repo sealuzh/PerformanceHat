@@ -86,3 +86,42 @@ In order to run the embedded [Jetty](http://eclipse.org/jetty/) server instance 
 ``mvn -pl ../cw-feedback-handler jetty:run``
 
 directly from the parent module in **cw-feedback-eclipse-parent**.
+
+## Usage in an example application
+
+To see the plugin in action, you will need an example application (target) that will be analyzed by the plugin to give performance hints while modifying the code of the example application.
+
+The code for the example application is located in the  **cw-feedback-example-application** submodule. This module is build together with all other modules as described above. During the build, the monitoring code (found in **cw-feedback-eclipse-monitoring**) is weaved into the example code using [AspectJ](https://eclipse.org/aspectj/).
+
+To use the plugin (installed by the instructions in the previous sections), you will have to do the following steps.
+
+### Register the application
+
+Run the feedback handler server (submodule **cw-feedback-handler**) by using the isntructions from previous sections. Then, open a browser and navigate to the URL `http://localhost:8080/monitoring/register?applicationId=YOUR_APPLICATION_ID` where your replace `YOUR_APPLICATION_ID` with an arbitrarily chosen name or identifier for the example application (no white spaces!). You should get a Message containing an access token for the example application. It will look like this:
+``{"accessToken":"gvkr7bg4use0ponuunt3pekdjq"}``. Remember / write down this token.
+
+### Configure Eclipse
+
+In the eclipse instance where you installed the plugin, open **Window** > **Preferences** and look for the **Feedback-Driven Development** entry on the left side. Click on it, and enter `http://localhost:8080/` as Feedback Handler URL. The second entry on the properties page is optional and can be left empty.
+
+### Configure Example Application
+
+In Eclipse, right click on **cw-feedback-example-application**, then choose **Configure** in the context menu and click on **Enable Feedback Nature**. The Icon of the module in the project explorer of Eclipse should change now.
+
+Now, you have to modify the file in **cw-feedback-example-application** under the path `src/main/resources/config.properties` and replace the **monitoring.app_id** placeholder with the application name / id you used in the registration step before. Also, replace the **monitoring.access_token** placeholder by the access token you got from the server and wrote downn.
+
+Now, right click on **cw-feedback-example-application** and open **Properties**. Look for the **Feedback-Driven Development** entry on the left side, and enter the app id and access token from before again. Then, on the left side, under **Feedback-Driven Development**, you should see an entry named **Performance Hat**. Open that entry and enter some time values for the two options (for example 200 ms and 200 ms).
+
+### Running the Example Applicatoin
+Be sure that the Feedback Handler is still running at this point. Otherwise start it again prior to running the Example Application.
+
+Now run the Example Application by executing the main method in **cw-feedback-example-application** in the class `uzh.ifi.seal.performancehat.example.Application`. After the webapplication has started, go to a browser and open the following two urls:
+`http://localhost:9000/example`
+`http://localhost:9000/users`
+
+Don't worry if the pages take very long time to open, this is a wanted behavior.
+
+While you have run those two pages, the Feedback Handler has recorded all the performance metrics behind those two requests. This means, the Feedback Handler has now data to feed into the plugin in order to display it to you in the IDE.
+
+### Using the plugin
+To see the performance plugin in action, open the class `uzh.ifi.seal.performancehat.example.controllers.ExampleController.java`. Do some change (add a new line or so) and save, in order to force Eclipse to rebuild it. After rebuilding it, spots in the code that exceed the performance limits which you set before in milliseconds, are highlighted in orange. You can hover over these spots and if everything has worked fine, you should see a popup telling you how long the respective method or loop takes to execute.
