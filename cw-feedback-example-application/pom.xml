@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>ch.uzh.ifi.seal.performancehat</groupId>
-	<artifactId>ExampleApplication</artifactId>
+	<groupId>ch.uzh.ifi.seal</groupId>
+	<artifactId>cw-feedback-example-application</artifactId>
 	<version>0.1.0</version>
 	<name>FDD Example Application</name>
 	<description>Example Appliation to showcase the use of Feedback-Driven Development with PerformanceHat.</description>

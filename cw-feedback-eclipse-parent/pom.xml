@@ -18,7 +18,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ch.uzh.ifi.seal</groupId>
-	<artifactId>performancehat</artifactId>
+	<artifactId>cw-feedback-eclipse-parent</artifactId>
 	<packaging>pom</packaging>
 	<version>1.0</version>
 	<name>PerformanceHat Parent Project</name>

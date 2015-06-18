@@ -15,17 +15,14 @@ public class UserStub implements IUser {
 	}
 	
 	
-	@Override
 	public String getUsername() {
 		return this.username;
 	}
 
-	@Override
 	public String getRole() {
 		return this.role;
 	}
 
-	@Override
 	public String getEmail() {
 		return this.email;
 	}
