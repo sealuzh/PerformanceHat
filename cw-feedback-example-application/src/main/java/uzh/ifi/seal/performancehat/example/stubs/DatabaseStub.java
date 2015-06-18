@@ -23,7 +23,7 @@ public class DatabaseStub implements IDatabase {
 	}
 	
 	
-	@Override
+	
 	public List<String> getUserNames() {
 		List<String> usernames = new ArrayList<String>();
 		for(IUser user : userList){
@@ -32,7 +32,7 @@ public class DatabaseStub implements IDatabase {
 		return usernames;
 	}
 
-	@Override
+	
 	public List<String> getUserEmails() {
 		List<String> useremails = new ArrayList<String>();
 		for(IUser user : userList){
@@ -44,7 +44,7 @@ public class DatabaseStub implements IDatabase {
 		
 	}
 
-	@Override
+	
 	public List<String> getUserInfo() {
 		List<String> userInfoList = new ArrayList<String>();
 		for(IUser user: userList){
