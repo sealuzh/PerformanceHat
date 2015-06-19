@@ -12,9 +12,11 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.costs.core.builders.participants;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -104,7 +106,7 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
                 .setRequestStats("overall", getOverallRequests())
                 .add("serviceIdentifier", serviceIdentifier)  // substring from the properties: (eu.cloudwave.samples.services.) currency
                 .addIfNotNull("serviceMethod", serviceMethodIdentifier, serviceMethodName)
-                .add("requests", getRequestsByCallee())
+                .add("requests", getRequestsByCallee(serviceMethodIdentifier))
                 .build()));
             // @formatter:on
 
@@ -119,11 +121,17 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
        * 
        * @return AggregatedMicroserviceRequestsDto with min, avg and max
        */
-      private AggregatedMicroserviceRequestsDto[] getRequestsByCallee() {
+      private List<AggregatedMicroserviceRequestsDto> getRequestsByCallee(String serviceMethodIdentifier) {
         if (requests == null) {
           requests = feedbackHandlerClient.requestsByCallee(project, aggregationInterval, timeRangeFrom, timeRangeTo);
         }
-        return requests;
+
+        if (serviceMethodIdentifier != null && !serviceMethodIdentifier.isEmpty()) {
+          return Arrays.stream(requests).filter(request -> request.getCalleeMethod().equals(serviceMethodIdentifier)).collect(Collectors.toList());
+        }
+        else {
+          return Arrays.stream(requests).collect(Collectors.toList());
+        }
       }
 
       /**

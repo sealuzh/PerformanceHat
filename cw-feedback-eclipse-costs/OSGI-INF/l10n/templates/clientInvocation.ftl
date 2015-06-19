@@ -34,19 +34,23 @@
 		<td></td>
 		<td></td>
 		<td class="costs">
-			<#if isNew>
-				<ul label="Expected impact">
-					<li>Additional instances: 5</li>
-					<li>Additional costs per hour: 0.5</li>
-					<li>Cost Trend: +50%</li>
+			
+			<#if instances?has_content || maxRequests?has_content || pricePerInstance?has_content>
+				<#if predictions?has_content>
+					<ul label="Expected impact">
+					<#list predictions as prediction>
+						<li>${prediction.getType().getName()}: ${prediction.getValue()} ${prediction.getType().getUnit()}</li>
+					</#list> 	
+					</ul>
+				</#if>
+			
+				<ul label="Status">
+					<#if instances?has_content><li>${instances} instances</li></#if>
+					<#if maxRequests?has_content><li>Max ${maxRequests} req/s per instance</li></#if>
+					<#if pricePerInstance?has_content><li>USD ${pricePerInstance} per instance hour</li></#if>
 				</ul>
 			</#if>
 			
-			<ul label="Status">
-				<#if instances?has_content><li>${instances} instances</li></#if>
-				<#if maxRequests?has_content><li>Max ${maxRequests} req/s per instance</li></#if>
-				<#if pricePerInstance?has_content><li>USD ${pricePerInstance} per instance hour</li></#if>
-			</ul>
 		</td> 
 	  </tr>
 </table>

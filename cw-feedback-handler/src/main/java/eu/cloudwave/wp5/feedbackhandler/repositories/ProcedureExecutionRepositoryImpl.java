@@ -46,7 +46,7 @@ public class ProcedureExecutionRepositoryImpl extends AbstractRepository impleme
    */
   @Override
   public List<ClientRequestCollector> getAllRequests(final Long timeRangeFrom, final Long timeRangeTo) {
-    Criteria matchCriteria = getClientRequestCriteria();
+    Criteria matchCriteria = getClientRequestAnnotationCriteria();
     matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
 
     return getRequestsWithCriteria(matchCriteria);
@@ -55,30 +55,9 @@ public class ProcedureExecutionRepositoryImpl extends AbstractRepository impleme
   /**
    * {@inheritDoc}
    */
-  public List<IncomingRequestCollector> getAllIncomingRequests(final Long timeRangeFrom, final Long timeRangeTo) {
-    Criteria matchCriteria = getMicroserviceDeclarationCriteria();
-    matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
-
-    return getIncomingRequestsWithCriteria(matchCriteria, true);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public List<IncomingRequestCollector> getIncomingByIdentifier(final String identifier, final Long timeRangeFrom, final Long timeRangeTo, boolean groupByMethod) {
-    Criteria matchCriteria = getMicroserviceDeclarationCriteria();
-    matchCriteria = matchCriteria.and(ANNOTATION_IDENTIFIER_ATTRIBUTE).is(identifier);
-    matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
-
-    return getIncomingRequestsWithCriteria(matchCriteria, groupByMethod);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public List<ClientRequestCollector> getRequestsByCallee(final String callee, final Long timeRangeFrom, final Long timeRangeTo) {
-    Criteria matchCriteria = getClientRequestCriteria();
+    Criteria matchCriteria = getClientRequestAnnotationCriteria();
     matchCriteria = matchCriteria.and(ANNOTATION_TO_ATTRIBUTE).is(callee);
     matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
 
@@ -90,11 +69,35 @@ public class ProcedureExecutionRepositoryImpl extends AbstractRepository impleme
    */
   @Override
   public List<ClientRequestCollector> getRequestsByCaller(String caller, final Long timeRangeFrom, final Long timeRangeTo) {
-    Criteria matchCriteria = getClientRequestCriteria();
+    Criteria matchCriteria = getClientRequestAnnotationCriteria();
     matchCriteria = matchCriteria.and(ANNOTATION_FROM_ATTRIBUTE).is(caller);
     matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
 
     return getRequestsWithCriteria(matchCriteria);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public List<IncomingRequestCollector> getAllIncomingRequests(final Long timeRangeFrom, final Long timeRangeTo) {
+    Criteria matchCriteria = getMicroserviceMethodDeclarationAnnotationCriteria();
+    matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
+
+    return getIncomingRequestsWithCriteria(matchCriteria, true);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public List<IncomingRequestCollector> getIncomingByIdentifier(final String identifier, final Long timeRangeFrom, final Long timeRangeTo, boolean groupByMethod) {
+    //@formatter:off
+    Criteria matchCriteria = getMicroserviceMethodDeclarationAnnotationCriteria()
+        .and(ANNOTATION_IDENTIFIER_ATTRIBUTE).is(identifier);
+    //@formatter:on
+
+    matchCriteria = addTimeRangeCriteria(matchCriteria, timeRangeFrom, timeRangeTo);
+
+    return getIncomingRequestsWithCriteria(matchCriteria, groupByMethod);
   }
 
   /**
@@ -125,7 +128,7 @@ public class ProcedureExecutionRepositoryImpl extends AbstractRepository impleme
    * 
    * @return {@link Criteria}
    */
-  private Criteria getClientRequestCriteria() {
+  private Criteria getClientRequestAnnotationCriteria() {
     return new Criteria(ANNOTATION_NAME).is(Ids.MICROSERVICE_CLIENT_REQUEST_ANNOTATION_IDENTIFIER);
   }
 
@@ -134,7 +137,7 @@ public class ProcedureExecutionRepositoryImpl extends AbstractRepository impleme
    * 
    * @return {@link Criteria}
    */
-  private Criteria getMicroserviceDeclarationCriteria() {
+  private Criteria getMicroserviceMethodDeclarationAnnotationCriteria() {
     return new Criteria(ANNOTATION_NAME).is(Ids.MICROSERVICE_ENDPOINT_ANNOTATION_IDENTIFIER);
   }
 

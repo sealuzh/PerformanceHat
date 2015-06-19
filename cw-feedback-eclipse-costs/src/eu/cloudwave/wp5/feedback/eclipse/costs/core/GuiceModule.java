@@ -51,6 +51,7 @@ public class GuiceModule extends AbstractModule {
     // Cost Builder
     bind(FeedbackCleaner.class).to(CostFeedbackCleanerImpl.class).in(Singleton.class);
     bind(PredictionStrategy.class).to(PredictionStrategyImpl.class).in(Singleton.class);
+    // bind(PredictionStrategy.class).to(DummyPredictionStrategyImpl.class).in(Singleton.class);
 
     // Feedback Handler Client
     bind(RestClient.class).to(RestClientImpl.class).in(Singleton.class);
