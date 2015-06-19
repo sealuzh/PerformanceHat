@@ -120,3 +120,7 @@ While you have run those two pages, the Feedback Handler has recorded all the pe
 * Do some change (add a new line or so) and save, in order to force Eclipse to rebuild it.
 * After rebuilding it, spots in the code that exceed the performance limits which you set before in milliseconds, are highlighted in orange.
 * You can hover over these spots and if everything has worked fine, you should see a popup telling you how long the respective method or loop takes to execute.
+
+### Pitfalls
+
+* UNIX Machines: If while using the plugin you see just an empty Pop-Up Window with a message saying `<the browser control could not be initialized>`, install the `libwebkitgtk` package (see the solution on Stackoverflow: [here](http://stackoverflow.com/questions/7130980/swt-browser-no-more-handles-error) )
