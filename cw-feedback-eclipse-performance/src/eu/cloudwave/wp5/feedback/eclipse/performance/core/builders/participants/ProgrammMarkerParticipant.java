@@ -23,7 +23,7 @@ public class ProgrammMarkerParticipant extends AbstractFeedbackBuilderParticipan
 	 public ProgrammMarkerParticipant(ProgrammMarker ext) {
 	    this.ext = ext;
 		this.feedbackHandlerClient = PerformancePluginActivator.instance(FeedbackHandlerEclipseClient.class);
-	    this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
+		this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
 	  }
 
 

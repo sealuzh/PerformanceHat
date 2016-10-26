@@ -1,5 +1,7 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-public interface MethodOccurence extends IAstNode{
+import eu.cloudwave.wp5.common.model.Procedure;
 
+public interface MethodOccurence extends IAstNode{
+	 public Procedure createCorrelatingProcedure();
 }

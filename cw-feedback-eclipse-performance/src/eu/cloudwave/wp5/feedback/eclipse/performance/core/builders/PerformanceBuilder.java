@@ -33,6 +33,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.CriticalLoopBuilderParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProgrammMarkerParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.CriticalLoopProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker;
 
 public class PerformanceBuilder extends FeedbackBuilder {
@@ -66,7 +67,7 @@ public class PerformanceBuilder extends FeedbackBuilder {
     //			the visitors params are wrappers builded automatically each time needed
     //participants.add(new HotspotsBuilderParticipant());
 	participants.add(new ProgrammMarkerParticipant(new HotspotProgrammMarker()));
-    participants.add(new CriticalLoopBuilderParticipant());
+    participants.add(new ProgrammMarkerParticipant(new CriticalLoopProgrammMarker()));
 
     return participants;
   }

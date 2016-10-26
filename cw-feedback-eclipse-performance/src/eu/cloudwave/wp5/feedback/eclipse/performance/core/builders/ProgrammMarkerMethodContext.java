@@ -9,11 +9,11 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.Feedba
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration;
 
-public class ProgrammMarkerMathodContext implements ProgrammMarkerContext{
+public class ProgrammMarkerMethodContext implements ProgrammMarkerContext{
 	private final  MethodDeclaration decl;
 	final ProgrammMarkerContext base;
 	
-	public ProgrammMarkerMathodContext(ProgrammMarkerContext base, MethodDeclaration decl) {
+	public ProgrammMarkerMethodContext(ProgrammMarkerContext base, MethodDeclaration decl) {
 		this.base = base;
 		this.decl = decl;
 	}

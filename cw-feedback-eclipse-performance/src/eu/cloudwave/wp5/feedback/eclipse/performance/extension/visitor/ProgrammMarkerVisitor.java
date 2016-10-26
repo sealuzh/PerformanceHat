@@ -24,7 +24,9 @@ public abstract class ProgrammMarkerVisitor {
 
 	public ProgrammMarkerVisitor visit(MethodOccurence methode){return CONTINUE;};
 	public ProgrammMarkerVisitor visit(MethodDeclaration declaration){return CONTINUE;};
+	public ProgrammMarkerVisitor visit(ParameterDeclaration decl){return CONTINUE;};
 	
 	public void finish(){}
+	
 
 }

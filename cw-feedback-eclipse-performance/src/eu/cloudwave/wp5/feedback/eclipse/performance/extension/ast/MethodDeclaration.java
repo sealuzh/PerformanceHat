@@ -1,6 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -13,7 +13,7 @@ import eu.cloudwave.wp5.common.model.ProcedureKind;
 import eu.cloudwave.wp5.common.model.impl.ProcedureImpl;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
-public class MethodDeclaration extends AAstNode<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
+public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
 	
 	public MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, ProgrammMarkerContext ctx) {
 		super(methodDeclaration,ctx);
@@ -22,6 +22,23 @@ public class MethodDeclaration extends AAstNode<org.eclipse.jdt.core.dom.MethodD
 	 @Override
 	public MethodDeclaration getCurrentMethode() {
 		return this;
+	}
+	 
+	private List<Double> metrics = null;
+
+	@Override
+	public List<Double> getDoubleTags(String name) {
+		if(name.equals("CollectionSize")){
+			if (metrics == null) {
+				 Procedure procedure = createCorrelatingProcedure();
+				 String[] arguments = procedure.getArguments().toArray(new String[procedure.getArguments().size()]);
+			     Double averageSize = ctx.getFeedBackClient().collectionSize(ctx.getProject(), procedure.getClassName(), procedure.getName(), arguments, "");
+			     metrics = Collections.singletonList(averageSize);
+	        }
+	        return metrics;
+		} else {
+			return super.getDoubleTags(name);
+		}
 	}
 
 	/**
@@ -90,13 +107,6 @@ public class MethodDeclaration extends AAstNode<org.eclipse.jdt.core.dom.MethodD
 	    return getStartPosition() + inner.getName().getLength();
 	  }
 	  
-	  @Override
-	  public boolean corrolatesWith(Procedure procedure) {
-			  boolean doesClassCorroalte = getQualifiedClassName().equals(procedure.getClassName());
-			  boolean doesMethodCorroalte = getMethodName().equals(procedure.getName());
-			  boolean doArgsCorroalte = Arrays.equals(getArguments(), procedure.getArguments().toArray());
-			  return doesClassCorroalte & doesMethodCorroalte & doArgsCorroalte;
-	  }
 	
 	  public Procedure createCorrelatingProcedure() {
 	    final List<String> arguments = Lists.newArrayList(getArguments());

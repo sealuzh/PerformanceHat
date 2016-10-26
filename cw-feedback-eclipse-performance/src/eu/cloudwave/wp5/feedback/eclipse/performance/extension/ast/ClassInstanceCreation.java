@@ -1,17 +1,20 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
+import com.google.common.collect.Lists;
+
 import eu.cloudwave.wp5.common.model.Procedure;
 import eu.cloudwave.wp5.common.model.ProcedureKind;
+import eu.cloudwave.wp5.common.model.impl.ProcedureImpl;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
-public class ClassInstanceCreation extends AAstNode<org.eclipse.jdt.core.dom.ClassInstanceCreation> implements Invocation {
+public class ClassInstanceCreation extends AMethodRelated<org.eclipse.jdt.core.dom.ClassInstanceCreation> implements Invocation {
 	
 	  private static final String EMPTY = "";
 	  private static final String INIT = "<init>";
@@ -70,18 +73,15 @@ public class ClassInstanceCreation extends AAstNode<org.eclipse.jdt.core.dom.Cla
 	    return parentExpression.getStartPosition() + parentExpression.getLength();
 	  }
 
-	@Override
-	protected boolean corrolatesWith(Procedure procedure) {
-		  boolean doesClassCorroalte = getTargetQualifiedClassName().equals(procedure.getClassName());
-		  boolean doesMethodCorroalte = getTargetMethodName().equals(procedure.getName());
-		  boolean doArgsCorroalte = Arrays.equals(getTargetArguments(), procedure.getArguments().toArray());
-		  return doesClassCorroalte & doesMethodCorroalte & doArgsCorroalte;
-	}
-	
+
 	@Override
 	public ProcedureKind getProcedureKind() {
 		return ProcedureKind.CONSTRUCTOR;
 	}
-	
+
+	public Procedure createCorrelatingProcedure(){
+		  final List<String> arguments = Lists.newArrayList(getTargetArguments());
+		  return new ProcedureImpl(getTargetQualifiedClassName(), getTargetMethodName(), getProcedureKind(), arguments, Lists.newArrayList());
+	 }
 
 }

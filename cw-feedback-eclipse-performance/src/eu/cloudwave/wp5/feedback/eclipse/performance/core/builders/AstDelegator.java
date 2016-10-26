@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
@@ -54,19 +55,42 @@ public class AstDelegator extends ASTVisitor  {
 	 @Override
      public boolean visit(final MethodDeclaration methodDeclaration) {
 		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration(methodDeclaration,context);
-		 context = new ProgrammMarkerMathodContext(context, decl);
+		 context = new ProgrammMarkerMethodContext(context, decl);
 		 ProgrammMarkerVisitor m1 = visitors.peek().visit(decl);
 		 ProgrammMarkerVisitor m2 = visitors.peek().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m1, m2);
      }
 	 
 	 public void endVisit(final MethodDeclaration methodDeclaration) {
-		 context = ((ProgrammMarkerMathodContext)context).base;
+		 context = ((ProgrammMarkerMethodContext)context).base;
 		 handleEndVisit();
 	 }
 	 
+	 
 	
      @Override
+	public boolean visit(SingleVariableDeclaration node) {
+    	 int count = 0;
+    	 
+    	 for(Object param :context.getCurrentMethode().getEclipseAstNode().parameters()){
+    		if(param.equals(node)) {
+    	    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ParameterDeclaration decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ParameterDeclaration(count,context.getCurrentMethode(),node,context);
+    			 ProgrammMarkerVisitor m = visitors.peek().visit(decl);
+    			 return handleVisitReturn(m);
+    		}
+    		count++;
+    	 }
+    	 
+    	 return handleVisitReturn((ProgrammMarkerVisitor)null);
+
+	}
+
+	@Override
+	public void endVisit(SingleVariableDeclaration node) {
+		 handleEndVisit();
+	}
+
+	@Override
      public boolean visit(final MethodInvocation methodInvocation) {
     	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodInvocation decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodInvocation(methodInvocation,context);
 		 ProgrammMarkerVisitor m1 = visitors.peek().visit(decl);

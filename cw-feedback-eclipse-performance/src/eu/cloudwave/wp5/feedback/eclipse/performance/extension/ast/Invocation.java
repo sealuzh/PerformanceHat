@@ -1,15 +1,10 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.List;
-
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
-import com.google.common.collect.Lists;
-
 import eu.cloudwave.wp5.common.model.Procedure;
 import eu.cloudwave.wp5.common.model.ProcedureKind;
-import eu.cloudwave.wp5.common.model.impl.ProcedureImpl;
 
 
 public interface Invocation extends IAstNode {
@@ -64,8 +59,5 @@ public interface Invocation extends IAstNode {
 	  
 	  public ProcedureKind getProcedureKind();
 	  
-	  default public Procedure createCorrelatingProcedure(){
-		  final List<String> arguments = Lists.newArrayList(getTargetArguments());
-		  return new ProcedureImpl(getTargetQualifiedClassName(), getTargetMethodName(), getProcedureKind(), arguments, Lists.newArrayList());
-	  }
+	  public Procedure createCorrelatingProcedure();
 }

@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension;
+package eu.cloudwave.wp5.feedback.eclipse.performance.core.tag;
 
 public class MethodLocator {
 	public final String className;

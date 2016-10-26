@@ -11,10 +11,12 @@ import eu.cloudwave.wp5.common.util.TimeValues;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodOccurence;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
+import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
 
 public class HotspotProgrammMarker implements ProgrammMarker{
 	
@@ -33,10 +35,13 @@ public class HotspotProgrammMarker implements ProgrammMarker{
 
 			@Override
 			public ProgrammMarkerVisitor visit(MethodOccurence methode) {
-				 for (HotspotTag hotspot :methode.getMeasurementTags(HotspotTag.class)) {
+				 final double threshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__HOTSPOTS, PerformanceConfigs.DEFAULT_THRESHOLD_HOTSPOTS);
+				 for (double avgExecutionTime :methode.getDoubleTags("AvgExcecutionTime")) {
+					 if(avgExecutionTime < threshold) continue;
 					 //Todo: Not nice at all look what we can evacuate
-					 final Procedure procedure = hotspot.getProcedure();
-					 final String valueAsText = TimeValues.toText(hotspot.getAverageExecutionTime(), DECIMAL_PLACES);
+					 
+					 final Procedure procedure = methode.createCorrelatingProcedure();
+					 final String valueAsText = TimeValues.toText(avgExecutionTime, DECIMAL_PLACES);
 					 final String kind = procedure.getKind().equals(ProcedureKind.CONSTRUCTOR) ? CONSTRUCTOR : METHOD;
 					 final String message = String.format(MESSAGE_PATTERN, kind, procedure.getName(), valueAsText);
 					 final Map<String, Object> context = Maps.newHashMap();

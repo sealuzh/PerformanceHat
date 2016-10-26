@@ -15,15 +15,21 @@ public class ExampleController {
     @RequestMapping("/example")
     public String example(Model model){
         return "example";
-       
     }
     
 	
     @RequestMapping("/users")
     public String greeting(Model model) {
+    	for(String u: getUserInfo()){
+    		for(String u2: getUserInfo()){
+        		getUserInfo();
+        	}
+    	}
+    	
     	List<String> userList = getUserInfo();
         model.addAttribute("userList", userList);
         return "users";
+        
     }
     
     
