@@ -17,15 +17,23 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
+
 import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackCleaner;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.FeedbackBuilderParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
+import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.CriticalLoopBuilderParticipant;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.HotspotsBuilderParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProgrammMarkerParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker;
 
 public class PerformanceBuilder extends FeedbackBuilder {
 
@@ -34,10 +42,30 @@ public class PerformanceBuilder extends FeedbackBuilder {
    */
   @Override
   protected List<FeedbackBuilderParticipant> getParticipants() {
-    System.out.println("PerformanceBuilder: register participants");
     List<FeedbackBuilderParticipant> participants = Lists.newArrayList();
-
-    participants.add(new HotspotsBuilderParticipant());
+    
+    IExtensionRegistry reg = Platform.getExtensionRegistry();
+    
+    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.MARKER)){
+    	try {
+			participants.add(new ProgrammMarkerParticipant((ProgrammMarker)elem.createExecutableExtension("Class")));
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    //Todo: Make These Dynamically
+    //Todo: Make new AstVisiter whiches wrappes the AstNodes when requested
+    //Todo:   Lazy inject Performance Metricy from Datasources if requested
+    //Todo:   Allow Helper
+    //Todo:  Call ProgrammMarkerVisitor
+    //Todo:   MakeStatePattern where a Subvisitor can be returned to process childs
+    //Todo:   Stuff like file etc... is in BuilderContext which is passed down, the helpers are also their
+    //Todo:   Think about Hierarchical Visitor
+    //			alla: visitMethodeDeclaration, visitMethodeCall, visitMethodeOccurence <-- the last is called in both cases
+    //			the visitors params are wrappers builded automatically each time needed
+    //participants.add(new HotspotsBuilderParticipant());
+	participants.add(new ProgrammMarkerParticipant(new HotspotProgrammMarker()));
     participants.add(new CriticalLoopBuilderParticipant());
 
     return participants;

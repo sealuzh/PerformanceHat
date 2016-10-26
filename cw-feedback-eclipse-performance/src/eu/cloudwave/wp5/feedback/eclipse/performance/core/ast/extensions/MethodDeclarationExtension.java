@@ -15,8 +15,15 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.ast.extensions;
 
+import java.util.List;
+
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+
+import com.google.common.collect.Lists;
+
+import eu.cloudwave.wp5.common.model.Procedure;
+import eu.cloudwave.wp5.common.model.impl.ProcedureImpl;
 
 /**
  * Provides complementary functionality for {@link MethodDeclaration}'s. It wraps a {@link MethodDeclaration} similar to
@@ -61,4 +68,7 @@ public class MethodDeclarationExtension extends AbstractMethodExtension<MethodDe
   public IMethodBinding getMethodBinding() {
     return methodDeclaration.resolveBinding().getMethodDeclaration();
   }
+ 
+
+  
 }

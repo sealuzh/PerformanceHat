@@ -14,7 +14,7 @@
     "zeroclipboard": "~2.2.0",
     "ng-clip": "~0.2.6"
   },
-"resolutions": {
+  "resolutions": {
     "angular": "~1.4.0"
   }
 }

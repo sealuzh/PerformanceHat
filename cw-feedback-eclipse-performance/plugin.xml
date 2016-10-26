@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
-<plugin>   
+<plugin>
+   <extension-point id="eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension" name="ProgrammMarkerExtension" schema="schema/eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension.exsd"/>   
 
    <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
    <extension

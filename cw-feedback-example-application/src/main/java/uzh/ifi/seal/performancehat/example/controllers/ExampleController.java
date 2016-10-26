@@ -24,7 +24,6 @@ public class ExampleController {
     	List<String> userList = getUserInfo();
         model.addAttribute("userList", userList);
         return "users";
-        
     }
     
     

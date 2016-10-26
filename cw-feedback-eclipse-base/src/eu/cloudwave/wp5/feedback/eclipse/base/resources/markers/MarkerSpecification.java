@@ -31,15 +31,20 @@ public class MarkerSpecification {
   private String message;
   private Map<String, Object> additionalAttributes;
 
-  public MarkerSpecification(final String id, final MarkerPosition position, final int severity, final FeedbackMarkerType type, final String message) {
+  public MarkerSpecification(final String id, final MarkerPosition position, final int severity, final FeedbackMarkerType type, final String message,  Map<String, Object> additionalAttributes) {
     super();
     this.id = id;
     this.position = position;
     this.severity = severity;
     this.type = type;
     this.message = message;
-    this.additionalAttributes = Maps.newHashMap();
+    this.additionalAttributes =additionalAttributes;
   }
+  
+  public MarkerSpecification(final String id, final MarkerPosition position, final int severity, final FeedbackMarkerType type, final String message) {
+	    this(id,position,severity,type,message,Maps.newHashMap());
+  }
+
 
   public String getId() {
     return id;
