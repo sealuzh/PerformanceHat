@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
@@ -11,7 +12,7 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerPosition;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecification;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
-public abstract class AAstNode<T> implements BackedAstNode<T> {
+public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	
 	protected final ProgrammMarkerContext ctx;
 	protected final T inner;
@@ -21,7 +22,6 @@ public abstract class AAstNode<T> implements BackedAstNode<T> {
 		this.inner = inner;
 	}
 
-	@Override
 	public T getEclipseAstNode() {
 		return inner;
 	}
@@ -56,5 +56,18 @@ public abstract class AAstNode<T> implements BackedAstNode<T> {
 	   * @return the end position (in the respective Java file) of the wrapped object.
 	   */
 	  protected abstract int getEndPosition();
+
+	@Override
+	public int hashCode() {
+		return inner.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof AAstNode))return false;
+		return inner.equals(((AAstNode)obj).inner);
+	}
+	  
+	  
 
 }

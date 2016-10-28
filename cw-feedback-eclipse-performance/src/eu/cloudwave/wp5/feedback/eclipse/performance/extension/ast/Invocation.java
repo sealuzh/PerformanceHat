@@ -6,8 +6,8 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import eu.cloudwave.wp5.common.model.Procedure;
 import eu.cloudwave.wp5.common.model.ProcedureKind;
 
-
-public interface Invocation extends IAstNode {
+//Todo: make methode occurence
+public interface Invocation extends Expression {
 	
 	  /**
 	   * Returns the corresponding {@link IMethodBinding} of the wrapped object.

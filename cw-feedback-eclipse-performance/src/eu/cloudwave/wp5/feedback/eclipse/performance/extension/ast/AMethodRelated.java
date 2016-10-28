@@ -4,15 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.ui.actions.ProjectActionGroup;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 import eu.cloudwave.wp5.common.model.Procedure;
-import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerClient;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
-public abstract class AMethodRelated<T> extends AAstNode<T> {
+public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	public abstract Procedure createCorrelatingProcedure();
 
 	public AMethodRelated(T inner, ProgrammMarkerContext ctx) {

@@ -1,5 +1,9 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
@@ -29,4 +33,12 @@ public class ForStatement extends AAstNode<org.eclipse.jdt.core.dom.ForStatement
 		return Optional.absent();
 	}
 
+	@Override
+	public List<Expression> getInitExpressions() {
+		List<org.eclipse.jdt.core.dom.Expression> exprs = inner.initializers();
+		return exprs.stream().map(e -> Expression.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
+	}
+
+	
+	
 }

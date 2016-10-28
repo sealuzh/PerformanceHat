@@ -1,5 +1,7 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
+import java.util.List;
+
 import com.google.common.base.Optional;
 
 public interface LoopStatement extends IAstNode{
@@ -13,4 +15,6 @@ public interface LoopStatement extends IAstNode{
 	   * @return
 	   */
 	  public Optional<IAstNode> getSourceNode();
+
+	  public List<Expression> getInitExpressions();
 }

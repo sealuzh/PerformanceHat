@@ -1,9 +1,11 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -26,7 +28,8 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 
 	@Override
 	protected int getEndPosition() {
-		return  inner.getParameter().getStartPosition();
+		  final org.eclipse.jdt.core.dom.Expression expression = inner.getExpression();
+          return expression.getStartPosition() + expression.getLength();
 	}
 
 	/**
@@ -37,7 +40,7 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 	   */
 	  //todo: do rewire CollectionSource to Something that can have tags, like a param or a variable/Vlaue and then use tag mechanism
 	  public Optional<IAstNode> getSourceNode() {
-	    final Expression expression = inner.getExpression();
+	    final org.eclipse.jdt.core.dom.Expression expression = inner.getExpression();
 
 	    // Case 1: the for loop contains a variable; 'for(Object item : items)'
 	    if (expression instanceof SimpleName) {
@@ -115,7 +118,7 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 	        return false;
 	      }
 
-	      private void setSourceProcedure(final Expression expression) {
+	      private void setSourceProcedure(final org.eclipse.jdt.core.dom.Expression expression) {
 	        if (expression != null && expression instanceof org.eclipse.jdt.core.dom.MethodInvocation) {
 	        	inv.set(new MethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation) expression,ctx));
 	        }
@@ -138,4 +141,11 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 	    }
 	  }
 
+
+	@Override
+	public List<Expression> getInitExpressions() {
+		return Collections.singletonList(Expression.fromEclipseAstNode(inner.getExpression(),ctx));
+	}
+
+	  
 }

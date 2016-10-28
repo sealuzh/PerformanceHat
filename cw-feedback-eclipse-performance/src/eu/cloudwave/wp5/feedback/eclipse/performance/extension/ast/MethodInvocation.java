@@ -1,5 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -56,6 +57,23 @@ public class MethodInvocation extends AMethodRelated<org.eclipse.jdt.core.dom.Me
 	    //todo: pass in correct, but now this also is always UNKNOWN so at least ok
 	    return new ProcedureImpl(getTargetQualifiedClassName(), getTargetMethodName(), getProcedureKind(), arguments, Lists.newArrayList());
 	  }
+	
+	 private List<Double> metrics = null;
+
+	 @Override
+		public List<Double> getDoubleTags(String name) {
+			if(name.equals("CollectionSize")){
+				if (metrics == null) {
+					 Procedure procedure = createCorrelatingProcedure();
+					 String[] arguments = procedure.getArguments().toArray(new String[procedure.getArguments().size()]);
+				     Double averageSize = ctx.getFeedBackClient().collectionSize(ctx.getProject(), procedure.getClassName(), procedure.getName(), arguments, "");
+				     metrics = Collections.singletonList(averageSize);
+		        }
+		        return metrics;
+			} else {
+				return super.getDoubleTags(name);
+			}
+		}
 	
 	 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import eu.cloudwave.wp5.common.util.Numbers;
@@ -18,7 +17,6 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.Performance
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.LoopStatement;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
@@ -60,66 +58,13 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker{
 				 double averageSize = 0.0; 
 				 for(double size :colSize)averageSize+=size;
 				 averageSize /= colSize.size();
-	        	 if(averageSize == 0) return averageSize;	        	
-			 }
-		 }
+	        	 return averageSize;	        	
+			 } 
+		   }
 		 return null;
 	  }
 
-	  @FunctionalInterface
-	  private interface ExcecutionTimeSummaryCallBack{
-		  public void callBack(double avgExecTimePerIteration,List<ProcedureExecutionData> procedureExecutionTimes);
-	  }
-	  
-	  private static class BlockTimeMeasurer extends ProgrammMarkerVisitor{
-		private final ExcecutionTimeSummaryCallBack cb;
-		private final ProgrammMarkerContext context;
-      	private double avgExecTimePerIteration = 0.0;
-      	private List<ProcedureExecutionData> procedureExecutionTimes = Lists.newArrayList();
-     	
-		public BlockTimeMeasurer(ProgrammMarkerContext context, ExcecutionTimeSummaryCallBack cb) {
-			this.cb = cb;
-			this.context = context;
-		}
-
-		@Override
-		public ProgrammMarkerVisitor visit(Invocation invocation) {
-			List<Double> tags = invocation.getDoubleTags("AvgExcecutionTime");
-			if(tags.isEmpty()) return CONTINUE;
-			double avgExecTime = 0.0;
-			for(double avgT : tags)avgExecTime+=avgT;
-			avgExecTime /= tags.size();
-			avgExecTimePerIteration+= avgExecTime;
-	    	procedureExecutionTimes.add(ProcedureExecutionData.of(invocation.createCorrelatingProcedure(), avgExecTime));
-			return CONTINUE;
-		}
-		
-		@Override
-		public ProgrammMarkerVisitor visit(LoopStatement loop) {
-			  Double averageSize = findNumOfIterations(loop, context);
-			  if(averageSize == null) return CONTINUE;
-			  if(averageSize == 0) return SKIP_CHILDS;
-			  final double avgSize = averageSize; //so we can use it in inner
-			  final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-	     
-			  return new BlockTimeMeasurer(context,(avgExecTimePerIteration, procedureExecutionTimes) ->{
-		         //todo: correct? should it be total?
-	         	 if (avgExecTimePerIteration >= threshold) {
-	         		//Create independent marker if higher then threshold 
-	         		createCriticalLoopMarker(loop,context.getTemplateHandler(),avgSize,avgExecTimePerIteration,procedureExecutionTimes);
-	         	 }
-	         	 //Integrate results into current loop
-	         	 avgExecTimePerIteration+=(avgExecTimePerIteration*avgSize);
-	         	 procedureExecutionTimes.addAll(procedureExecutionTimes);
-		    });
-		}
-
-		@Override
-		public void finish() {
-          cb.callBack(avgExecTimePerIteration, procedureExecutionTimes);
-		}
-	  }
-
+	 
 	  //Same as BlockTimeMeasurer, but react's only on loops, if we would like predictions for Methods, then we could just add them here
 	  //But then Hotspot could fastly get irrelevant, basically it would be easy todo everithing here
 	  @Override
@@ -130,14 +75,15 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker{
 					  Double averageSize = findNumOfIterations(loop, rootContext);
 					  if(averageSize == null) return CONTINUE;
 					  if(averageSize == 0) return SKIP_CHILDS;
+
 					  final double avgSize = averageSize; //so we can use it in inner
 					  final double threshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-			     
-					  return new BlockTimeMeasurer(rootContext,(avgExecTimePerIteration, procedureExecutionTimes) ->{
-				         //todo: correct? should it be total?
+
+					  return new LoopBlockTimeMeasurer(rootContext, loop.getInitExpressions(),(avgExecTimePerIteration, procedureExecutionTimes) ->{
+						 //todo: correct? should it be total?
 			         	 if (avgExecTimePerIteration >= threshold) {
 			         		createCriticalLoopMarker(loop,rootContext.getTemplateHandler(),avgSize,avgExecTimePerIteration,procedureExecutionTimes);
-			         	 }
+			         	 } 
 				    });	
 			     }
 		  };

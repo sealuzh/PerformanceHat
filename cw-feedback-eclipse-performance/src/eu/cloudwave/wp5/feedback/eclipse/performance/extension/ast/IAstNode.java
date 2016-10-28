@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
 
 public interface IAstNode {
 	
 	public MethodDeclaration getCurrentMethode();
+	public ASTNode getEclipseAstNode();
 	
 	default public List<Object> getTags(String name){
 		return Collections.emptyList();
