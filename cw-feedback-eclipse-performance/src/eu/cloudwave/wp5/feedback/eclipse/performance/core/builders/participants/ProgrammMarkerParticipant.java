@@ -10,26 +10,27 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaPr
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.AstDelegator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.ProgrammMarkerContextBase;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerEclipseClient;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagRegistry;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
 public class ProgrammMarkerParticipant extends AbstractFeedbackBuilderParticipant implements FeedbackBuilderParticipant{
 
-	 private FeedbackHandlerEclipseClient feedbackHandlerClient;
 	 private TemplateHandler templateHandler;
 	 private final ProgrammMarker ext;
 
 	 public ProgrammMarkerParticipant(ProgrammMarker ext) {
 	    this.ext = ext;
-		this.feedbackHandlerClient = PerformancePluginActivator.instance(FeedbackHandlerEclipseClient.class);
 		this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
 	  }
 
-
 	@Override
 	protected void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
-		ProgrammMarkerContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, feedbackHandlerClient,templateHandler);
+		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
+		TagCreator crea = reg.getCreatorFor(javaFile);
+		crea.clearAssosiatedTags();
+		ProgrammMarkerContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler);
 		astRoot.accept( new AstDelegator(ext.createFileVisitor(rootContext),rootContext)) ;
 	}
 

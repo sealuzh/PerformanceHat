@@ -5,7 +5,8 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration;
 
@@ -13,16 +14,19 @@ public class ProgrammMarkerContextBase implements ProgrammMarkerContext{
 	private final FeedbackProject project;
 	private final FeedbackJavaFile file;
 	private final CompilationUnit unit;
-	private final FeedbackHandlerEclipseClient fddHandler;
+	private final TagProvider tagProv;
+	private final TagCreator tagCrea;	
 	private final TemplateHandler template;
 
 	
 	public ProgrammMarkerContextBase(FeedbackProject project, FeedbackJavaFile file, CompilationUnit unit,
-			FeedbackHandlerEclipseClient fddHandler, TemplateHandler template) {
+			TagProvider tagProv, TagCreator tagCrea, TemplateHandler template) {
 		this.project = project;
 		this.file = file;
 		this.unit = unit;
-		this.fddHandler = fddHandler;
+		this.tagCrea = tagCrea;
+		this.tagProv = tagProv;
+
 		this.template = template;
 	}
 
@@ -31,10 +35,17 @@ public class ProgrammMarkerContextBase implements ProgrammMarkerContext{
 		return project;
 	}
 
-	//Todo: temporary will be replaced by datasource mechanism
+	
+	
+	
 	@Override
-	public FeedbackHandlerEclipseClient getFeedBackClient() {
-		return fddHandler;
+	public TagProvider getTagProvider() {
+		return tagProv;
+	}
+
+	@Override
+	public TagCreator getTagCreator() {
+		return tagCrea;
 	}
 
 	//Todo: bettersolution is needed

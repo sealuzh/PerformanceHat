@@ -47,13 +47,13 @@ class LoopBlockTimeMeasurer extends ProgrammMarkerVisitor{
 	@Override
 	public ProgrammMarkerVisitor visit(Invocation invocation) {
 		if(visit((Expression)invocation) == SKIP_CHILDS) return SKIP_CHILDS; 	//Todo: latter add to some count once
-		List<Double> tags = invocation.getDoubleTags("AvgExcecutionTime");
+		List<Double> tags = invocation.getDoubleTags(CriticalLoopProgrammMarker.AVG_EXEC_TIME_TAG);
 		if(tags.isEmpty()) return CONTINUE;
 		double avgExecTime = 0.0;
 		for(double avgT : tags)avgExecTime+=avgT;
 		avgExecTime /= tags.size();
 		avgExecTimePerIteration+= avgExecTime;
-    	procedureExecutionTimes.add(ProcedureExecutionData.of(invocation.createCorrelatingProcedure(), avgExecTime));
+    	procedureExecutionTimes.add(ProcedureExecutionData.of(invocation.createCorrespondingMethodLocation(), avgExecTime));
 		return CONTINUE;
 	}
 	

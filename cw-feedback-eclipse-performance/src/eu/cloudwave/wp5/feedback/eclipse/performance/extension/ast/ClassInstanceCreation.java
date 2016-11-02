@@ -1,17 +1,11 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.List;
-
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
-import com.google.common.collect.Lists;
-
-import eu.cloudwave.wp5.common.model.Procedure;
-import eu.cloudwave.wp5.common.model.ProcedureKind;
-import eu.cloudwave.wp5.common.model.impl.ProcedureImpl;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
 public class ClassInstanceCreation extends AMethodRelated<org.eclipse.jdt.core.dom.ClassInstanceCreation> implements Invocation {
@@ -22,39 +16,7 @@ public class ClassInstanceCreation extends AMethodRelated<org.eclipse.jdt.core.d
  	  public ClassInstanceCreation(org.eclipse.jdt.core.dom.ClassInstanceCreation newInstance, ProgrammMarkerContext ctx) {
 		super(newInstance,ctx);
       }
-
-	  @Override
-	  public String getTargetQualifiedClassName() {
-	    final String regularName = getTargetMethodBinding().getDeclaringClass().getQualifiedName();
-	    // if the name is empty, this is the constructor of anonymous inner class
-	    // Therefore, no name exists and the name of the implementing interface or the extending class ha to be considered.
-	    if (regularName.equals(EMPTY)) {
-	      final ITypeBinding[] interfaces = getTargetMethodBinding().getDeclaringClass().getInterfaces();
-	      if (interfaces.length > 0) {
-	        return interfaces[0].getQualifiedName();
-	      }
-	      return getTargetMethodBinding().getDeclaringClass().getSuperclass().getQualifiedName();
-	    }
-	    return regularName;
-	  }
-
-	  @Override
-	  public String getTargetMethodName() {
-	    final String regularName = getTargetMethodBinding().getName();
-	    if (regularName.equals(EMPTY)) {
-	      return INIT;
-	    }
-	    return regularName;
-	  }
-
-	  /**
-	   * {@inheritDoc}
-	   */
-	  @Override
-	  public IMethodBinding getTargetMethodBinding() {
-	    return inner.resolveConstructorBinding().getMethodDeclaration();
-	  }
-
+ 	  
 	  /**
 	   * {@inheritDoc}
 	   */
@@ -72,16 +34,32 @@ public class ClassInstanceCreation extends AMethodRelated<org.eclipse.jdt.core.d
 	    final ASTNode parentExpression = inner.getType().getParent();
 	    return parentExpression.getStartPosition() + parentExpression.getLength();
 	  }
+	
+	 private static String getTargetQualifiedClassName(IMethodBinding bind) {
+		    final String regularName = bind.getDeclaringClass().getQualifiedName();
+		    // if the name is empty, this is the constructor of anonymous inner class
+		    // Therefore, no name exists and the name of the implementing interface or the extending class ha to be considered.
+		    if (regularName.equals(EMPTY)) {
+		      final ITypeBinding[] interfaces = bind.getDeclaringClass().getInterfaces();
+		      if (interfaces.length > 0) {
+		        return interfaces[0].getQualifiedName();
+		      }
+		      return bind.getDeclaringClass().getSuperclass().getQualifiedName();
+		    }
+		    return regularName;
+		  }
 
+		  private static String getTargetMethodName(IMethodBinding bind) {
+		    final String regularName = bind.getName();
+		    if (regularName.equals(EMPTY)) {
+		      return INIT;
+		    }
+		    return regularName;
+		  }
 
-	@Override
-	public ProcedureKind getProcedureKind() {
-		return ProcedureKind.CONSTRUCTOR;
-	}
-
-	public Procedure createCorrelatingProcedure(){
-		  final List<String> arguments = Lists.newArrayList(getTargetArguments());
-		  return new ProcedureImpl(getTargetQualifiedClassName(), getTargetMethodName(), getProcedureKind(), arguments, Lists.newArrayList());
+	public  MethodLocator createCorrespondingMethodLocation(){
+		IMethodBinding bind = inner.resolveConstructorBinding().getMethodDeclaration();
+		return new MethodLocator(getTargetQualifiedClassName(bind), getTargetMethodName(bind), AMethodRelated.getTargetArguments(bind));
 	 }
 
 }

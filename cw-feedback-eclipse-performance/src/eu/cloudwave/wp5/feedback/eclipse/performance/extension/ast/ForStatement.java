@@ -1,6 +1,5 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,7 @@ public class ForStatement extends AAstNode<org.eclipse.jdt.core.dom.ForStatement
 
 	@Override
 	public List<Expression> getInitExpressions() {
+		@SuppressWarnings("unchecked")
 		List<org.eclipse.jdt.core.dom.Expression> exprs = inner.initializers();
 		return exprs.stream().map(e -> Expression.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
 	}

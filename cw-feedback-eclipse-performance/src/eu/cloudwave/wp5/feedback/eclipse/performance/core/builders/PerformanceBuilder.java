@@ -16,6 +16,7 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -30,7 +31,6 @@ import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.Feedbac
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.CriticalLoopBuilderParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProgrammMarkerParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.CriticalLoopProgrammMarker;
@@ -43,13 +43,13 @@ public class PerformanceBuilder extends FeedbackBuilder {
    */
   @Override
   protected List<FeedbackBuilderParticipant> getParticipants() {
-    List<FeedbackBuilderParticipant> participants = Lists.newArrayList();
+    List<ProgrammMarker> markers  = Lists.newArrayList();
     
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     
     for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.MARKER)){
     	try {
-			participants.add(new ProgrammMarkerParticipant((ProgrammMarker)elem.createExecutableExtension("Class")));
+    		markers.add((ProgrammMarker) elem.createExecutableExtension("Class"));
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -66,10 +66,11 @@ public class PerformanceBuilder extends FeedbackBuilder {
     //			alla: visitMethodeDeclaration, visitMethodeCall, visitMethodeOccurence <-- the last is called in both cases
     //			the visitors params are wrappers builded automatically each time needed
     //participants.add(new HotspotsBuilderParticipant());
-	participants.add(new ProgrammMarkerParticipant(new HotspotProgrammMarker()));
-    participants.add(new ProgrammMarkerParticipant(new CriticalLoopProgrammMarker()));
-
-    return participants;
+	markers.add(new HotspotProgrammMarker());
+    markers.add(new CriticalLoopProgrammMarker());
+    markers = DependencyOrderer.order(markers, Lists.asList("CollectionSize","AvgExcecutionTime", new String[]{}));
+    
+    return markers.stream().map(m -> new ProgrammMarkerParticipant(m)).collect(Collectors.toList());
   }
 
   /**

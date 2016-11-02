@@ -50,6 +50,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.ast.ForLoopBodyVisitor
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
 
 /**
@@ -189,6 +190,11 @@ public class CriticalLoopBuilderParticipant extends AbstractFeedbackBuilderParti
       return executionTime;
     }
 
+    public static ProcedureExecutionData of(final MethodLocator loc, final Double executionTime) {
+        final String simpleClassName = loc.className.substring(loc.className.lastIndexOf(POINT) + 1);
+        return new ProcedureExecutionData(simpleClassName,loc.methodName, TimeValues.toText(executionTime, DECIMAL_PLACES));
+      }
+    
     public static ProcedureExecutionData of(final Procedure procedure, final Double executionTime) {
       final String simpleClassName = procedure.getClassName().substring(procedure.getClassName().lastIndexOf(POINT) + 1);
       return new ProcedureExecutionData(simpleClassName, procedure.getName(), TimeValues.toText(executionTime, DECIMAL_PLACES));

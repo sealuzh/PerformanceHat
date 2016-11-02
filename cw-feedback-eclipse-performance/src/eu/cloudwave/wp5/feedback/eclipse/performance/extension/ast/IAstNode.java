@@ -14,6 +14,8 @@ public interface IAstNode {
 	public MethodDeclaration getCurrentMethode();
 	public ASTNode getEclipseAstNode();
 	
+	public void attachTag(String name, Object value);
+	
 	default public List<Object> getTags(String name){
 		return Collections.emptyList();
 	}

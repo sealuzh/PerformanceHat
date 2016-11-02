@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import eu.cloudwave.wp5.common.util.Numbers;
@@ -23,7 +24,6 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.Perfo
 
 //TODO: DOES NOT WORK FIND OUT WHY
 public class CriticalLoopProgrammMarker implements ProgrammMarker{
-	
 
 	  private static final String PROCEDURE_EXECUTIONS = "procedureExecutions";
 	  private static final String AVG_TIME_PER_ITERATION = "avgTimePerIteration";
@@ -32,8 +32,15 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker{
 	  private static final String LOOP = "loop";
 	  private static final int DECIMAL_PLACES = 3;
 	  private static final String MESSAGE_PATTERN = "Critical Loop: Average Total Time is %s (Average Iterations: %s).";
-	  
-	  public static void createCriticalLoopMarker(LoopStatement loop, TemplateHandler template, double averageSize, double avgExecTimePerIteration, List<ProcedureExecutionData> procedureExecutionTimes ){
+	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
+	  static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+
+	  @Override
+	  public List<String> getRequiredTags() {
+		  	return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
+	  }
+
+	public static void createCriticalLoopMarker(LoopStatement loop, TemplateHandler template, double averageSize, double avgExecTimePerIteration, List<ProcedureExecutionData> procedureExecutionTimes ){
 		  final Double avgTotalExecTime = averageSize * avgExecTimePerIteration;
           final String avgIterationsText = new Double(Numbers.round(averageSize, DECIMAL_PLACES)).toString();
           final String avgExecTimePerIterationText = TimeValues.toText(avgExecTimePerIteration, DECIMAL_PLACES);
@@ -53,7 +60,7 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker{
 	  public static Double findNumOfIterations(LoopStatement loop, ProgrammMarkerContext context){
 		  final Optional<IAstNode> collectionSource = loop.getSourceNode();
 		  if (collectionSource.isPresent()) {
-			 List<Double> colSize = collectionSource.get().getDoubleTags("CollectionSize");
+			 List<Double> colSize = collectionSource.get().getDoubleTags(COLLECTION_SIZE_TAG);
 			 if(!colSize.isEmpty()){
 				 double averageSize = 0.0; 
 				 for(double size :colSize)averageSize+=size;

@@ -1,41 +1,51 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 
-import eu.cloudwave.wp5.common.model.Procedure;
+import com.google.common.collect.Lists;
+
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
 public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
-	public abstract Procedure createCorrelatingProcedure();
+	public abstract MethodLocator createCorrespondingMethodLocation();
 
 	public AMethodRelated(T inner, ProgrammMarkerContext ctx) {
 		super(inner, ctx);
 	}
 	
-	private List<Double> metrics = null;
+	/**
+	   * Returns an array containing the qualified names of the types of the given arguments.
+	   * 
+	   * @param methodBinding
+	   *          the {@link IMethodBinding}
+	   * @return an array containing the qualified names of the types of the given arguments
+	   */
+	  static public String[] getTargetArguments(IMethodBinding binding) {
+	    final ITypeBinding[] argumentTypes = binding.getParameterTypes();
+	    final String[] argumentNames = new String[argumentTypes.length];
+	    for (int i = 0; i < argumentTypes.length; i++) {
+	      final String argument = argumentTypes[i].getQualifiedName();
+		    final int genericBeginIndex = argument.indexOf("<");
+		    if (genericBeginIndex != -1) {
+		    	argumentNames[i] = argument.substring(0, genericBeginIndex);
+		    } else {
+		    	argumentNames[i] = argument;
+		    }
+	    }
+	    return argumentNames;
+	  }
 	
 	@Override
-	public List<Double> getDoubleTags(String name) {
-		if(name.equals("AvgExcecutionTime")){
-			if (metrics == null) {
-				Procedure prod = createCorrelatingProcedure();;
-				String[] args = prod.getArguments().toArray(new String[prod.getArguments().size()]);
-				Double measure = ctx.getFeedBackClient().avgExecTime(ctx.getProject(),prod.getClassName(),prod.getName(), args);
-				if(measure == null) return Collections.emptyList();
-				metrics = Collections.singletonList(measure);
-				
-	        }
-	        return metrics;
-		}
-		return Collections.emptyList();
-	}
-
-	@Override
 	public List<Object> getTags(String name) {
-		return getDoubleTags(name).stream().map(t -> (Object)t).collect(Collectors.toList());
+		MethodLocator loc = createCorrespondingMethodLocation();
+		List<Object> res = Lists.newArrayList();
+		res.addAll(ctx.getTagProvider().getTagsForMethod(new MethodLocator(loc.className, loc.methodName, loc.argumentTypes),name));
+		res.addAll(super.getTags(name));
+		return res;
 	}
 }

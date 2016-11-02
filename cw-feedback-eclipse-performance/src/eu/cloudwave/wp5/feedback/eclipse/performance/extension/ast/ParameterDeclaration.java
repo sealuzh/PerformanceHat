@@ -1,10 +1,10 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import eu.cloudwave.wp5.common.model.Procedure;
+import com.google.common.collect.Lists;
+
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
 public class ParameterDeclaration extends AAstNode<org.eclipse.jdt.core.dom.SingleVariableDeclaration>{
@@ -17,27 +17,14 @@ public class ParameterDeclaration extends AAstNode<org.eclipse.jdt.core.dom.Sing
 		this.method = method;
 		this.paramPos = paramPos;
 	}
-
 	
-	private List<Double> metrics = null;
-	
-	@Override
-	public List<Double> getDoubleTags(String name) {
-		if(name.equals("CollectionSize")){
-			if (metrics == null) {
-				 Procedure procedure = method.createCorrelatingProcedure();
-				 String[] arguments = procedure.getArguments().toArray(new String[procedure.getArguments().size()]);
-			     Double averageSize = ctx.getFeedBackClient().collectionSize(ctx.getProject(), procedure.getClassName(), procedure.getName(), arguments, paramPos+"");
-			     metrics = Collections.singletonList(averageSize);
-	        }
-	        return metrics;
-		}
-		return Collections.emptyList();
-	}
-
 	@Override
 	public List<Object> getTags(String name) {
-		return getDoubleTags(name).stream().map(t -> (Object)t).collect(Collectors.toList());
+		MethodLocator loc = method.createCorrespondingMethodLocation();
+		List<Object> res = Lists.newArrayList();
+		res.addAll(ctx.getTagProvider().getTagsForParam(loc,paramPos,name));
+		res.addAll(super.getTags(name));
+		return res;
 	}
 
 	//Todo: Fill these two methods

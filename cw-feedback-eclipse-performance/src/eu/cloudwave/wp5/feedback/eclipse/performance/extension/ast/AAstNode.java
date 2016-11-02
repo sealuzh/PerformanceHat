@@ -1,5 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
@@ -30,6 +31,16 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 		return ctx.getCurrentMethode();
 	}
 			
+	@Override
+	public void attachTag(String name, Object value) {
+		ctx.getTagCreator().addAstNodeTag(inner, name, value);
+	}
+
+	@Override
+	public List<Object> getTags(String name) {
+		return ctx.getTagProvider().getTagsForNode(inner, name);
+	}
+
 	@Override
 	public void markWarning(String id, FeedbackMarkerType type, String message, Map<String, Object> additionalAttributes){
 		 final FeedbackJavaFile javaFile =  ctx.getFile();
@@ -62,6 +73,7 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 		return inner.hashCode();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof AAstNode))return false;
