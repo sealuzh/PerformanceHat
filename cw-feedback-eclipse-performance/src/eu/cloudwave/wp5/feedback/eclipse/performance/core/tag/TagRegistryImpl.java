@@ -201,6 +201,7 @@ public class TagRegistryImpl implements TagRegistry{
 		@Override
 		public void clearAssosiatedTags() {
 			Set<CompositeKey> keys = keyAssoc.remove(key);
+			if(keys == null) return;
 			for(CompositeKey k: keys){
 				Map<Object,List<Object>> e = entries.get(k);
 				e.remove(key);
