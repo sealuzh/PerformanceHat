@@ -16,4 +16,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: University of Zurich, Software Evolution and Architecture Lab
-Export-Package: eu.cloudwave.wp5.feedback.eclipse.performance.core.ast.extensions
+Export-Package: eu.cloudwave.wp5.feedback.eclipse.performance.extension

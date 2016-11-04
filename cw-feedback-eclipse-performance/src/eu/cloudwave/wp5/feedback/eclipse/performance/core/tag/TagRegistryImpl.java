@@ -4,10 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
@@ -16,6 +19,9 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.Feedba
 
 public class TagRegistryImpl implements TagRegistry{
 	
+	//wow, java does and make it easy to declare ADT's I miss Haskell
+	// If you dont wnat to read all the inner classes they are (in Haskell)
+	// CompositeKey = AstNodeKey String AstNode | MethodKey String MethodLocator | ParamKey String MethodLocator int
 	private interface CompositeKey{};
 	private static final class AstNodeKey implements CompositeKey{
 		public final String tagName;
@@ -107,7 +113,8 @@ public class TagRegistryImpl implements TagRegistry{
 	}
 	
 	//For now we only accept exact matches
-	private final Map<CompositeKey,List<Object>> entries = Maps.newHashMap();
+	//Todo; needs way to remove all AstKeys (to clean up after compile)
+	private final Map<CompositeKey,Map<Object,List<Object>>> entries = Maps.newHashMap();
 	//will be needed by creator to clean old stuff where object is Datasource or the path/feedbackfile
 	private final Map<Object,Set<CompositeKey>> keyAssoc = Maps.newHashMap();
 
@@ -117,9 +124,14 @@ public class TagRegistryImpl implements TagRegistry{
 	public TagRegistryImpl(FeedbackProject project) {
 		this.project = project;
 	}
+	
+	private final List<Object> extract(CompositeKey key){
+		return entries.getOrDefault(key, Collections.emptyMap()).values().stream().flatMap(v -> v.stream()).collect(Collectors.toList());
+	}
 
 	@Override
 	public List<Object> getTagsForMethod(MethodLocator method, String tagName) {
+		//Todo: reimplement as Datasource
 		if(tagName.equals("AvgExcecutionTime")){
 				Double measure = fddClient.avgExecTime(project,method.className, method.methodName, method.argumentTypes);
 				if(measure != null)  return Collections.singletonList(measure);
@@ -127,35 +139,86 @@ public class TagRegistryImpl implements TagRegistry{
 			     Double averageSize = fddClient.collectionSize(project,method.className, method.methodName, method.argumentTypes, "");
 			     if(averageSize != null)  return Collections.singletonList(averageSize);
 		} 
-		return entries.getOrDefault(new MethodKey(tagName, method), Collections.emptyList());
+		return extract(new MethodKey(tagName, method));
 	}
 
 	@Override
 	public List<Object> getTagsForParam(MethodLocator method, int paramPosition, String tagName) {
+		//Todo: reimplement as Datasource
 		if(tagName.equals("CollectionSize")){
 		     Double averageSize = fddClient.collectionSize(project,method.className, method.methodName, method.argumentTypes, paramPosition+"");
 		     if(averageSize != null)  return Collections.singletonList(averageSize);
 		} 
-		return entries.getOrDefault(new ParamKey(tagName, method, paramPosition), Collections.emptyList());
+		return extract(new ParamKey(tagName, method, paramPosition));
 
 	}
 
 	@Override
 	public List<Object> getTagsForNode(ASTNode node, String tagName) {
-		return entries.getOrDefault(new AstNodeKey(tagName, node), Collections.emptyList());
+		return extract(new AstNodeKey(tagName, node));
+	}
+	
+	public class TagCreatorImpl implements TagCreator{
+		
+		private final Object key;
+		
+		public TagCreatorImpl(Object key) {
+			this.key = key;
+		}
+		
+		private void add(CompositeKey k, Object value){
+			keyAssoc.compute(key, (ignore , v) -> {
+				if(v == null) v = Sets.newHashSet();
+				v.add(k);
+				return v;
+			});
+			entries.compute(k, (ignore, v) -> {
+				if(v == null) v = Maps.newHashMap();
+				v.compute(key, (ignoreInner, vInner) -> {
+					if(vInner == null) vInner = Lists.newLinkedList();
+					vInner.add(value);
+					return vInner;
+				});
+				return v;
+			});
+		}
+
+		@Override
+		public void addMethodTag(MethodLocator loc, String tagName, Object tagValue) {
+			add(new MethodKey(tagName, loc), tagValue);
+		}
+
+		@Override
+		public void addParameterTag(MethodLocator loc, int paramPosition, String tagName, Object tagValue) {
+			add(new ParamKey(tagName, loc, paramPosition), tagValue);
+		}
+
+		@Override
+		public void addAstNodeTag(ASTNode node, String tagName, Object tagValue) {
+			add(new AstNodeKey(tagName, node), tagValue);			
+		}
+
+		@Override
+		public void clearAssosiatedTags() {
+			Set<CompositeKey> keys = keyAssoc.remove(key);
+			for(CompositeKey k: keys){
+				Map<Object,List<Object>> e = entries.get(k);
+				e.remove(key);
+				if(e.isEmpty()) entries.remove(k);
+			}			
+		}
+
 	}
 
 	
 	@Override
 	public TagCreator getCreatorFor(Object dataSource) {
-		// TODO just a stub to prevent null pointers
-		return new TagCreatorImpl();
+		return new TagCreatorImpl(dataSource);
 	}
 
 	@Override
 	public TagCreator getCreatorFor(FeedbackJavaFile file) {
-		// TODO just a stub to prevent null pointers
-		return new TagCreatorImpl();
+		return new TagCreatorImpl(file.getFullPath());
 	}
 
 }

@@ -197,5 +197,14 @@
          </view>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension">
+      <client
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker">
+      </client>
+      <client
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.CriticalLoopProgrammMarker">
+      </client>
+   </extension>
 
 </plugin>

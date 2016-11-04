@@ -43,31 +43,21 @@ public class PerformanceBuilder extends FeedbackBuilder {
    */
   @Override
   protected List<FeedbackBuilderParticipant> getParticipants() {
+	  
+	//Todo: cache???  
+	  
     List<ProgrammMarker> markers  = Lists.newArrayList();
     
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     
     for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.MARKER)){
     	try {
-    		markers.add((ProgrammMarker) elem.createExecutableExtension("Class"));
+    		markers.add((ProgrammMarker) elem.createExecutableExtension("class"));
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
     }
-    
-    //Todo: Make These Dynamically
-    //Todo: Make new AstVisiter whiches wrappes the AstNodes when requested
-    //Todo:   Lazy inject Performance Metricy from Datasources if requested
-    //Todo:   Allow Helper
-    //Todo:  Call ProgrammMarkerVisitor
-    //Todo:   MakeStatePattern where a Subvisitor can be returned to process childs
-    //Todo:   Stuff like file etc... is in BuilderContext which is passed down, the helpers are also their
-    //Todo:   Think about Hierarchical Visitor
-    //			alla: visitMethodeDeclaration, visitMethodeCall, visitMethodeOccurence <-- the last is called in both cases
-    //			the visitors params are wrappers builded automatically each time needed
-    //participants.add(new HotspotsBuilderParticipant());
-	markers.add(new HotspotProgrammMarker());
-    markers.add(new CriticalLoopProgrammMarker());
+   
     markers = DependencyOrderer.order(markers, Lists.asList("CollectionSize","AvgExcecutionTime", new String[]{}));
     
     return markers.stream().map(m -> new ProgrammMarkerParticipant(m)).collect(Collectors.toList());
