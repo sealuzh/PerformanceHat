@@ -59,23 +59,29 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
      * 
      * @return the start position (in the respective Java file) of the wrapped object.
      */
-	  protected abstract int getStartPosition();
+	protected int getStartPosition() {
+		return inner.getStartPosition();
+	}
 
 	  /**
 	   * Returns the end position (in the respective Java file) of the wrapped object.
 	   * 
 	   * @return the end position (in the respective Java file) of the wrapped object.
 	   */
-	  protected abstract int getEndPosition();
+	protected int getEndPosition() {
+		return getStartPosition()+inner.getLength();
+	}
 
 	@Override
-	public int hashCode() {
+	public final int hashCode() {
 		return inner.hashCode();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean equals(Object obj) {
+	//Equality means represent same node and not same representation
+	//Theoretically an own seperate quality would be better but then custom hash sets would be needed
+	public final boolean equals(Object obj) {
 		if(!(obj instanceof AAstNode))return false;
 		return inner.equals(((AAstNode)obj).inner);
 	}

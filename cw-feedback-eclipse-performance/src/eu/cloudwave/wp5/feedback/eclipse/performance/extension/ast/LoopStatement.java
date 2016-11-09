@@ -16,5 +16,5 @@ public interface LoopStatement extends IAstNode{
 	   */
 	  public Optional<IAstNode> getSourceNode();
 
-	  public List<Expression> getInitExpressions();
+	  public List<IAstNode> getInitNodes();
 }

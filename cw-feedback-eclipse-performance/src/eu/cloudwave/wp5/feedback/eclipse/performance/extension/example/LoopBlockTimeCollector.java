@@ -1,43 +1,36 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
-import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProcedureExecutionData;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Expression;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.LoopStatement;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 
+//todo: do we need seperate class for this (or would inner class do)
+//todo: if we keep make CTR private and use static methode calling the skip thing
 class LoopBlockTimeCollector extends BlockTimeCollector{
 	
 	private final double avgSize;
-    private final List<Expression> headerExprs; //ether the foreach source or the initializer
+    private final Set<IAstNode> headerExprs; //ether the foreach source or the initializer
     private final LoopStatement loop;
     
 	LoopBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, ProgrammMarkerContext context, double avgSize, LoopStatement loop) {
 		super(parent, callback, context);
 		this.avgSize = avgSize;
-		this.headerExprs = loop.getInitExpressions();
+		this.headerExprs = Sets.newHashSet(loop.getInitNodes());
 		this.loop = loop;
 	}
 	
 	public LoopBlockTimeCollector(BlockTimeCollectorCallback callback, ProgrammMarkerContext context, double avgSize, LoopStatement loop) {
 		this(null, callback, context, avgSize, loop);
 	}
-
-	//todo:add the other expressions + add the count once stuff
 	
 	@Override
-	public ProgrammMarkerVisitor visit(Expression expr) {
-		if(headerExprs.contains(expr)) return SKIP_CHILDS; 	//Todo: latter add to some count once
-		return super.visit(expr);
-	}
-
-	@Override
-	public ProgrammMarkerVisitor visit(Invocation invocation) {
-		if(headerExprs.contains(invocation)) return SKIP_CHILDS; 	//Todo: latter add to some count once
-		return super.visit(invocation);
+	public boolean shouldVisitNode(IAstNode node) {
+		return !headerExprs.contains(node);
 	}
 
 	@Override

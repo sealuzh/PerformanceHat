@@ -14,18 +14,6 @@ public class ForStatement extends AAstNode<org.eclipse.jdt.core.dom.ForStatement
 	}
 
 	@Override
-	protected int getStartPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	protected int getEndPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public Optional<IAstNode> getSourceNode() {
 		//todo check if theire is 0 -> x.length/x.size, then return x.length
 		//todo: Ev Create IterationDescriptor, start, step, end (each can be int or length of(AstNode)
@@ -33,10 +21,10 @@ public class ForStatement extends AAstNode<org.eclipse.jdt.core.dom.ForStatement
 	}
 
 	@Override
-	public List<Expression> getInitExpressions() {
+	public List<IAstNode> getInitNodes() {
 		@SuppressWarnings("unchecked")
 		List<org.eclipse.jdt.core.dom.Expression> exprs = inner.initializers();
-		return exprs.stream().map(e -> Expression.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
+		return exprs.stream().map(e -> IAstNode.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
 	}
 
 	

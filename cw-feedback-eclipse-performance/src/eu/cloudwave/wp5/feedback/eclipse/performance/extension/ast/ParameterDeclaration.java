@@ -25,17 +25,5 @@ public class ParameterDeclaration extends AAstNode<org.eclipse.jdt.core.dom.Sing
 		res.addAll(ctx.getTagProvider().getTagsForParam(loc,paramPos,name));
 		res.addAll(super.getTags(name));
 		return res;
-	}
-
-	//Todo: Fill these two methods
-	@Override
-	protected int getStartPosition() {
-		return 0;
-	}
-
-	@Override
-	protected int getEndPosition() {
-		return 0;
-	}
-
+	}	
 }

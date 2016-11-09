@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
+//Note: equality is based on the node it represents and not how te node is represented
 public interface IAstNode {
 	
 	public MethodDeclaration getCurrentMethode();
@@ -35,5 +37,15 @@ public interface IAstNode {
 	}
 	
 	public void markWarning(String id, FeedbackMarkerType type, String message, Map<String, Object> additionalAttributes);
+
+	static class NodeWrapper extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
+		public NodeWrapper(org.eclipse.jdt.core.dom.ASTNode inner, ProgrammMarkerContext ctx) {
+			super(inner, ctx);
+		}
+	}
+	
+	public static IAstNode fromEclipseAstNode(org.eclipse.jdt.core.dom.ASTNode expr, ProgrammMarkerContext ctx){
+		return new NodeWrapper(expr, ctx);
+	}
 
 }

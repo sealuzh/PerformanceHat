@@ -143,8 +143,8 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 
 
 	@Override
-	public List<Expression> getInitExpressions() {
-		return Collections.singletonList(Expression.fromEclipseAstNode(inner.getExpression(),ctx));
+	public List<IAstNode> getInitNodes() {
+		return Collections.singletonList(IAstNode.fromEclipseAstNode(inner.getExpression(),ctx));
 	}
 
 	  

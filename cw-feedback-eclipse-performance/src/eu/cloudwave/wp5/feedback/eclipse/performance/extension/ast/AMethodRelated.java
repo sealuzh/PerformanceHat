@@ -13,10 +13,18 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerCon
 
 public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	public abstract MethodLocator createCorrespondingMethodLocation();
-
-	public AMethodRelated(T inner, ProgrammMarkerContext ctx) {
-		super(inner, ctx);
+	public enum CallType{
+	  CTR_NEW, METHOD, CTR_DELEGATE, CTR_SUPER, METHOD_SUPER, DECLARATION
 	}
+
+	public final CallType callType; 
+	
+	public AMethodRelated(T inner,CallType callType, ProgrammMarkerContext ctx) {
+		super(inner, ctx);
+		this.callType = callType;
+	}
+	
+	//Todo: add Inner Fetcher for Method, CTR,..... with cast
 	
 	/**
 	   * Returns an array containing the qualified names of the types of the given arguments.

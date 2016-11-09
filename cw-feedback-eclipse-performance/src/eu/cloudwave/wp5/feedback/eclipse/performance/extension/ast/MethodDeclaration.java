@@ -8,7 +8,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerCon
 public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
 	
 	 public MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, ProgrammMarkerContext ctx) {
-		super(methodDeclaration,ctx);
+		super(methodDeclaration, AMethodRelated.CallType.DECLARATION,ctx);
 	 }
 		
 		 @Override
