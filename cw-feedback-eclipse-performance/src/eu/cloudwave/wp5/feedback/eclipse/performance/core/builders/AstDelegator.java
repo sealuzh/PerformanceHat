@@ -53,8 +53,8 @@ public class AstDelegator extends ASTVisitor  {
 	 }
 	 
 	 private boolean handleVisitStart(IAstNode node){
-//			ProgrammMarkerVisitor subst = getCurrent().getOptionalSubstitution(node);
-//			pushChildVisitor(subst);
+			ProgrammMarkerVisitor subst = getCurrent().concreteBranchVisitor(node);
+			pushChildVisitor(subst);
 			return getCurrent().shouldVisitNode(node);
 	 }
 

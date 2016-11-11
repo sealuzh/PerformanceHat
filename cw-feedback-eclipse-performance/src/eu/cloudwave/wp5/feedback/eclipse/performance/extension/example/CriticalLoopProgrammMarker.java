@@ -11,12 +11,13 @@ import eu.cloudwave.wp5.common.util.TimeValues;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProcedureExecutionData;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.LoopStatement;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.AvgTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.DataAvgTimeNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
 
@@ -38,8 +39,8 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker, BlockTimeColl
 		  	return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
 	  }
 
-	public static void createCriticalLoopMarker(LoopStatement loop, TemplateHandler template, double averageSize, double avgExecTimePerIteration, List<ProcedureExecutionData> procedureExecutionTimes ){
-		  final Double avgTotalExecTime = averageSize * avgExecTimePerIteration;
+	public static void createCriticalLoopMarker(LoopStatement loop, TemplateHandler template, double averageSize, double avgExecTimePerIteration, double avgHeaderExcecutionTime,  AvgTimeNode procedureExecutionSummary ){
+		  final Double avgTotalExecTime = avgHeaderExcecutionTime +(averageSize * avgExecTimePerIteration);
           final String avgIterationsText = new Double(Numbers.round(averageSize, DECIMAL_PLACES)).toString();
           final String avgExecTimePerIterationText = TimeValues.toText(avgExecTimePerIteration, DECIMAL_PLACES);
           final String avgTotalExecTimeText = TimeValues.toText(avgTotalExecTime, DECIMAL_PLACES);
@@ -48,7 +49,7 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker, BlockTimeColl
           context.put(AVG_TOTAL, avgTotalExecTimeText);
           context.put(AVG_INTERATIONS, avgIterationsText);
           context.put(AVG_TIME_PER_ITERATION, avgExecTimePerIterationText);
-          context.put(PROCEDURE_EXECUTIONS,procedureExecutionTimes);
+          context.put(PROCEDURE_EXECUTIONS,procedureExecutionSummary);
           final String desc = template.getContent(LOOP, context);
           final Map<String, Object> additionalAttributes = Maps.newHashMap();
 		  additionalAttributes.put(MarkerAttributes.DESCRIPTION, desc);
@@ -71,13 +72,24 @@ public class CriticalLoopProgrammMarker implements ProgrammMarker, BlockTimeColl
 		  };
 	}
 
-	@Override
-	public ProcedureExecutionData loopBlockMeasured(double avgExecTimePerIteration, double avgSize, List<ProcedureExecutionData> procedureExecutionTimes, LoopStatement loop, ProgrammMarkerContext context) {
-		final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-		if (avgExecTimePerIteration >= threshold) CriticalLoopProgrammMarker.createCriticalLoopMarker(loop,context.getTemplateHandler(),avgSize,avgExecTimePerIteration,procedureExecutionTimes);
-		return null;
-	}
-
-	
 	  
+	  
+	@Override
+	public AvgTimeNode loopBlockMeasured(double avgExecTimePerIter, double avgIters,
+			List<AvgTimeNode> bodyProcedureExecutionTimes, double avgHeaderExcecutionTime,
+			List<AvgTimeNode> headerProcedureExecutionTimes, LoopStatement loop,
+			ProgrammMarkerContext context) {
+		
+		final double bodyT = (avgExecTimePerIter*avgIters);
+		final double totalT = avgHeaderExcecutionTime+bodyT;
+
+		final AvgTimeNode headerN = new DataAvgTimeNode("loop header", avgHeaderExcecutionTime/1000, headerProcedureExecutionTimes);
+		final AvgTimeNode bodyN = new DataAvgTimeNode("loop body("+(int)avgIters+"x)", bodyT/1000, bodyProcedureExecutionTimes);		
+		final AvgTimeNode loopN = new DataAvgTimeNode("loop", totalT/1000, headerN, bodyN);
+		
+		final double total = avgHeaderExcecutionTime+(avgExecTimePerIter*avgIters);
+		final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
+		if (total >= threshold) CriticalLoopProgrammMarker.createCriticalLoopMarker(loop,context.getTemplateHandler(),avgIters,avgExecTimePerIter, avgHeaderExcecutionTime, loopN);
+		return loopN;
+	}	  
 }

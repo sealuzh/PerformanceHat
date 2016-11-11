@@ -1,10 +1,5 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor;
 
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.Sets;
-
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Block;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.CatchClause;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ConstructorInvocation;
@@ -22,7 +17,8 @@ public abstract class ProgrammMarkerVisitor {
 
 	public boolean shouldVisitChilds(){return true;};
 	public boolean shouldVisitNode(IAstNode node){return true;};
-	//public ProgrammMarkerVisitor getOptionalSubstitution(ASTNode node){return null;};
+	//todo: needs better name
+	public ProgrammMarkerVisitor concreteBranchVisitor(IAstNode node){return null;};
 	
 	protected ProgrammMarkerVisitor CONTINUE = this;
 	protected static ProgrammMarkerVisitor SKIP_CHILDS = new ProgrammMarkerVisitor() {
@@ -50,7 +46,5 @@ public abstract class ProgrammMarkerVisitor {
 
 	
 	public void finish(){}
-	
-	
 
 }
