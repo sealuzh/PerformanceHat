@@ -3,13 +3,15 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.google.common.base.Optional;
 
@@ -20,104 +22,108 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	public For(org.eclipse.jdt.core.dom.ForStatement forStatement, ProgrammMarkerContext ctx) {
 		super(forStatement,ctx);
 	}
+	
+	@Override
+	protected int getStartPosition() {
+		return inner.getStartPosition()+3;
+	}
 
-	boolean hasRange = false;
+	@Override
+	protected int getEndPosition() {
+          return inner.getBody().getStartPosition();
+	}
+
 	boolean hasSource = false;
 	boolean isInited = false;
-	int startIncl = 0;
-	int endExcl = 0;
-	int step = 0;
+	int iters = -1;
 	
 	//Complex, but its java, in scala would be so nicer even in kotlin
-	//Does not work yet
 	public void analyze(){
 		if(isInited) return;
 		isInited = true;
 		
-		List<org.eclipse.jdt.core.dom.Expression> inits = inner.initializers();
-		List<org.eclipse.jdt.core.dom.Expression> updaters = inner.updaters();
+		@SuppressWarnings("unchecked")
+		List<Expression> inits = inner.initializers();
+		@SuppressWarnings("unchecked")
+		List<Expression> updaters = inner.updaters();
 
 		if(inits.size() != 1 || updaters.size() != 1) return;
 		if(!(inits.get(0) instanceof VariableDeclarationExpression)) return;
-		List<org.eclipse.jdt.core.dom.VariableDeclarationFragment> frags = ((org.eclipse.jdt.core.dom.VariableDeclarationExpression)inits.get(0)).fragments();
+		@SuppressWarnings("unchecked")
+		List<VariableDeclarationFragment> frags = ((VariableDeclarationExpression)inits.get(0)).fragments();
 		if(frags.size() != 1) return;
-		org.eclipse.jdt.core.dom.VariableDeclarationFragment frag = frags.get(0);
+		VariableDeclarationFragment frag = frags.get(0);
 		
-		org.eclipse.jdt.core.dom.SimpleName updName = null;
-		org.eclipse.jdt.core.dom.Expression update = updaters.get(0);
-		if(update instanceof org.eclipse.jdt.core.dom.PostfixExpression){
-			org.eclipse.jdt.core.dom.PostfixExpression pf = (org.eclipse.jdt.core.dom.PostfixExpression)update;
+		String updName = null;
+		Expression update = updaters.get(0);
+		int step= 0;
+		if(update instanceof PostfixExpression){
+			PostfixExpression pf = (PostfixExpression)update;
 			if(pf.getOperator() == PostfixExpression.Operator.INCREMENT)step = 1;
 			else if(pf.getOperator() == PostfixExpression.Operator.DECREMENT)step = -1;
-			if(pf.getOperand() instanceof org.eclipse.jdt.core.dom.SimpleName) updName = (org.eclipse.jdt.core.dom.SimpleName)pf.getOperand();
-		} else if(update instanceof org.eclipse.jdt.core.dom.PrefixExpression){
-			org.eclipse.jdt.core.dom.PrefixExpression pf = (org.eclipse.jdt.core.dom.PrefixExpression)update;
+			if(pf.getOperand() instanceof SimpleName) updName = ((SimpleName)pf.getOperand()).getIdentifier();
+		} else if(update instanceof PrefixExpression){
+			PrefixExpression pf = (PrefixExpression)update;
 			if(pf.getOperator() == PrefixExpression.Operator.INCREMENT)step = 1;
 			else if(pf.getOperator() == PrefixExpression.Operator.DECREMENT)step = -1;
-			if(pf.getOperand() instanceof org.eclipse.jdt.core.dom.SimpleName) updName = (org.eclipse.jdt.core.dom.SimpleName)pf.getOperand();
-		} else if(update instanceof org.eclipse.jdt.core.dom.Assignment){
-			org.eclipse.jdt.core.dom.Assignment as = (org.eclipse.jdt.core.dom.Assignment)update;
-			if(as.getRightHandSide() instanceof org.eclipse.jdt.core.dom.NumberLiteral){
-				String token = ((org.eclipse.jdt.core.dom.NumberLiteral)as.getRightHandSide()).getToken(); //find
+			if(pf.getOperand() instanceof SimpleName) updName = ((SimpleName)pf.getOperand()).getIdentifier();
+		} else if(update instanceof Assignment){
+			Assignment as = (Assignment)update;
+			if(as.getRightHandSide() instanceof NumberLiteral){
+				String token = ((NumberLiteral)as.getRightHandSide()).getToken(); //find
 				try{
 					int diff = Integer.parseInt(token);
 					if(as.getOperator() == Assignment.Operator.PLUS_ASSIGN)step = diff;
 					else if(as.getOperator() == Assignment.Operator.MINUS_ASSIGN)step = -diff;
-					if(as.getLeftHandSide() instanceof org.eclipse.jdt.core.dom.SimpleName) updName = (org.eclipse.jdt.core.dom.SimpleName)as.getLeftHandSide();
+					if(as.getLeftHandSide() instanceof SimpleName) updName = ((SimpleName)as.getLeftHandSide()).getIdentifier();
 				} catch (NumberFormatException e){ }	
 			} 
 		}
 		
-		if(step == 0 || updName == null || !updName.getIdentifier().equals(frag.getName().getIdentifier())) return;
+		if(step == 0 || updName == null || !updName.equals(frag.getName().getIdentifier())) return;
 		
-		org.eclipse.jdt.core.dom.Expression init = frag.getInitializer();
-		if(init instanceof org.eclipse.jdt.core.dom.NumberLiteral){
-			org.eclipse.jdt.core.dom.NumberLiteral initNum = (org.eclipse.jdt.core.dom.NumberLiteral)init;
+		Expression init = frag.getInitializer();
+		if(init instanceof NumberLiteral){
+			NumberLiteral initNum = (NumberLiteral)init;
 			try{
-				startIncl = Integer.parseInt(initNum.getToken());
-				org.eclipse.jdt.core.dom.Expression condition = inner.getExpression();
-				if(condition instanceof org.eclipse.jdt.core.dom.InfixExpression){
-					org.eclipse.jdt.core.dom.InfixExpression infix = (org.eclipse.jdt.core.dom.InfixExpression)condition;
+				int startIncl = Integer.parseInt(initNum.getToken());
+				Expression condition = inner.getExpression();
+				if(condition instanceof InfixExpression){
+					InfixExpression infix = (InfixExpression)condition;
 					boolean leftId = true;
-					org.eclipse.jdt.core.dom.Expression bound;
-					if(infix.getLeftOperand() instanceof org.eclipse.jdt.core.dom.SimpleName){
-						if(!(((org.eclipse.jdt.core.dom.SimpleName)infix.getLeftOperand()).getIdentifier().equals(updName))) return;
+					Expression bound;
+					if(infix.getLeftOperand() instanceof SimpleName){
+						if(!(((SimpleName)infix.getLeftOperand()).getIdentifier().equals(updName))) return;
 						bound = infix.getRightOperand();
-					} else if(infix.getRightOperand() instanceof org.eclipse.jdt.core.dom.SimpleName){
-						if(!(((org.eclipse.jdt.core.dom.SimpleName)infix.getRightOperand()).getIdentifier().equals(updName))) return;
+					} else if(infix.getRightOperand() instanceof SimpleName){
+						if(!(((SimpleName)infix.getRightOperand()).getIdentifier().equals(updName))) return;
 						leftId = false;
 						bound = infix.getLeftOperand();
 					} else {
 						return;
 					}
 					
-					if(bound instanceof org.eclipse.jdt.core.dom.NumberLiteral){
-						endExcl = Integer.parseInt(((org.eclipse.jdt.core.dom.NumberLiteral)bound).getToken());
-						//we do not analyse this infinite or zero cases
-						if(startIncl <= endExcl){
-							if(step <= 0)return;
-							//expect < or <=
-							if((leftId && infix.getOperator() == InfixExpression.Operator.LESS_EQUALS) || (!leftId && infix.getOperator() == InfixExpression.Operator.GREATER_EQUALS)){
-								endExcl++; //we use exclusive end
-							} else if((leftId && infix.getOperator() != InfixExpression.Operator.LESS) || (!leftId && infix.getOperator() != InfixExpression.Operator.GREATER)){
-								return;
-							}
-							hasRange = true;
-						} else if(startIncl >= endExcl){
-							if(step >= 0)return;
-							//expect > or >=
-							if((leftId && infix.getOperator() == InfixExpression.Operator.GREATER_EQUALS) || (!leftId && infix.getOperator() == InfixExpression.Operator.LESS_EQUALS)){
-								endExcl++; //we use exclusive end
-							} else if((leftId && infix.getOperator() != InfixExpression.Operator.GREATER) || (!leftId && infix.getOperator() != InfixExpression.Operator.LESS)){
-								return;
-							}
-							hasRange = true;
+					if(bound instanceof NumberLiteral){
+						int endExcl = Integer.parseInt(((NumberLiteral)bound).getToken());
+						boolean pased = false;
+						boolean greater = true;
+						if(infix.getOperator() == InfixExpression.Operator.LESS_EQUALS || infix.getOperator() == InfixExpression.Operator.GREATER_EQUALS){
+							endExcl++;
+							pased = true;
+							if(infix.getOperator() == InfixExpression.Operator.LESS_EQUALS)greater = false;
+						} else if(infix.getOperator() == InfixExpression.Operator.LESS || infix.getOperator() == InfixExpression.Operator.GREATER){
+							pased = true;
+							if(infix.getOperator() == InfixExpression.Operator.LESS)greater = false;
 						}
+						if(!pased) return;
+						if(!leftId) greater = !greater;
+						//we do not analyse this infinite or zero cases
+						if(startIncl < endExcl && (step < 0 || greater)) return;
+						if(startIncl > endExcl && (step > 0 || !greater)) return;
+						iters = (endExcl - startIncl)/step;
 						return;
 					}
 				}
-				if(true)throw new AssertionFailedException(""+condition.getClass());
-
 			} catch (NumberFormatException e){ 
 				return;
 			}	
@@ -132,8 +138,8 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	@Override
 	public Optional<Integer> getIterations() {
 		analyze();
-		if(!hasRange) return Optional.absent();
-		return Optional.of((endExcl - startIncl)/step);
+		if(iters < 0) return Optional.absent();
+		return Optional.of(iters);
 	}
 
 	@Override
