@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.dom.*;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.LoopStatement;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodOccurence;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 
@@ -53,7 +53,7 @@ public class AstDelegator extends ASTVisitor  {
 	 }
 	 
 	 private boolean handleVisitStart(IAstNode node){
-			ProgrammMarkerVisitor subst = getCurrent().concreteBranchVisitor(node);
+			ProgrammMarkerVisitor subst = getCurrent().concreteNodeVisitor(node);
 			pushChildVisitor(subst);
 			return getCurrent().shouldVisitNode(node);
 	 }
@@ -63,6 +63,12 @@ public class AstDelegator extends ASTVisitor  {
 		 return getCurrent().shouldVisitChilds();
 	 }
 	
+	 private boolean defaultVisit(final ASTNode node){
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode decl = IAstNode.fromEclipseAstNode(node, context);
+		 if(!handleVisitStart(decl)) return false;
+		 return handleVisitReturn(null);
+	 }
+	 
 	 //Todo: lambdafy visiors
 	 
 	 @Override
@@ -92,7 +98,8 @@ public class AstDelegator extends ASTVisitor  {
     		}
     		count++;
     	 }
-    	 return handleVisitReturn((ProgrammMarkerVisitor)null);
+    	 
+    	 return defaultVisit(node);
 
 	}
 
@@ -105,7 +112,6 @@ public class AstDelegator extends ASTVisitor  {
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
      }
-
    
      @Override
      public boolean visit(final SuperMethodInvocation methodInvocation) {
@@ -149,19 +155,19 @@ public class AstDelegator extends ASTVisitor  {
      
      @Override
      public boolean visit(final EnhancedForStatement foreachStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForEachStatement decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForEachStatement(foreachStatement,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForEach decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForEach(foreachStatement,context);
 		 if(!handleVisitStart(decl)) return false;
     	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((LoopStatement)decl);
+    	 if(m == null) m = getCurrent().visit((Loop)decl);
 		 return handleVisitReturn(m);
      }
 
      @Override
      public boolean visit(final ForStatement forStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForStatement decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForStatement(forStatement,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.For decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.For(forStatement,context);
 		 if(!handleVisitStart(decl)) return false;
     	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((LoopStatement)decl);
+    	 if(m == null) m = getCurrent().visit((Loop)decl);
 		 return handleVisitReturn(m);
      }    
      
@@ -180,56 +186,476 @@ public class AstDelegator extends ASTVisitor  {
 		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
-
-	/* Todo: Merge with Branch
+	
+	
 	@Override
-	public void endVisit(ConditionalExpression node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
+	public boolean visit(IfStatement ifNode) {
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching(ifNode,context);
+		 if(!handleVisitStart(decl)) return false;
+		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 return handleVisitReturn(m);
 	}
-	*/
+	
+	@Override
+	public boolean visit(ConditionalExpression condNode) {
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching(condNode,context);
+		 if(!handleVisitStart(decl)) return false;
+		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 return handleVisitReturn(m);
+	}
 
 	
+	@Override
+	public boolean visit(SwitchStatement switchNode) {
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching(switchNode,context);
+		 if(!handleVisitStart(decl)) return false;
+		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 return handleVisitReturn(m);
+	}
+
+	@Override
+	public boolean visit(TryStatement tryNode) {
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Try decl = new eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Try(tryNode,context);
+		 if(!handleVisitStart(decl)) return false;
+		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 return handleVisitReturn(m);
+	}
+	
+	//Note: nothing special todo: weprocess but do not gen a hook
+	@Override
+	public boolean visit(SwitchCase node) {
+		return defaultVisit(node);
+	}
 
 	//Note: to remember whats still open
 	@Override
-	public void endVisit(DoStatement node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
+	public boolean visit(DoStatement node) {
+		return defaultVisit(node);
+	}
+
+
+	@Override
+	public boolean visit(WhileStatement node) {
+		return defaultVisit(node);
+	}
+
+	//Better Save then Sorry
+	//Makes sure, that even if we do not have special impl at least equals works in cases someone gens it over IAstNode
+	@Override
+	public boolean visit(AnnotationTypeDeclaration node) {
+		return defaultVisit(node);
 	}
 
 	@Override
-	public void endVisit(IfStatement node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
+	public boolean visit(AnnotationTypeMemberDeclaration node) {
+		return defaultVisit(node);
 	}
+
+	@Override
+	public boolean visit(AnonymousClassDeclaration node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayAccess node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayCreation node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayInitializer node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ArrayType node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(AssertStatement node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(Assignment node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(BlockComment node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(BooleanLiteral node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(BreakStatement node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(CastExpression node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(CharacterLiteral node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(CompilationUnit node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ContinueStatement node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(CreationReference node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(Dimension node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(EmptyStatement node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(EnumConstantDeclaration node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(EnumDeclaration node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ExpressionMethodReference node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ExpressionStatement node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(FieldAccess node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(FieldDeclaration node) {
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ImportDeclaration node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(InfixExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(Initializer node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(InstanceofExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(IntersectionType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(Javadoc node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(LabeledStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(LambdaExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(MarkerAnnotation node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(MemberRef node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(MemberValuePair node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(MethodRef node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(MethodRefParameter node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(Modifier node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(NameQualifiedType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(NormalAnnotation node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(NullLiteral node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(NumberLiteral node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(PackageDeclaration node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ParameterizedType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ParenthesizedExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(PostfixExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(PrefixExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(PrimitiveType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(QualifiedName node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(QualifiedType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ReturnStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SimpleName node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SimpleType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SingleMemberAnnotation node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(StringLiteral node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SuperFieldAccess node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SuperMethodReference node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(SynchronizedStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TagElement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TextElement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ThisExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(ThrowStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TypeDeclaration node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TypeDeclarationStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TypeLiteral node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TypeMethodReference node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(TypeParameter node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(UnionType node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(VariableDeclarationExpression node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(VariableDeclarationStatement node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(VariableDeclarationFragment node) {
+		
+		return defaultVisit(node);
+	}
+
+	@Override
+	public boolean visit(WildcardType node) {
+		
+		return defaultVisit(node);
+	}
+
 
 	
-	@Override
-	public void endVisit(SwitchCase node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
-	}
-
-	@Override
-	public void endVisit(SwitchStatement node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
-	}
-
-	@Override
-	public void endVisit(TryStatement node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
-	}
-
-	@Override
-	public void endVisit(WhileStatement node) {
-		// TODO Auto-generated method stub
-		super.endVisit(node);
-	}
-
- 
      
 }
 

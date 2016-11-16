@@ -7,44 +7,41 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockTimeCollectorCallback.ExecutionStats;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.AvgTimeNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 
 //todo: do we need seperate class for this (or would inner class do)
 //todo: if we keep make CTR private and use static methode calling the skip thing
-class LoopBlockTimeCollector extends BlockTimeCollector{
-	
-    private final Set<IAstNode> headerExprs; //ether the foreach source or the initializer
-    private final Loop loop;
-    private final List<AvgTimeNode> headerTimeStats = Lists.newArrayList();
-	protected double headerAvgExcecutionTime = 0.0;
+class BranchBlockTimeCollector extends BlockTimeCollector{
+	private final List<ExecutionStats> stats = Lists.newArrayList();
+    private final Set<IAstNode> branchStarts; //ether the foreach source or the initializer
+    private final Branching branch;
 
-	LoopBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, ProgrammMarkerContext context, Loop loop) {
+	BranchBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, ProgrammMarkerContext context, Branching branch) {
 		super(parent, callback, context);
-		this.headerExprs = Sets.newHashSet(loop.getInitNodes());
-		this.loop = loop;
+		this.branchStarts = Sets.newHashSet(branch.getBranches());
+		this.branch = branch;
 	}
 	
 	@Override
 	public ProgrammMarkerVisitor concreteNodeVisitor(IAstNode node) {
-		if(headerExprs.contains(node)){
+		if(branchStarts.contains(node)){
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {
-					headerAvgExcecutionTime+=avgExcecutionTime;
-					headerTimeStats.addAll(excecutionTimeStats);				
+					stats.add(new ExecutionStats(avgExcecutionTime,excecutionTimeStats));			
 				}	
 			};
 		}
 		return null;
-	}	
+	}
 	
 	@Override
 	public AvgTimeNode generateResults() {
-		return callback.loopMeasured(new ExecutionStats(avgExcecutionTime, excecutionTimeStats), new ExecutionStats(headerAvgExcecutionTime, headerTimeStats), loop, context);
+		return callback.branchMeasured(new ExecutionStats(avgExcecutionTime, excecutionTimeStats), stats, branch, context);
 	}
-	
+
   }

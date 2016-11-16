@@ -44,8 +44,10 @@ public interface IAstNode {
 		}
 	}
 	
-	public static IAstNode fromEclipseAstNode(org.eclipse.jdt.core.dom.ASTNode expr, ProgrammMarkerContext ctx){
-		return new NodeWrapper(expr, ctx);
+	//todo: Make static Factory Class
+	public static IAstNode fromEclipseAstNode(org.eclipse.jdt.core.dom.ASTNode node, ProgrammMarkerContext ctx){
+		//todo: make giant switch and create correct if exists
+		return new NodeWrapper(node, ctx);
 	}
 
 }

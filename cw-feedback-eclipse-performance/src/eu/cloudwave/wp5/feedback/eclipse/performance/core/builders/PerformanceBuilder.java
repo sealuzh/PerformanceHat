@@ -33,7 +33,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProgrammMarkerParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.CriticalLoopProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker;
 
 public class PerformanceBuilder extends FeedbackBuilder {

@@ -15,9 +15,9 @@ import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 
-public class ForEachStatement extends AAstNode<EnhancedForStatement> implements LoopStatement{
+public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 		
-	public ForEachStatement(EnhancedForStatement foreachStatement,ProgrammMarkerContext ctx) {
+	public ForEach(EnhancedForStatement foreachStatement,ProgrammMarkerContext ctx) {
 		super(foreachStatement,ctx);
 	}
 
@@ -30,6 +30,11 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 	protected int getEndPosition() {
 		  final org.eclipse.jdt.core.dom.Expression expression = inner.getExpression();
           return expression.getStartPosition() + expression.getLength();
+	}
+
+	@Override
+	public Optional<Integer> getIterations() {
+		return Optional.absent();
 	}
 
 	/**
@@ -145,6 +150,11 @@ public class ForEachStatement extends AAstNode<EnhancedForStatement> implements 
 	@Override
 	public List<IAstNode> getInitNodes() {
 		return Collections.singletonList(IAstNode.fromEclipseAstNode(inner.getExpression(),ctx));
+	}
+
+	@Override
+	public IAstNode getBody() {
+		return IAstNode.fromEclipseAstNode(inner.getBody(), ctx);
 	}
 
 	  

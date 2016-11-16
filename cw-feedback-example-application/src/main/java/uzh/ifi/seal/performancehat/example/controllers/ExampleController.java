@@ -21,21 +21,26 @@ public class ExampleController {
 	
     @RequestMapping("/users")
     public String greeting(Model model) {
-		//4811 = 687*7
     	for(String u3: getUserInfo()){
-    		//687 = 98*7
 	    	for(String u: getUserInfo()){
-	        	//98 = 14*7
 	    		for(String u2: getUserInfo()){
-	    			getUserInfo();
+	    			if(true){
+		    			getUserInfo();	    				
+	    			} else {
+		    			getUserInfo();	    					    				
+	    			}
 	        	}
 	    	}
     	}
-   
-    	//196 = 28*7
-    	for(String u2: getUserInfo()){
-      		getUserInfo();
-    		getUserInfo();
+  
+      	for(String u2: getUserInfo()){
+    		try{
+          		getUserInfo();
+    		} catch(Exception e){
+        		getUserInfo();
+    		} finally{
+        		getUserInfo();
+    		}
     	}
     	
     	List<String> userList = getUserInfo();

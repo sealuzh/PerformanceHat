@@ -203,7 +203,7 @@
             class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker">
       </client>
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.CriticalLoopProgrammMarker">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionProgrammMarker">
       </client>
    </extension>
 

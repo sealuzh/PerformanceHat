@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-public interface LoopStatement extends IAstNode{
+public interface Loop extends IAstNode{
 	
 	
 	/**
@@ -15,6 +15,10 @@ public interface LoopStatement extends IAstNode{
 	   * @return
 	   */
 	  public Optional<IAstNode> getSourceNode();
+	  
+	  public Optional<Integer> getIterations();
 
 	  public List<IAstNode> getInitNodes();
+	  
+	  public IAstNode getBody();
 }
