@@ -107,7 +107,9 @@ public class BlockPredictionProgrammMarker implements ProgrammMarker, BlockTimeC
 		List<Double> tags = invocation.getDoubleTags(BlockPredictionProgrammMarker.AVG_EXEC_TIME_TAG);
 		if(tags.isEmpty()) return null;
 		double avgExecTime = 0.0;
-		for(double avgT : tags)avgExecTime+=avgT;
+		for(double avgT : tags) {
+			avgExecTime+=avgT;
+		}
 		avgExecTime /= tags.size();
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
 		return new AvgTimeLeafe(loc.methodName, avgExecTime);

@@ -32,7 +32,6 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-
   
     	for(int i = 0; i < 5; i++){
     		getUserInfo();	 
