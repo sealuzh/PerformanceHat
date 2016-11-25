@@ -15,9 +15,9 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
 
 class TryBlockTimeCollector extends BlockTimeCollector{
-	private final List<ExecutionStats> catches = Lists.newArrayList();
+	private final List<List<AvgTimeNode>> catches = Lists.newArrayList();
     private final Set<IAstNode> catchesStarts; //ether the foreach source or the initializer
-    private ExecutionStats finallyPart = null;
+    private List<AvgTimeNode> finallyPart = null;
     private final Block finallyBlock;
     private final Try tryStm;
 
@@ -34,14 +34,14 @@ class TryBlockTimeCollector extends BlockTimeCollector{
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {
-					finallyPart = new ExecutionStats(avgExcecutionTime,excecutionTimeStats);			
+					finallyPart = excecutionTimeStats;			
 				}	
 			};
 		}else if(catchesStarts.contains(node)){
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {
-					catches.add(new ExecutionStats(avgExcecutionTime,excecutionTimeStats));			
+					catches.add(excecutionTimeStats);			
 				}	
 			};
 		}
@@ -50,6 +50,6 @@ class TryBlockTimeCollector extends BlockTimeCollector{
 	
 	@Override
 	public AvgTimeNode generateResults() {
-		return callback.tryMeasured(new ExecutionStats(avgExcecutionTime, excecutionTimeStats), finallyPart, catches, tryStm, context);
+		return callback.tryMeasured(excecutionTimeStats, finallyPart, catches, tryStm, context);
 	}
   }

@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.google.common.base.Optional;
 
@@ -30,6 +31,7 @@ import eu.cloudwave.wp5.common.error.RequestException;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.FeedbackBuilderParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.feedbackhandler.RequestExceptionHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.logging.Logger;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceDelta;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
@@ -94,9 +96,17 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
   private void fullBuild(final FeedbackJavaProject project) throws CoreException {
     System.out.println("fullBuild");
     this.getFeedbackCleaner().cleanAll(project);
-    for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-      participant.build(project, project.getJavaSourceFiles());
+	for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+      participant.prepare(project, project.getJavaSourceFiles());
     }
+	for(FeedbackJavaFile javaFile:project.getJavaSourceFiles()){
+		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+		if(!astRoot.isPresent()) continue;
+		for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+	      participant.buildFile(project, javaFile, astRoot.get());
+	    }
+	}
+   
   }
 
   /**
@@ -114,7 +124,14 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
       final FeedbackJavaResourceDelta delta = feedbackDeltaOptional.get();
       this.getFeedbackCleaner().cleanDelta(delta);
       for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-        participant.build(project, feedbackDeltaOptional.get().getChangedJavaFiles());
+          participant.prepare(project, feedbackDeltaOptional.get().getChangedJavaFiles());
+	  }
+      for(FeedbackJavaFile javaFile:feedbackDeltaOptional.get().getChangedJavaFiles()){
+			Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+			if(!astRoot.isPresent()) continue;
+			for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+		      participant.buildFile(project, javaFile, astRoot.get());
+		    }
       }
     }
   }

@@ -1,86 +1,46 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-import eu.cloudwave.wp5.common.util.Numbers;
-import eu.cloudwave.wp5.common.util.TimeValues;
-import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
-import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
-import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
-import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Try;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.AvgTimeLeafe;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.AvgTimeNode;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.DataAvgTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.BlockTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.BranchTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.BranchingTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.LoopErrorTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.LoopTimeNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.timestats.MethodCallTimeNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
-import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
 
-//TODO: DOES NOT WORK FIND OUT WHY
 public class BlockPredictionProgrammMarker implements ProgrammMarker, BlockTimeCollectorCallback{
 
-	  private static final String PROCEDURE_EXECUTIONS = "procedureExecutions";
-	  private static final String AVG_TIME_PER_ITERATION = "avgTimePerIteration";
-	  private static final String AVG_INTERATIONS = "avgInterations";
-	  private static final String AVG_TOTAL = "avgTotal";
-	  private static final String LOOP = "loop";
-	  private static final String METHOD = "method";
-
-	  private static final int DECIMAL_PLACES = 3;
-	  private static final String LOOP_MESSAGE_PATTERN = "Critical Loop: Average Total Time is %s (Average Iterations: %s).";
-	  private static final String METHOD_MESSAGE_PATTERN = "Critical method: Average Total Time is %s.";
 
 	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
-	  static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+	  private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+	  public static final String AVG_PRED_TIME_TAG = "AvgPredictionTime";
 
 	  @Override
 	  public List<String> getRequiredTags() {
 		  	return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
 	  }
 	  
-	private static void createMarker(IAstNode node,String message, String desc, FeedbackMarkerType type){
-        final Map<String, Object> additionalAttributes = Maps.newHashMap();
-		additionalAttributes.put(MarkerAttributes.DESCRIPTION, desc);
-		node.markWarning(Ids.PERFORMANCE_MARKER,type,message, additionalAttributes);
-	}
+	  public List<String> getProvidedTags(){
+		  return Collections.singletonList(AVG_PRED_TIME_TAG);
+	  }
+	  
+	  
+	  
 
-	private static void createCriticalLoopMarker(Loop loop, TemplateHandler template, double averageSize, double avgExecTimePerIteration,  AvgTimeNode procedureExecutionSummary ){
-          final String avgIterationsText = new Double(Numbers.round(averageSize, DECIMAL_PLACES)).toString();
-          final String avgTotalExecTimeText = TimeValues.toText(procedureExecutionSummary.getAvgTime(), DECIMAL_PLACES);
-          final String msg = String.format(LOOP_MESSAGE_PATTERN, avgTotalExecTimeText, avgIterationsText);
-          final Map<String, Object> context = Maps.newHashMap();
-          context.put(AVG_TOTAL, avgTotalExecTimeText);
-          context.put(AVG_INTERATIONS, avgIterationsText);
-          context.put(AVG_TIME_PER_ITERATION, TimeValues.toText(avgExecTimePerIteration, DECIMAL_PLACES));
-          context.put(PROCEDURE_EXECUTIONS,procedureExecutionSummary);
-          final String desc = template.getContent(LOOP, context);
-          createMarker(loop,msg,desc,PerformanceMarkerTypes.COLLECTION_SIZE);
-	}
-	
-	private static void createCriticalMetodMarker(MethodDeclaration decl, TemplateHandler template,AvgTimeNode procedureExecutionSummary ){
-        final String avgTotalExecTimeText = TimeValues.toText(procedureExecutionSummary.getAvgTime(), DECIMAL_PLACES);
-        final String msg = String.format(METHOD_MESSAGE_PATTERN, avgTotalExecTimeText);
-        final Map<String, Object> context = Maps.newHashMap();
-        context.put(AVG_TOTAL, avgTotalExecTimeText);
-        context.put(PROCEDURE_EXECUTIONS,procedureExecutionSummary);
-        final String desc = template.getContent(METHOD, context);
-        createMarker(decl,msg,desc,PerformanceMarkerTypes.COLLECTION_SIZE);
-	 }
 	 
 	  //Same as BlockTimeMeasurer, but react's only on loops, if we would like predictions for Methods, then we could just add them here
 	  //But then Hotspot could fastly get irrelevant, basically it would be easy todo everithing here
@@ -92,15 +52,21 @@ public class BlockPredictionProgrammMarker implements ProgrammMarker, BlockTimeC
 					  return new BlockTimeCollector(BlockPredictionProgrammMarker.this,rootContext){
 						@Override
 						public AvgTimeNode generateResults() {
-							final AvgTimeNode methodN = new DataAvgTimeNode("method declaration", avgExcecutionTime, excecutionTimeStats);	
-							final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-							if (avgExcecutionTime >= threshold) createCriticalMetodMarker(method,context.getTemplateHandler(),methodN);
+							final double methodTimeSum = sum(excecutionTimeStats);
+							final AvgTimeNode methodN = new BlockTimeNode("method declaration", methodTimeSum, excecutionTimeStats);	
+							//final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
+							//if (methodTimeSum >= threshold) createCriticalMetodMarker(method,context.getTemplateHandler(),methodN);
+							method.attachTag(AVG_PRED_TIME_TAG, methodN);
 							return methodN;
 						} 
 					  };
 			     }
 		  };
 	} 
+	  
+	private static double sum(List<AvgTimeNode> nodes){
+		return nodes.stream().mapToDouble(n -> n.getAvgTime()).sum();
+	}
 	  
 	@Override
 	public AvgTimeNode invocationEncountered(Invocation invocation, ProgrammMarkerContext context) {
@@ -112,58 +78,63 @@ public class BlockPredictionProgrammMarker implements ProgrammMarker, BlockTimeC
 		}
 		avgExecTime /= tags.size();
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
-		return new AvgTimeLeafe(loc.methodName, avgExecTime);
+		return new MethodCallTimeNode(loc, avgExecTime);
 	}
 
 	@Override
-	public AvgTimeNode loopMeasured(ExecutionStats iterationExecutionTime, ExecutionStats headerExecutionTime, Loop loop, ProgrammMarkerContext context){
+	public AvgTimeNode loopMeasured(List<AvgTimeNode> iterationExecutionTime, List<AvgTimeNode> headerExecutionTime, Loop loop, ProgrammMarkerContext context){
 
 		
 		Double avgItersLookup = LoopUtils.findNumOfIterations(loop, context);
 		double avgIters = (avgItersLookup == null)?0:avgItersLookup;
-		final double bodyT = (iterationExecutionTime.avgExcecutionTime*avgIters);
-		final double totalT = headerExecutionTime.avgExcecutionTime+bodyT;
+		final double iterExcecTime = sum(iterationExecutionTime);
+		final double headerExectime =  sum(headerExecutionTime);
 
-		final AvgTimeNode headerN = new DataAvgTimeNode("loop header", headerExecutionTime.avgExcecutionTime, headerExecutionTime.excecutionTimeStats);
+		final AvgTimeNode headerN = new BlockTimeNode("loop header", headerExectime, headerExecutionTime);
 		AvgTimeNode bodyN;
-		if(avgItersLookup == null) bodyN = new AvgTimeLeafe("<Iteration prediction failed>",0);
-		else bodyN = new DataAvgTimeNode("loop body("+(int)avgIters+"x)", bodyT, iterationExecutionTime.excecutionTimeStats);		
-		final AvgTimeNode loopN = new DataAvgTimeNode("loop", totalT, headerN, bodyN);
+		if(avgItersLookup == null) bodyN = new LoopErrorTimeNode();
+		else bodyN = new BlockTimeNode("loop body", iterExcecTime, iterationExecutionTime);		
+		final AvgTimeNode loopN = new LoopTimeNode((avgIters*bodyN.getAvgTime())+headerN.getAvgTime(),avgIters, bodyN, headerN);	
 		
-		final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-		if (totalT >= threshold) createCriticalLoopMarker(loop,context.getTemplateHandler(),avgIters,iterationExecutionTime.avgExcecutionTime, loopN);
+		//final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
+		loop.attachTag(AVG_PRED_TIME_TAG, loopN);
+		//if (totalT >= threshold) createCriticalLoopMarker(loop,context.getTemplateHandler(),avgIters,iterExcecTime, loopN);
 		return loopN;
 	}
 
 	@Override
-	public AvgTimeNode branchMeasured(ExecutionStats conditionExecutionTime, List<ExecutionStats> branchExecutionTimes, Branching branch, ProgrammMarkerContext context){
-		 final List<AvgTimeNode> subNodes = Lists.newArrayList();
-		 subNodes.add(new DataAvgTimeNode("condition", conditionExecutionTime.avgExcecutionTime, conditionExecutionTime.excecutionTimeStats));
+	public AvgTimeNode branchMeasured(List<AvgTimeNode> conditionExecutionTime, List<List<AvgTimeNode>> branchExecutionTimes, Branching branch, ProgrammMarkerContext context){
+		 final List<AvgTimeNode> branchNodes = Lists.newArrayList();
+		 final AvgTimeNode conditionN = new BlockTimeNode("condition", sum(conditionExecutionTime), conditionExecutionTime);
 		 double tot = 0;
 		 int branchCount = branchExecutionTimes.size();
 		 if(branch.isSkippable())branchCount++;
 		 int i = 0;
-		 double part = new BigDecimal((100.0/branchCount)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-		 for(ExecutionStats bet:branchExecutionTimes) {
-			 subNodes.add(new DataAvgTimeNode("branch "+(++i)+"("+part+"%)", bet.avgExcecutionTime/branchCount, bet.excecutionTimeStats));
-			 tot+=bet.avgExcecutionTime;
+		 double part = 1.0/branchCount;
+		 for(List<AvgTimeNode> bet:branchExecutionTimes) {
+			 final double betSum = sum(bet);
+			 branchNodes.add(new BranchTimeNode((++i),part, betSum/branchCount, bet));
+			 tot+=betSum;
 		 }
 		 tot /= branchCount;
-		 final AvgTimeNode loopN = new DataAvgTimeNode("branching", tot, subNodes);
+		 final AvgTimeNode branchN = new BranchingTimeNode(tot, conditionN, branchNodes);
 
 		 //Todo: markig/tagging
 		 
-		 return loopN;
+		 return branchN;
 	}
 
 	@Override
-	public AvgTimeNode tryMeasured(ExecutionStats tryExecutionTime, ExecutionStats finnalyExecutionTime, List<ExecutionStats> catchExccutionTimes, Try tryStm, ProgrammMarkerContext context) {
+	public AvgTimeNode tryMeasured(List<AvgTimeNode> tryExecutionTime, List<AvgTimeNode> finnalyExecutionTime, List<List<AvgTimeNode>> catchExccutionTimes, Try tryStm, ProgrammMarkerContext context) {
+		//todo: make try node
 		if(finnalyExecutionTime == null){
-			return new DataAvgTimeNode("try",tryExecutionTime.avgExcecutionTime, tryExecutionTime.excecutionTimeStats);
+			return new BlockTimeNode("try",sum(tryExecutionTime), tryExecutionTime);
 		} else {
-			final AvgTimeNode bodyN = new DataAvgTimeNode("body", tryExecutionTime.avgExcecutionTime, tryExecutionTime.excecutionTimeStats);
-			final AvgTimeNode finallyN = new DataAvgTimeNode("finally", finnalyExecutionTime.avgExcecutionTime, finnalyExecutionTime.excecutionTimeStats);		
-			final AvgTimeNode tryN = new DataAvgTimeNode("try", tryExecutionTime.avgExcecutionTime+finnalyExecutionTime.avgExcecutionTime, bodyN, finallyN);
+			final double tryTimeSum = sum(tryExecutionTime);
+			final AvgTimeNode bodyN = new BlockTimeNode("body", tryTimeSum, tryExecutionTime);
+			final double finallyTimeSum = sum(finnalyExecutionTime);
+			final AvgTimeNode finallyN = new BlockTimeNode("finally", finallyTimeSum, finnalyExecutionTime);		
+			final AvgTimeNode tryN = new BlockTimeNode("try", tryTimeSum+finallyTimeSum, bodyN, finallyN);
 			 //Todo: markig/tagging
 
 			

@@ -20,7 +20,6 @@ class LoopBlockTimeCollector extends BlockTimeCollector{
     private final Set<IAstNode> headerExprs; //ether the foreach source or the initializer
     private final Loop loop;
     private final List<AvgTimeNode> headerTimeStats = Lists.newArrayList();
-	protected double headerAvgExcecutionTime = 0.0;
 
 	LoopBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, ProgrammMarkerContext context, Loop loop) {
 		super(parent, callback, context);
@@ -34,7 +33,6 @@ class LoopBlockTimeCollector extends BlockTimeCollector{
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {
-					headerAvgExcecutionTime+=avgExcecutionTime;
 					headerTimeStats.addAll(excecutionTimeStats);				
 				}	
 			};
@@ -44,7 +42,7 @@ class LoopBlockTimeCollector extends BlockTimeCollector{
 	
 	@Override
 	public AvgTimeNode generateResults() {
-		return callback.loopMeasured(new ExecutionStats(avgExcecutionTime, excecutionTimeStats), new ExecutionStats(headerAvgExcecutionTime, headerTimeStats), loop, context);
+		return callback.loopMeasured(excecutionTimeStats, headerTimeStats, loop, context);
 	}
 	
   }

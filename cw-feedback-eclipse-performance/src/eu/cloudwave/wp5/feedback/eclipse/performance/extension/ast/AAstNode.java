@@ -18,7 +18,7 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	protected final ProgrammMarkerContext ctx;
 	protected final T inner;
 	
-	public AAstNode(T inner, ProgrammMarkerContext ctx) {
+	AAstNode(T inner, ProgrammMarkerContext ctx) {
 		this.ctx = ctx;
 		this.inner = inner;
 	}

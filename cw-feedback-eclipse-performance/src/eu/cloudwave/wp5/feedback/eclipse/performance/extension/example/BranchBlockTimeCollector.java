@@ -16,7 +16,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammM
 //todo: do we need seperate class for this (or would inner class do)
 //todo: if we keep make CTR private and use static methode calling the skip thing
 class BranchBlockTimeCollector extends BlockTimeCollector{
-	private final List<ExecutionStats> stats = Lists.newArrayList();
+	private final List<List<AvgTimeNode>> stats = Lists.newArrayList();
     private final Set<IAstNode> branchStarts; //ether the foreach source or the initializer
     private final Branching branch;
 
@@ -32,7 +32,7 @@ class BranchBlockTimeCollector extends BlockTimeCollector{
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {
-					stats.add(new ExecutionStats(avgExcecutionTime,excecutionTimeStats));			
+					stats.add(excecutionTimeStats);			
 				}	
 			};
 		}
@@ -41,7 +41,7 @@ class BranchBlockTimeCollector extends BlockTimeCollector{
 	
 	@Override
 	public AvgTimeNode generateResults() {
-		return callback.branchMeasured(new ExecutionStats(avgExcecutionTime, excecutionTimeStats), stats, branch, context);
+		return callback.branchMeasured(excecutionTimeStats, stats, branch, context);
 	}
 
   }

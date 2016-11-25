@@ -7,7 +7,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerCon
 
 public class Try extends AAstNode<org.eclipse.jdt.core.dom.TryStatement> {
 	
-	public Try(org.eclipse.jdt.core.dom.TryStatement tryStat, ProgrammMarkerContext ctx) {
+	Try(org.eclipse.jdt.core.dom.TryStatement tryStat, ProgrammMarkerContext ctx) {
 		super(tryStat,ctx);
 	}
 	

@@ -19,7 +19,7 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 
 	public final CallType callType; 
 	
-	public AMethodRelated(T inner,CallType callType, ProgrammMarkerContext ctx) {
+	AMethodRelated(T inner,CallType callType, ProgrammMarkerContext ctx) {
 		super(inner, ctx);
 		this.callType = callType;
 	}
@@ -52,7 +52,7 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	public List<Object> getTags(String name) {
 		MethodLocator loc = createCorrespondingMethodLocation();
 		List<Object> res = Lists.newArrayList();
-		res.addAll(ctx.getTagProvider().getTagsForMethod(new MethodLocator(loc.className, loc.methodName, loc.argumentTypes),name));
+		res.addAll(ctx.getTagProvider().getTagsForMethod(loc,name));
 		res.addAll(super.getTags(name));
 		return res;
 	}

@@ -18,9 +18,7 @@ public interface IAstNode {
 	
 	public void attachTag(String name, Object value);
 	
-	default public List<Object> getTags(String name){
-		return Collections.emptyList();
-	}
+    public List<Object> getTags(String name);
 	
 	default public List<Double> getDoubleTags(String name){
 		return getTags(name).stream().map(t -> {
@@ -42,12 +40,6 @@ public interface IAstNode {
 		public NodeWrapper(org.eclipse.jdt.core.dom.ASTNode inner, ProgrammMarkerContext ctx) {
 			super(inner, ctx);
 		}
-	}
-	
-	//todo: Make static Factory Class
-	public static IAstNode fromEclipseAstNode(org.eclipse.jdt.core.dom.ASTNode node, ProgrammMarkerContext ctx){
-		//todo: make giant switch and create correct if exists
-		return new NodeWrapper(node, ctx);
 	}
 
 }

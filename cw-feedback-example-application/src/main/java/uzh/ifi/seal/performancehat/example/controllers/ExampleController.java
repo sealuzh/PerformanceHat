@@ -18,13 +18,13 @@ public class ExampleController {
     }
     
     
-	
     @RequestMapping("/users")
     public String greeting(Model model) {
-    	for(String u3: getUserInfo()){
+    	test:for(String u3: getUserInfo()){
 	    	for(String u: getUserInfo()){
 	    		for(String u2: getUserInfo()){
-	    			if(true){
+	    			//# branches: 0.5, 0.5
+	    			blubb:if(true){
 		    			getUserInfo();	    				
 	    			} else {
 		    			getUserInfo();	    					    				
@@ -32,13 +32,18 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-  
-    	for(int i = 0; i < 5; i++){
-    		getUserInfo();	 
+   
+    	greeting(model);
+    
+    	int x = getUserInfo().size();
+   
+    	for(int i = 0; i < x; i++){
+    		lulo:getUserInfo();	 
     	}
+   
     	
       	for(String u2: getUserInfo()){
-    		try{
+    		lala:try{
           		getUserInfo();
     		} catch(Exception e){
         		getUserInfo();

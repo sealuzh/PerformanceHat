@@ -18,6 +18,7 @@ package eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
@@ -27,16 +28,18 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaPr
  * it is registered in the feedback builder it is executed each time the feedback builder is triggered.
  */
 public interface FeedbackBuilderParticipant {
-
   /**
-   * Builds the given files of the given project
+   * Template method that is triggered during the build for each Java file that has to be built. Subclasses should to
+   * the actual work here.
    * 
    * @param project
-   *          the project
-   * @param files
-   *          the Java files to be built
-   * @throws CoreException
-   *           if build process could not be successfully finished
+   *          the {@link FeedbackJavaProject}
+   * @param javaFile
+   *          the {@link FeedbackJavaFile}
+   * @param astRoot
+   *          the {@link CompilationUnit} of the file
    */
-  public void build(final FeedbackJavaProject project, final Set<FeedbackJavaFile> files) throws CoreException;
+  public void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
+  public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException;
+
 }

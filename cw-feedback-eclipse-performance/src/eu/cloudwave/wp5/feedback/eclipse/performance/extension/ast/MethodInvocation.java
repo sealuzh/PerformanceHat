@@ -11,12 +11,12 @@ public class MethodInvocation extends AMethodRelated<org.eclipse.jdt.core.dom.Ex
 	private org.eclipse.jdt.core.dom.MethodInvocation directCall = null;
 	private org.eclipse.jdt.core.dom.SuperMethodInvocation superCall = null;
 	
-	public MethodInvocation(org.eclipse.jdt.core.dom.MethodInvocation methodInvocation, ProgrammMarkerContext ctx) {
+	MethodInvocation(org.eclipse.jdt.core.dom.MethodInvocation methodInvocation, ProgrammMarkerContext ctx) {
 		super(methodInvocation,AMethodRelated.CallType.METHOD,ctx);
 		directCall = methodInvocation;
 	}
 	
-	public MethodInvocation(org.eclipse.jdt.core.dom.SuperMethodInvocation methodInvocation, ProgrammMarkerContext ctx) {
+	MethodInvocation(org.eclipse.jdt.core.dom.SuperMethodInvocation methodInvocation, ProgrammMarkerContext ctx) {
 		super(methodInvocation,AMethodRelated.CallType.METHOD_SUPER,ctx);
 		superCall = methodInvocation;
 	}

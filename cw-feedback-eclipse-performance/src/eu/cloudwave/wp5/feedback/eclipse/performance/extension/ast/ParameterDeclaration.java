@@ -12,7 +12,7 @@ public class ParameterDeclaration extends AAstNode<org.eclipse.jdt.core.dom.Sing
 	private final MethodDeclaration method;
 	private final int paramPos;
 	
-	public ParameterDeclaration(int paramPos, MethodDeclaration method, org.eclipse.jdt.core.dom.SingleVariableDeclaration inner, ProgrammMarkerContext ctx) {
+	ParameterDeclaration(int paramPos, MethodDeclaration method, org.eclipse.jdt.core.dom.SingleVariableDeclaration inner, ProgrammMarkerContext ctx) {
 		super(inner, ctx);
 		this.method = method;
 		this.paramPos = paramPos;

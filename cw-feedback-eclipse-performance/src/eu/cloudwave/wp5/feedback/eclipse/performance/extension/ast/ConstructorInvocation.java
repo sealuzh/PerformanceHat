@@ -16,17 +16,17 @@ public class ConstructorInvocation extends AMethodRelated<org.eclipse.jdt.core.d
 	  private org.eclipse.jdt.core.dom.SuperConstructorInvocation superCall = null;
 
 
-	  public ConstructorInvocation(org.eclipse.jdt.core.dom.ClassInstanceCreation newInstance, ProgrammMarkerContext ctx) {
+	  ConstructorInvocation(org.eclipse.jdt.core.dom.ClassInstanceCreation newInstance, ProgrammMarkerContext ctx) {
 		 super(newInstance,AMethodRelated.CallType.CTR_NEW,ctx);
 		 this.newInstance = newInstance;
       }
  	  
- 	  public ConstructorInvocation(org.eclipse.jdt.core.dom.ConstructorInvocation thisCall, ProgrammMarkerContext ctx) {
+ 	  ConstructorInvocation(org.eclipse.jdt.core.dom.ConstructorInvocation thisCall, ProgrammMarkerContext ctx) {
 		 super(thisCall,AMethodRelated.CallType.CTR_DELEGATE,ctx);
 		 this.thisCall = thisCall;
       }
  	  
- 	  public ConstructorInvocation(org.eclipse.jdt.core.dom.SuperConstructorInvocation superCall, ProgrammMarkerContext ctx) {
+ 	  ConstructorInvocation(org.eclipse.jdt.core.dom.SuperConstructorInvocation superCall, ProgrammMarkerContext ctx) {
 		 super(superCall,AMethodRelated.CallType.CTR_SUPER,ctx);
 		 this.superCall = superCall;
       }

@@ -23,8 +23,8 @@ public interface BlockTimeCollectorCallback {
 	}
 	
 	public AvgTimeNode invocationEncountered(Invocation invocation, ProgrammMarkerContext context);
-	public AvgTimeNode loopMeasured(ExecutionStats iterationExecutionTime, ExecutionStats headerExecutionTime, Loop loop, ProgrammMarkerContext context);
-	public AvgTimeNode branchMeasured(ExecutionStats conditionExecutionTime, List<ExecutionStats> branchExccutionTimes, Branching branch, ProgrammMarkerContext context);
-	public AvgTimeNode tryMeasured(ExecutionStats tryExecutionTime, ExecutionStats finnalyExecutionTime, List<ExecutionStats> catchExccutionTimes, Try tryStm, ProgrammMarkerContext context);
+	public AvgTimeNode loopMeasured(List<AvgTimeNode> iterationExecutionTimes, List<AvgTimeNode> headerExecutionTimes, Loop loop, ProgrammMarkerContext context);
+	public AvgTimeNode branchMeasured(List<AvgTimeNode> conditionExecutionTimes, List<List<AvgTimeNode>> branchExccutionTimes, Branching branch, ProgrammMarkerContext context);
+	public AvgTimeNode tryMeasured(List<AvgTimeNode> tryExecutionTimes, List<AvgTimeNode> finnalyExecutionTimes, List<List<AvgTimeNode>> catchExccutionTimes, Try tryStm, ProgrammMarkerContext context);
 
 }

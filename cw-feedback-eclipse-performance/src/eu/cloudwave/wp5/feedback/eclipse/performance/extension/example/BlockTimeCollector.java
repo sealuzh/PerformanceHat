@@ -17,7 +17,6 @@ abstract class BlockTimeCollector extends ProgrammMarkerVisitor{
 	protected final BlockTimeCollectorCallback callback;
 	protected final BlockTimeCollector parent;
 	protected final ProgrammMarkerContext context;
-	protected double avgExcecutionTime = 0.0;
 	protected List<AvgTimeNode> excecutionTimeStats = Lists.newArrayList();
 
 	protected BlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, ProgrammMarkerContext context) {
@@ -34,7 +33,6 @@ abstract class BlockTimeCollector extends ProgrammMarkerVisitor{
 	public ProgrammMarkerVisitor visit(Invocation invocation) {
 		AvgTimeNode data = callback.invocationEncountered(invocation, context);
 		if(data != null){
-			avgExcecutionTime+= data.getAvgTime();
 			excecutionTimeStats.add(data);
 		}
 		return CONTINUE;
@@ -60,7 +58,6 @@ abstract class BlockTimeCollector extends ProgrammMarkerVisitor{
 	public void finish(){
 		 AvgTimeNode data = generateResults();
 		 if(parent != null && data != null) {
-			 parent.avgExcecutionTime+=data.getAvgTime();
 			 parent.excecutionTimeStats.add(data);
 		 }
 	}

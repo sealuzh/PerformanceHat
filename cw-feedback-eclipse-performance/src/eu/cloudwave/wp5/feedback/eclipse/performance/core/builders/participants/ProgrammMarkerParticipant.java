@@ -1,5 +1,8 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants;
 
+import java.util.Set;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.AbstractFeedbackBuilderParticipant;
@@ -26,12 +29,22 @@ public class ProgrammMarkerParticipant extends AbstractFeedbackBuilderParticipan
 	  }
 
 	@Override
-	protected void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
+	public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
 		TagCreator crea = reg.getCreatorFor(javaFile);
-		crea.clearAssosiatedTags();
 		ProgrammMarkerContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler);
 		astRoot.accept( new AstDelegator(ext.createFileVisitor(rootContext),rootContext)) ;
 	}
+	
+	@Override
+	public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException {
+		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
+		for(FeedbackJavaFile javaFile:javaFiles){
+			TagCreator crea = reg.getCreatorFor(javaFile);
+			//crea.clearAssosiatedTags();
+		}
+	}
+	
+	
 
 }

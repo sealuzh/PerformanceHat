@@ -16,6 +16,7 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionProgrammMarker;
 
 public class TagRegistryImpl implements TagRegistry{
 	
@@ -50,6 +51,13 @@ public class TagRegistryImpl implements TagRegistry{
 			if (!tagName.equals(other.tagName)) return false;
 			return true;
 		}
+
+		@Override
+		public String toString() {
+			return "AstNodeKey [tagName=" + tagName + ", node=" + node + "]";
+		}
+		
+		
 	}
 	
 	private static final class MethodKey implements CompositeKey{

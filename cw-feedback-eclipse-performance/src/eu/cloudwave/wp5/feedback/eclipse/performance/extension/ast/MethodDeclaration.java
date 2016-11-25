@@ -7,7 +7,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerCon
 
 public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
 	
-	 public MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, ProgrammMarkerContext ctx) {
+	 MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, ProgrammMarkerContext ctx) {
 		super(methodDeclaration, AMethodRelated.CallType.DECLARATION,ctx);
 	 }
 		
@@ -45,5 +45,13 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 		return bind.isConstructor()?"Constructor":"Method";
 		//return "Method";
 	}
+
+	@Override
+	public void attachTag(String tagName, Object tagValue) {
+		ctx.getTagCreator().addMethodTag(createCorrespondingMethodLocation(), tagName, tagValue);
+		super.attachTag(tagName, tagValue);
+	}
+	
+	
 
 }

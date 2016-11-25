@@ -5,13 +5,15 @@ import java.util.Collections;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-public class AvgTimeLeafe implements AvgTimeNode{
-	private final String text;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
+
+public class MethodCallTimeNode implements AvgTimeNode{
+	private final MethodLocator loc;
 	private final double avgTime;
 
-	public AvgTimeLeafe(String text, double avgTime) {
+	public MethodCallTimeNode(MethodLocator loc, double avgTime) {
 		super();
-		this.text = text;
+		this.loc = loc;
 		this.avgTime = avgTime;
 	}
 
@@ -20,7 +22,7 @@ public class AvgTimeLeafe implements AvgTimeNode{
 	}
 	
 	public String getText(){
-		return text;
+		return loc.methodName;
 	}
 	
 	public double getAvgTime(){

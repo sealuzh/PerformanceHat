@@ -52,7 +52,7 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
    * {@inheritDoc}
    */
   @Override
-  public void build(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException {
+  public void prepare(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException {
 
     feedbackHandlerClient = CostPluginActivator.instance(FeedbackHandlerEclipseClient.class);
     templateHandler = CostPluginActivator.instance(TemplateHandler.class);
@@ -62,14 +62,14 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
     this.reloadProperties(project);
 
     // build files
-    super.build(project, javaFiles);
+    super.prepare(project, javaFiles);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  protected abstract void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
+  public abstract void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
 
   /**
    * Helper to extract value of annotation attribute from string
