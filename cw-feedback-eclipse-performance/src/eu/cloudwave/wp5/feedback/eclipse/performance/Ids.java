@@ -28,7 +28,8 @@ public class Ids {
   public static final String PLUGIN = "eu.cloudwave.wp5.feedback.eclipse.performance"; //$NON-NLS-1$
   
   private static final String DOT = "."; //$NON-NLS-1$
-  private static final String CORE_QUALIFIER = PLUGIN + DOT + "core" + DOT; //$NON-NLS-1$
+  private static final String BASE_QUALIFIER = PLUGIN + DOT ; //$NON-NLS-1$
+  private static final String CORE_QUALIFIER = BASE_QUALIFIER + "core" + DOT; //$NON-NLS-1$
   private static final String UI_QUALIFIER = PLUGIN + DOT + "ui" + DOT; //$NON-NLS-1$
 
   public static final String PERFORMANCE_MARKER = PLUGIN + DOT + "markers.PerformanceMarker";
@@ -37,7 +38,7 @@ public class Ids {
 
   public static final String BUILDER = CORE_QUALIFIER + "builders.PerformanceBuilder"; //$NON-NLS-1$
 
-  public static final String MARKER = CORE_QUALIFIER + "extension.ProgrammMarkerExtension";
+  public static final String EXTENSION = BASE_QUALIFIER + "extension.PerformancePlugin";
   
   public static final String PROJECT_NATURE_ENABLED_DECORATOR = UI_QUALIFIER + "decorators.FeedbackProjectNatureEnabledDecorator"; //$NON-NLS-1$
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension" name="ProgrammMarkerExtension" schema="schema/eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension.exsd"/>   
+   <extension-point id="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin" name="PerformancePlugin" schema="schema/eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin.exsd"/>
 
    <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
    <extension
@@ -198,12 +198,15 @@
       </perspectiveExtension>
    </extension>
    <extension
-         point="eu.cloudwave.wp5.feedback.eclipse.performance.core.extension.ProgrammMarkerExtension">
+         point="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin">
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin">
       </client>
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionProgrammMarker">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin">
+      </client>
+      <client
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin">
       </client>
    </extension>
 

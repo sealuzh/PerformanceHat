@@ -31,10 +31,10 @@ import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.Feedbac
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.ProgrammMarkerParticipant;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionProgrammMarker;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.PluginParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin;
 
 public class PerformanceBuilder extends FeedbackBuilder {
 
@@ -46,13 +46,13 @@ public class PerformanceBuilder extends FeedbackBuilder {
 	  
 	//Todo: cache???  
 	  
-    List<ProgrammMarker> markers  = Lists.newArrayList();
+    List<PerformancePlugin> markers  = Lists.newArrayList();
     
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     
-    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.MARKER)){
+    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.EXTENSION)){
     	try {
-    		markers.add((ProgrammMarker) elem.createExecutableExtension("class"));
+    		markers.add((PerformancePlugin) elem.createExecutableExtension("class"));
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -60,7 +60,7 @@ public class PerformanceBuilder extends FeedbackBuilder {
    
     markers = DependencyOrderer.order(markers, Lists.asList("CollectionSize","AvgExcecutionTime", new String[]{}));
     
-    return markers.stream().map(m -> new ProgrammMarkerParticipant(m)).collect(Collectors.toList());
+    return markers.stream().map(m -> new PluginParticipant(m)).collect(Collectors.toList());
   }
 
   /**

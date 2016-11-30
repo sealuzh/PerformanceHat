@@ -7,10 +7,10 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 
-public class ProgrammMarkerContextBase implements ProgrammMarkerContext{
+public class ProgrammMarkerContextBase implements AstContext{
 	private final FeedbackProject project;
 	private final FeedbackJavaFile file;
 	private final CompilationUnit unit;

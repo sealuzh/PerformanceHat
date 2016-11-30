@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarker;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 
 
 public class DependencyOrderer {
@@ -25,17 +25,17 @@ public class DependencyOrderer {
 	//orders a list of dependency so that if a needs something provided in b, b is before a in the list
 	//if possible it takes optional dependencies into account, if they lead to a cycle or are not present, they may be ignored
 	//its basically a topological search
-	public static List<ProgrammMarker> order(List<ProgrammMarker> input, List<String> givenOnes){
+	public static List<PerformancePlugin> order(List<PerformancePlugin> input, List<String> givenOnes){
 		int markers = input.size();
 		
 		//Check if everithing is avaiable
 		Set<String> allProvided = Sets.newHashSet();
 		allProvided.addAll(givenOnes);
-		for(ProgrammMarker m:input) allProvided.addAll(m.getProvidedTags());
-		for(ProgrammMarker m:input) if(!allProvided.containsAll(m.getRequiredTags())) throw new UnsatisfiedDependencyGraphException();
+		for(PerformancePlugin m:input) allProvided.addAll(m.getProvidedTags());
+		for(PerformancePlugin m:input) if(!allProvided.containsAll(m.getRequiredTags())) throw new UnsatisfiedDependencyGraphException();
 		
 		//build the graph structure (only the necessary parts)
-		Map<Integer, ProgrammMarker> open = Maps.newHashMap();
+		Map<Integer, PerformancePlugin> open = Maps.newHashMap();
 		int[] outDegree = new int[markers];
 		int[] optOutDegree = new int[markers];
 		
@@ -43,14 +43,14 @@ public class DependencyOrderer {
 		Map<String,List<Integer>> optDependencies = Maps.newHashMap();
 		
 		int c = 0;
-		for(ProgrammMarker m:input) {
+		for(PerformancePlugin m:input) {
 	    	final int cur = c;
 		    for(String dep: m.getRequiredTags()) dependencies.compute(dep, (String k, List<Integer> list) -> addOrCreateList(list,cur));
 		    for(String dep: m.getOptionalRequiredTags()) optDependencies.compute(dep, (String k, List<Integer> list) -> addOrCreateList(list,cur));
 		    open.put(c++,m);
 		}
 		
-		for(ProgrammMarker m: open.values()){
+		for(PerformancePlugin m: open.values()){
 			 for(String prov: m.getProvidedTags()){
 				 for(int d: dependencies.getOrDefault(prov, Collections.emptyList())) outDegree[d]++;
 				 for(int d: optDependencies.getOrDefault(prov, Collections.emptyList())) optOutDegree[d]++;
@@ -58,7 +58,7 @@ public class DependencyOrderer {
 		}
 		
 		//do the topological search
-		List<ProgrammMarker> result = Lists.newArrayList();
+		List<PerformancePlugin> result = Lists.newArrayList();
 		while (!open.isEmpty()) {
 			int cand = -1;
 			int optOut = Integer.MAX_VALUE;
@@ -69,7 +69,7 @@ public class DependencyOrderer {
 				}
 			}
 			if(cand == -1) throw new UnsatisfiedDependencyGraphException();
-			ProgrammMarker m = open.remove(cand);
+			PerformancePlugin m = open.remove(cand);
 			result.add(m);
 			for(String prov: m.getProvidedTags()){
 				 for(int d: dependencies.getOrDefault(prov, Collections.emptyList())) outDegree[d]--;

@@ -32,8 +32,9 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-   
-    	greeting(model);
+  
+
+    greeting(model);
     
     	int x = getUserInfo().size();
    

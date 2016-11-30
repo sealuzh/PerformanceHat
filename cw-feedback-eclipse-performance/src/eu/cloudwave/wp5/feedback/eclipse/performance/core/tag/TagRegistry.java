@@ -8,12 +8,6 @@ import org.eclipse.core.runtime.IPath;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 
-//Todo: Track from which CompilationUnit/DataSource Some infos come
-	//   An element is either bound to a datasource
-	//						  or to a compilationUnit
-	//    if its reevaluated, the corresponding input is cleared first
-
-//Todo: we will need one per Project
 public interface TagRegistry extends TagProvider {
 	
 	//Todo: clean if project is closed/deleted
@@ -23,19 +17,8 @@ public interface TagRegistry extends TagProvider {
 		return registries.computeIfAbsent(proj.getFullPath(), x -> new TagRegistryImpl(proj));
 	}
 	
-	//In CreatorNow @ Carlos: if you already use this please programm against TagCreator as the interface
-	//public void addMethodTag(MethodLocator method, String tagName, Object tagValue);
-	//public void addParameterTag(MethodLocator method, int paramPosition, String tagName, Object tagValue);
-	//public void addMethodAnnotationTag(MethodLocator method, String anotationName, /*Simple for now*/ String[] paramValues, String tagName, Object tagValue);
-	//public void addAstNodeTag(ASTNode node, String tagName, Object tagValue);
-
+	//Todo: needs public registry for inter ast Markers
+	//public TagCreator getCreatorFor(FeedbackProject proj);	
 	public TagCreator getCreatorFor(FeedbackJavaFile file);
-	public TagCreator getCreatorFor(Object dataSource);
-	
-	
-	//Read Methods open
-	
-
-
 	
 }

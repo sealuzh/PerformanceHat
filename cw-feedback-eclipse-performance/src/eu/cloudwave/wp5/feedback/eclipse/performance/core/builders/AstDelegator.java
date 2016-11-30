@@ -6,31 +6,32 @@ import java.util.Stack;
 
 import org.eclipse.jdt.core.dom.*;
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProgrammMarkerContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Invocation;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Loop;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodOccurence;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.StaticAstFactory;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.ProgrammMarkerVisitor;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.ProcessedUnit;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Invocation;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.StaticAstFactory;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 public class AstDelegator extends ASTVisitor  {
 	
 	 private static class StackEntry{
 		 public final int depth;
-		 public final ProgrammMarkerVisitor usedMarker;
-		 public StackEntry(int depth, ProgrammMarkerVisitor usedMarker) {
+		 public final PerformanceVisitor usedMarker;
+		 public StackEntry(int depth, PerformanceVisitor usedMarker) {
 			this.depth = depth;
 			this.usedMarker = usedMarker;
 		 }
 	 }
 	
 	 private final Stack<StackEntry> visitors = new Stack<>();
-	 private ProgrammMarkerContext context;
+	 private AstContext context;
 	 
 	 private int depth = 0;
 	 
-	 public AstDelegator(final ProgrammMarkerVisitor visitor, ProgrammMarkerContext context) {
+	 public AstDelegator(final PerformanceVisitor visitor, AstContext context) {
 		 this.context = context;
 		 pushChildVisitor(visitor);
 	 }
@@ -46,29 +47,29 @@ public class AstDelegator extends ASTVisitor  {
 		depth--;
 	}
 	
-	public void pushChildVisitor(ProgrammMarkerVisitor visitor){
+	public void pushChildVisitor(PerformanceVisitor visitor){
 		if(visitor == null || (!visitors.isEmpty() && visitors.peek().usedMarker == visitor))return;
 		visitors.push(new StackEntry(depth, visitor));
 	}
 
-	public ProgrammMarkerVisitor getCurrent(){
+	public PerformanceVisitor getCurrent(){
 		 return visitors.peek().usedMarker;
 	 }
 	 
 	
 	 private boolean handleVisitStart(IAstNode node){
-		ProgrammMarkerVisitor subst = getCurrent().concreteNodeVisitor(node);
+		PerformanceVisitor subst = getCurrent().concreteNodeVisitor(node);
 		pushChildVisitor(subst);
 		return getCurrent().shouldVisitNode(node);
 	 }
 
-	 private boolean handleVisitReturn(ProgrammMarkerVisitor pmv){
+	 private boolean handleVisitReturn(PerformanceVisitor pmv){
 		 if(pmv != null)  pushChildVisitor(pmv);
 		 return getCurrent().shouldVisitChilds();
 	 }
 	
 	 private boolean defaultVisit(final ASTNode node){
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.IAstNode decl = StaticAstFactory.fromEclipseAstNode(node, context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode decl = StaticAstFactory.fromEclipseAstNode(node, context);
 		 if(!handleVisitStart(decl)) return false;
 		 return handleVisitReturn(null);
 	 }
@@ -77,10 +78,10 @@ public class AstDelegator extends ASTVisitor  {
 	 
 	 @Override
      public boolean visit(final MethodDeclaration methodDeclaration) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodDeclaration decl = StaticAstFactory.createMethodDeclaration(methodDeclaration,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration decl = StaticAstFactory.createMethodDeclaration(methodDeclaration,context);
 		 context = new ProgrammMarkerMethodContext(context, decl);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
      }
@@ -105,9 +106,9 @@ public class AstDelegator extends ASTVisitor  {
     	 
     	 for(Object param :context.getCurrentMethode().getEclipseAstNode().parameters()){
     		if(param.equals(node)) {
-    	    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ParameterDeclaration decl = StaticAstFactory.createParameterDeclaration(count,context.getCurrentMethode(),node,context);
+    	    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ParameterDeclaration decl = StaticAstFactory.createParameterDeclaration(count,context.getCurrentMethode(),node,context);
     			 if(!handleVisitStart(decl)) return false;
-    	    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	    	 PerformanceVisitor m = getCurrent().visit(decl);
     			 return handleVisitReturn(m);
     		}
     		count++;
@@ -119,9 +120,9 @@ public class AstDelegator extends ASTVisitor  {
 
 	@Override
      public boolean visit(final MethodInvocation methodInvocation) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodInvocation decl =StaticAstFactory.createMethodInvocation(methodInvocation,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation decl =StaticAstFactory.createMethodInvocation(methodInvocation,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
    	  	 if(m == null) m = getCurrent().visit((Invocation)decl);
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
@@ -129,9 +130,9 @@ public class AstDelegator extends ASTVisitor  {
    
      @Override
      public boolean visit(final SuperMethodInvocation methodInvocation) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.MethodInvocation decl = StaticAstFactory.createMethodInvocation(methodInvocation,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation decl = StaticAstFactory.createMethodInvocation(methodInvocation,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
    	  	 if(m == null) m = getCurrent().visit((Invocation)decl);
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
@@ -139,9 +140,9 @@ public class AstDelegator extends ASTVisitor  {
      
      @Override
      public boolean visit(final ClassInstanceCreation newInstance) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(newInstance,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(newInstance,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
     	 if(m == null) m = getCurrent().visit((Invocation)decl);
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
@@ -149,9 +150,9 @@ public class AstDelegator extends ASTVisitor  {
      
 	 @Override
      public boolean visit(final ConstructorInvocation alt) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
     	 if(m == null) m = getCurrent().visit((Invocation)decl);
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
@@ -159,9 +160,9 @@ public class AstDelegator extends ASTVisitor  {
 
 	 @Override
      public boolean visit(final SuperConstructorInvocation alt) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
     	 if(m == null) m = getCurrent().visit((Invocation)decl);
    	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
 		 return handleVisitReturn(m);
@@ -169,69 +170,69 @@ public class AstDelegator extends ASTVisitor  {
      
      @Override
      public boolean visit(final EnhancedForStatement foreachStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.ForEach decl = StaticAstFactory.createForEach(foreachStatement,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ForEach decl = StaticAstFactory.createForEach(foreachStatement,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
     	 if(m == null) m = getCurrent().visit((Loop)decl);
 		 return handleVisitReturn(m);
      }
 
      @Override
      public boolean visit(final ForStatement forStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.For decl = StaticAstFactory.createFor(forStatement,context);
+    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.For decl = StaticAstFactory.createFor(forStatement,context);
 		 if(!handleVisitStart(decl)) return false;
-    	 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+    	 PerformanceVisitor m = getCurrent().visit(decl);
     	 if(m == null) m = getCurrent().visit((Loop)decl);
 		 return handleVisitReturn(m);
      }    
      
  	@Override
  	public boolean visit(CatchClause catchClause) {
- 		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.CatchClause decl = StaticAstFactory.createCatchClause(catchClause,context);
+ 		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.CatchClause decl = StaticAstFactory.createCatchClause(catchClause,context);
 		 if(!handleVisitStart(decl)) return false;
- 		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+ 		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
  	} 
 	
 	@Override
 	public boolean visit(Block block) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Block decl = StaticAstFactory.createBlock(block,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Block decl = StaticAstFactory.createBlock(block,context);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
 	
 	
 	@Override
 	public boolean visit(IfStatement ifNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = StaticAstFactory.createBranching(ifNode,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(ifNode,context);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
 	
 	@Override
 	public boolean visit(ConditionalExpression condNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = StaticAstFactory.createBranching(condNode,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(condNode,context);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
 
 	
 	@Override
 	public boolean visit(SwitchStatement switchNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Branching decl = StaticAstFactory.createBranching(switchNode,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(switchNode,context);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
 
 	@Override
 	public boolean visit(TryStatement tryNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.ast.Try decl = StaticAstFactory.createTry(tryNode,context);
+		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try decl = StaticAstFactory.createTry(tryNode,context);
 		 if(!handleVisitStart(decl)) return false;
-		 ProgrammMarkerVisitor m = getCurrent().visit(decl);
+		 PerformanceVisitor m = getCurrent().visit(decl);
 		 return handleVisitReturn(m);
 	}
 	
