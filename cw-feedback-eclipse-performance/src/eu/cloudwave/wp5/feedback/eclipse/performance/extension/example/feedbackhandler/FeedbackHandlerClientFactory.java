@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package eu.cloudwave.wp5.feedback.eclipse;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler;
 
-import com.google.inject.Singleton;
+/**
+ * A factory for {@link FeedbackHandlerClient}'s.
+ * 
+ * The appropriate implementation is created by Guice.
+ */
+public interface FeedbackHandlerClientFactory {
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.ProductionModule;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
-import eu.cloudwave.wp5.feedback.eclipse.tests.mocks.FeedbackHandlerEclipseClientMock;
-
-public class TestModule extends ProductionModule {
-
-  @Override
-  protected void overridableConfiguration() {
-    bind(FeedbackHandlerEclipseClient.class).to(FeedbackHandlerEclipseClientMock.class).in(Singleton.class);
-  }
+  /**
+   * Creates a {@link FeedbackHandlerClient}.
+   * 
+   * @param rootUrl
+   *          the root URL of the feedback handler
+   * @return the created {@link FeedbackHandlerClient}
+   */
+  public FeedbackHandlerClient create(String rootUrl);
 
 }

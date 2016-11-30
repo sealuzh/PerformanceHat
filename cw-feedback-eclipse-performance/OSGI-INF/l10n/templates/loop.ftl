@@ -17,7 +17,7 @@
 		<#if node.isDataNode()>
 		   	<tr>
 		     	<td style='padding-right: 20px;'>${spc}${node.getText()}:</td>
-	    	 	<td>${node.getAvgTime()/1000}s</td>
+	    	 	<td>${node.getPredictedTime()/1000}s</td>
 	    	</tr>
 	    	<#list node.getChildren() as child>
 				<@timeNode node=child indent=indent+1 />
