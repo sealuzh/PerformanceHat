@@ -17,6 +17,18 @@ public class ExampleController {
         return "example";
     }
     
+    public void grill(){
+    	grull();
+    	grall();
+    }
+    
+    public void grall(){
+        greeting(null);
+    }
+    
+    public void grull(){
+        greeting(null);
+    }
     
     @RequestMapping("/users")
     public String greeting(Model model) {
@@ -32,9 +44,6 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-  
-
-    greeting(model);
     
     	int x = getUserInfo().size();
    

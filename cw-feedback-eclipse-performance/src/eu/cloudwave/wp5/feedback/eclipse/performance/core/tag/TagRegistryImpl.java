@@ -6,68 +6,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 
 public class TagRegistryImpl implements TagRegistry{
 	
-	//wow, java does and make it easy to declare ADT's I miss Haskell
-	// If you dont wnat to read all the inner classes they are (in Haskell)
-	// CompositeKey = AstNodeKey String AstNode | MethodKey String MethodLocator | ParamKey String MethodLocator int
-	private interface CompositeKey{};
-	private static final class AstNodeKey implements CompositeKey{
-		public final String tagName;
-		public final ASTNode node;
-		public AstNodeKey(String tagName, ASTNode node) {
-			this.tagName = tagName;
-			this.node = node;
-		}
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + node.hashCode();
-			result = prime * result + tagName.hashCode();
-			return result;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (!(obj instanceof AstNodeKey)) return false;
-			AstNodeKey other = (AstNodeKey) obj;
-			if (!node.equals(other.node)) return false;
-			if (!tagName.equals(other.tagName)) return false;
-			return true;
-		}
-
-		@Override
-		public String toString() {
-			return "AstNodeKey [tagName=" + tagName + ", node=" + node + "]";
-		}
-		
-		
-	}
-	
 	//For now we only accept exact matches
 	//Todo; needs way to remove all AstKeys (to clean up after compile)
-	private final Map<CompositeKey,Map<Object,List<Object>>> entries = Maps.newHashMap();
+	private final Map<CompositeKey,Map<IPath,List<Object>>> entries = Maps.newHashMap();
 	//will be needed by creator to clean old stuff where object is Datasource or the path/feedbackfile
-	private final Map<Object,Set<CompositeKey>> keyAssoc = Maps.newHashMap();
-
-	private final FeedbackProject project;
-
-	public TagRegistryImpl(FeedbackProject project) {
-		this.project = project;
-	}
+	private final Map<IPath,Set<CompositeKey>> keyAssoc = Maps.newHashMap();
 	
 	private final List<Object> extract(CompositeKey key){
 		return entries.getOrDefault(key, Collections.emptyMap()).values().stream().flatMap(v -> v.stream()).collect(Collectors.toList());
@@ -78,11 +32,16 @@ public class TagRegistryImpl implements TagRegistry{
 		return extract(new AstNodeKey(tagName, node));
 	}
 	
+	@Override
+	public List<Object> getTagsForMethod(MethodLocator loc, String tagName) {
+		return extract(new MethodKey(tagName, loc));
+	}
+	
 	public class TagCreatorImpl implements TagCreator{
 		
-		private final Object key;
+		private final IPath key;
 		
-		public TagCreatorImpl(Object key) {
+		public TagCreatorImpl(IPath key) {
 			this.key = key;
 		}
 		
@@ -102,21 +61,40 @@ public class TagRegistryImpl implements TagRegistry{
 				return v;
 			});
 		}
+		
 		@Override
 		public void addAstNodeTag(ASTNode node, String tagName, Object tagValue) {
 			add(new AstNodeKey(tagName, node), tagValue);			
 		}
 
 		@Override
-		public void clearAssosiatedTags() {
+		public void addMethodTag(MethodLocator loc, String tagName, Object tagValue) {
+			add(new MethodKey(tagName, loc), tagValue);			
+		}
+
+		@Override
+		public void clearAssosiatedLocalTags() {
+			clearAssosiatedTags(false);			
+		}
+
+		@Override
+		public void clearAssosiatedPublicTags() {
+			clearAssosiatedTags(true);	
+		}
+		
+		private void clearAssosiatedTags(boolean global) {
 			Set<CompositeKey> keys = keyAssoc.remove(key);
 			if(keys == null) return;
 			for(CompositeKey k: keys){
-				Map<Object,List<Object>> e = entries.get(k);
-				e.remove(key);
-				if(e.isEmpty()) entries.remove(k);
-			}			
+				if(k.isGlobalKey() == global){
+					Map<IPath,List<Object>> e = entries.get(k);
+					e.remove(key);
+					if(e.isEmpty()) entries.remove(k);	
+				}
+			}	
 		}
+		
+		
 
 	}
 

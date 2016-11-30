@@ -35,6 +35,7 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecificat
 public abstract class AbstractFeedbackBuilderParticipant implements FeedbackBuilderParticipant {
   
   public void prepare(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException{};
+  public void cleanup(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException{};
 
 
   /**

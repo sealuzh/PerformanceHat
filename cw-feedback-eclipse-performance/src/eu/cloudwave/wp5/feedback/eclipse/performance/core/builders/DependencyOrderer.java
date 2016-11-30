@@ -25,12 +25,11 @@ public class DependencyOrderer {
 	//orders a list of dependency so that if a needs something provided in b, b is before a in the list
 	//if possible it takes optional dependencies into account, if they lead to a cycle or are not present, they may be ignored
 	//its basically a topological search
-	public static List<PerformancePlugin> order(List<PerformancePlugin> input, List<String> givenOnes){
+	public static List<PerformancePlugin> order(List<PerformancePlugin> input){
 		int markers = input.size();
 		
 		//Check if everithing is avaiable
 		Set<String> allProvided = Sets.newHashSet();
-		allProvided.addAll(givenOnes);
 		for(PerformancePlugin m:input) allProvided.addAll(m.getProvidedTags());
 		for(PerformancePlugin m:input) if(!allProvided.containsAll(m.getRequiredTags())) throw new UnsatisfiedDependencyGraphException();
 		

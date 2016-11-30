@@ -17,10 +17,11 @@ public class ProgrammMarkerContextBase implements AstContext{
 	private final TagProvider tagProv;
 	private final TagCreator tagCrea;	
 	private final TemplateHandler template;
+	private final PerformanceBuilder builder;
 
-	
 	public ProgrammMarkerContextBase(FeedbackProject project, FeedbackJavaFile file, CompilationUnit unit,
-			TagProvider tagProv, TagCreator tagCrea, TemplateHandler template) {
+			TagProvider tagProv, TagCreator tagCrea, TemplateHandler template, PerformanceBuilder builder) {
+		this.builder = builder;
 		this.project = project;
 		this.file = file;
 		this.unit = unit;

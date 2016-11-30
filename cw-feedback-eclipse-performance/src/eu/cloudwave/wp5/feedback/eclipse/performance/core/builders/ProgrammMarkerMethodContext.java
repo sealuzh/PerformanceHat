@@ -22,12 +22,9 @@ public class ProgrammMarkerMethodContext implements AstContext{
 		return base.getProject();
 	}
 
-	
-
 	@Override
 	public TagProvider getTagProvider() {
 		return base.getTagProvider();
-
 	}
 
 	@Override

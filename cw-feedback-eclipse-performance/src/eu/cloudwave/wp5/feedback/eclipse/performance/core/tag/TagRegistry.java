@@ -14,7 +14,7 @@ public interface TagRegistry extends TagProvider {
 	static Map<IPath,TagRegistry> registries = Maps.newHashMap();
 	
 	public static TagRegistry getProjectTagRegistry(final FeedbackProject proj){
-		return registries.computeIfAbsent(proj.getFullPath(), x -> new TagRegistryImpl(proj));
+		return registries.computeIfAbsent(proj.getFullPath(), x -> new TagRegistryImpl());
 	}
 	
 	//Todo: needs public registry for inter ast Markers

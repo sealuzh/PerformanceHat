@@ -31,13 +31,13 @@ import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.Feedbac
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.PluginParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.PerformancePluginsParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin;
 
 public class PerformanceBuilder extends FeedbackBuilder {
-
+	
   /**
    * {@inheritDoc}
    */
@@ -58,9 +58,9 @@ public class PerformanceBuilder extends FeedbackBuilder {
 		}
     }
    
-    markers = DependencyOrderer.order(markers, Lists.asList("CollectionSize","AvgExcecutionTime", new String[]{}));
+    markers = DependencyOrderer.order(markers);
     
-    return markers.stream().map(m -> new PluginParticipant(m)).collect(Collectors.toList());
+    return markers.stream().map(m -> new PerformancePluginsParticipant(m, this)).collect(Collectors.toList());
   }
 
   /**

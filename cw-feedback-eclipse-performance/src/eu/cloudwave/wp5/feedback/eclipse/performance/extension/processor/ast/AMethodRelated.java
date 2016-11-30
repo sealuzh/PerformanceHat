@@ -47,4 +47,16 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	    }
 	    return argumentNames;
 	  }
+
+	@Override
+	public List<Object> getTags(String name) {
+		MethodLocator loc = createCorrespondingMethodLocation();
+		List<Object> res = Lists.newArrayList();
+		res.addAll(ctx.getTagProvider().getTagsForMethod(loc, name));
+		res.addAll(super.getTags(name));
+		return res;
+	}
+	  
+	  
+	  
 }

@@ -41,5 +41,6 @@ public interface FeedbackBuilderParticipant {
    */
   public void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
   public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException;
+  public void cleanup(FeedbackJavaProject project, Set<FeedbackJavaFile> javaSourceFiles) throws CoreException;
 
 }

@@ -106,6 +106,9 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 	      participant.buildFile(project, javaFile, astRoot.get());
 	    }
 	}
+	for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+      participant.cleanup(project, project.getJavaSourceFiles());
+    }
    
   }
 
@@ -133,6 +136,9 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 		      participant.buildFile(project, javaFile, astRoot.get());
 		    }
       }
+      for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+          participant.cleanup(project, feedbackDeltaOptional.get().getChangedJavaFiles());
+	  }
     }
   }
 }
