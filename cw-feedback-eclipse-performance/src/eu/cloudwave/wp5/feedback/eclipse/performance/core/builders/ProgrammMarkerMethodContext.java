@@ -3,6 +3,7 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
@@ -18,7 +19,7 @@ public class ProgrammMarkerMethodContext implements AstContext{
 	}
 
 	@Override
-	public FeedbackProject getProject() {
+	public FeedbackJavaProject getProject() {
 		return base.getProject();
 	}
 

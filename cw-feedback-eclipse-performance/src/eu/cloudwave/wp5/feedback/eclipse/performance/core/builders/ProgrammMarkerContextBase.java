@@ -5,23 +5,22 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 
 public class ProgrammMarkerContextBase implements AstContext{
-	private final FeedbackProject project;
+	private final FeedbackJavaProject project;
 	private final FeedbackJavaFile file;
 	private final CompilationUnit unit;
 	private final TagProvider tagProv;
 	private final TagCreator tagCrea;	
 	private final TemplateHandler template;
-	private final PerformanceBuilder builder;
 
-	public ProgrammMarkerContextBase(FeedbackProject project, FeedbackJavaFile file, CompilationUnit unit,
-			TagProvider tagProv, TagCreator tagCrea, TemplateHandler template, PerformanceBuilder builder) {
-		this.builder = builder;
+	public ProgrammMarkerContextBase(FeedbackJavaProject project, FeedbackJavaFile file, CompilationUnit unit,
+			TagProvider tagProv, TagCreator tagCrea, TemplateHandler template) {
 		this.project = project;
 		this.file = file;
 		this.unit = unit;
@@ -32,7 +31,7 @@ public class ProgrammMarkerContextBase implements AstContext{
 	}
 
 	@Override
-	public FeedbackProject getProject() {
+	public FeedbackJavaProject getProject() {
 		return project;
 	}
 

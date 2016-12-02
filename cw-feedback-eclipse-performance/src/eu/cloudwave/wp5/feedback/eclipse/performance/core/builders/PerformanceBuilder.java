@@ -15,6 +15,7 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,45 +23,66 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackCleaner;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.FeedbackBuilderParticipant;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.PerformancePluginsParticipant;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin;
 
 public class PerformanceBuilder extends FeedbackBuilder {
+	
+	
+  public static void processFile(FeedbackJavaProject project, FeedbackJavaFile file)  throws CoreException{
+	 	Optional<CompilationUnit> astRoot = file.getAstRoot();
+	 	if(!astRoot.isPresent()) return;	
+	 	List<FeedbackBuilderParticipant> participants = getParticipantsStatic();
+	 	for (final FeedbackBuilderParticipant participant : participants) {
+		 	participant.prepare(project, Collections.singleton(file));
+	  	}
+	 	for (final FeedbackBuilderParticipant participant : participants) {
+	 		participant.buildFile(project, file, astRoot.get());
+	 	}
+	 	for (final FeedbackBuilderParticipant participant : participants) {
+	 		participant.cleanup(project, Collections.singleton(file));
+	 	}
+  }
+
+  private static List<FeedbackBuilderParticipant> getParticipantsStatic(){
+	  
+		 //Todo: cache??
+	    List<PerformancePlugin> markers  = Lists.newArrayList();
+	    
+	    IExtensionRegistry reg = Platform.getExtensionRegistry();
+	    
+	    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.EXTENSION)){
+	    	try {
+	    		markers.add((PerformancePlugin) elem.createExecutableExtension("class"));
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+	    }
+	   
+	    markers = DependencyOrderer.order(markers);
+	    
+	    return markers.stream().map(m -> new PerformancePluginsParticipant(m)).collect(Collectors.toList());
+  }
 	
   /**
    * {@inheritDoc}
    */
   @Override
   protected List<FeedbackBuilderParticipant> getParticipants() {
-	  
-	//Todo: cache???  
-	  
-    List<PerformancePlugin> markers  = Lists.newArrayList();
-    
-    IExtensionRegistry reg = Platform.getExtensionRegistry();
-    
-    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.EXTENSION)){
-    	try {
-    		markers.add((PerformancePlugin) elem.createExecutableExtension("class"));
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-    }
-   
-    markers = DependencyOrderer.order(markers);
-    
-    return markers.stream().map(m -> new PerformancePluginsParticipant(m, this)).collect(Collectors.toList());
+	 return getParticipantsStatic();
   }
 
   /**

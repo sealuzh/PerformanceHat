@@ -1,5 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +10,11 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
@@ -23,12 +28,12 @@ import com.google.common.collect.Sets;
 
 public class ImpactPropagator {
 
-	public static List<IPath> calculateImpact(IMember mem){
+	public static void calculateImpact(IMember mem){
 		 Queue<IMember> open = Lists.newLinkedList();
 		 open.add(mem);
 		 Set<IMember> visited = Sets.newHashSet();
 		 Map<IPath,Set<IPath>> inedges = Maps.newHashMap(); 
-		 //Map<IPath,Integer> mult = Maps.newHashMap(); 
+		 Map<IPath,ICompilationUnit> targets = Maps.newHashMap(); 
 		 while(!open.isEmpty()){
 			 IMember cur = open.poll();
 			 if(visited.contains(cur)) continue;
@@ -55,6 +60,7 @@ public class ImpactPropagator {
 				 mult.compute(cur.getPath(), (k,v)-> )
 			 }*/
 			 
+			 targets.putIfAbsent(cur.getPath(),cur.getCompilationUnit());
 			 inedges.merge(cur.getPath(), files, (v1,v2) -> Sets.union(v1, v2));
 			 visited.add(cur);
 			 open.addAll(methodCalls);
@@ -71,7 +77,6 @@ public class ImpactPropagator {
 			 }
 		 }
 		 
-		 List<IPath> ordered = Lists.newArrayList();
 		 while (!outDegree.isEmpty()) {
 			 List<IPath> smallest = Lists.newArrayList();
 			 int smallestNum = Integer.MAX_VALUE;
@@ -86,14 +91,14 @@ public class ImpactPropagator {
 			 }
 			 for(IPath p:smallest){
 				 outDegree.remove(p);
-				 ordered.add(p);
+				 
+				 //todo: do something with it
+				 
+				 
 				 for(IPath ip: inedges.get(p)){
 					 outDegree.computeIfPresent(ip, (k,v) -> v-1);
 				 }
 			 }
 		 }
-		 
-		 return ordered;
-
 	}
 }

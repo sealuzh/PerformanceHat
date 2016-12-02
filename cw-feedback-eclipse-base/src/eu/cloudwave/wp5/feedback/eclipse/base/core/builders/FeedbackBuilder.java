@@ -17,6 +17,7 @@ package eu.cloudwave.wp5.feedback.eclipse.base.core.builders;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
@@ -40,11 +41,6 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaRe
  * A Builder for the feedback plugin. Delegates the Work to a list of registered {@link FeedbackBuilderParticipant}'s.
  */
 public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
-
-  public FeedbackBuilder() {
-    System.out.println("Abstract FeedbackBuilder");
-  }
-
   /*
    * Returns implementation of FeedbackJavaResourceFactory (each plugin can use its own dependency injector in the
    * FeedbackBuilder subclass)
@@ -96,18 +92,22 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
   private void fullBuild(final FeedbackJavaProject project) throws CoreException {
     System.out.println("fullBuild");
     this.getFeedbackCleaner().cleanAll(project);
-	for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-      participant.prepare(project, project.getJavaSourceFiles());
+	
+ 	List<FeedbackBuilderParticipant> participants = this.getParticipants();
+ 	Set<FeedbackJavaFile> files = project.getJavaSourceFiles();
+ 	
+    for (final FeedbackBuilderParticipant participant : participants) {
+      participant.prepare(project, files);
     }
-	for(FeedbackJavaFile javaFile:project.getJavaSourceFiles()){
+	for(FeedbackJavaFile javaFile:files){
 		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
 		if(!astRoot.isPresent()) continue;
-		for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
+		for (final FeedbackBuilderParticipant participant : participants) {
 	      participant.buildFile(project, javaFile, astRoot.get());
 	    }
 	}
-	for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-      participant.cleanup(project, project.getJavaSourceFiles());
+	for (final FeedbackBuilderParticipant participant : participants) {
+      participant.cleanup(project, files);
     }
    
   }
@@ -126,19 +126,20 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
     if (feedbackDeltaOptional.isPresent()) {
       final FeedbackJavaResourceDelta delta = feedbackDeltaOptional.get();
       this.getFeedbackCleaner().cleanDelta(delta);
-      for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-          participant.prepare(project, feedbackDeltaOptional.get().getChangedJavaFiles());
-	  }
-      for(FeedbackJavaFile javaFile:feedbackDeltaOptional.get().getChangedJavaFiles()){
-			Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
-			if(!astRoot.isPresent()) continue;
-			for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-		      participant.buildFile(project, javaFile, astRoot.get());
-		    }
-      }
-      for (final FeedbackBuilderParticipant participant : this.getParticipants()) {
-          participant.cleanup(project, feedbackDeltaOptional.get().getChangedJavaFiles());
-	  }
+      
+   		List<FeedbackBuilderParticipant> participants = this.getParticipants();
+   		Set<FeedbackJavaFile> files = feedbackDeltaOptional.get().getChangedJavaFiles();
+   	
+	    for (final FeedbackBuilderParticipant participant : participants) {
+	        participant.prepare(project, files);
+	    }
+	  	for(FeedbackJavaFile javaFile:files){
+	  		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+	  		if(!astRoot.isPresent()) continue;
+	  		for (final FeedbackBuilderParticipant participant : participants) {
+	  	      participant.buildFile(project, javaFile, astRoot.get());
+	  	    }
+	  	}
     }
   }
 }

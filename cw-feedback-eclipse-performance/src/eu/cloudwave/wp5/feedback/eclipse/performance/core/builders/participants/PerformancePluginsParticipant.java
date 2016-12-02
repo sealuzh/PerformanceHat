@@ -23,10 +23,8 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 
 	 private TemplateHandler templateHandler;
 	 private final PerformancePlugin ext;
-	 private final PerformanceBuilder builder;
 
-	 public PerformancePluginsParticipant(PerformancePlugin ext, PerformanceBuilder builder) {
-	    this.builder = builder;
+	 public PerformancePluginsParticipant(PerformancePlugin ext) {
 		this.ext = ext;
 		this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
 	  }
@@ -35,7 +33,7 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 	public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
 			TagCreator crea = reg.getCreatorFor(javaFile);
-			AstContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler, builder);
+			AstContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler);
 			astRoot.accept(new AstDelegator(ext.createPerformanceVisitor(rootContext),rootContext) );
 	}
 	

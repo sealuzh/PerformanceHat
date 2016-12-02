@@ -71,13 +71,27 @@
             id="eu.cloudwave.wp5.feedback.eclipse.performance.categories.ToggleProjectNatureCategory">
       </category>
       
+      <category
+            name="Performance Commands"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.categories.PerformanceCommand">
+      </category>
+      
       <command
             name="%commands.ToggleProjectNatureCommand.name"
             categoryId="eu.cloudwave.wp5.feedback.eclipse.performance.categories.ToggleProjectNatureCategory"
             id="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand">
       </command>
       
+      <command
+            name="Propagate Feedback"
+            categoryId="eu.cloudwave.wp5.feedback.eclipse.performance.categories.PerformanceCommand"
+            id="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ImpactPropagationCommand">
+      </command>
+      
    </extension>
+  
+   
+   
    
    
    <!-- Handlers -->
@@ -86,6 +100,11 @@
       <handler
             commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ToggleProjectNatureCommand"
             class="eu.cloudwave.wp5.feedback.eclipse.performance.core.handlers.ToggleProjectNatureHandler">
+      </handler>
+      
+      <handler
+            commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ImpactPropagationCommand"
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.core.handlers.ImpactPropagationHandler">
       </handler>
       
    </extension>
@@ -138,6 +157,12 @@
             </visibleWhen>
          </command>
       </menuContribution>
+      <menuContribution locationURI="popup:#AbstractTextEditorContext?after=additions">
+	    <command 
+	    	commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ImpactPropagationCommand" 
+	    	label="Propagate Feedback" 
+	    	style="push" />
+	   </menuContribution>
        
    </extension>
 
