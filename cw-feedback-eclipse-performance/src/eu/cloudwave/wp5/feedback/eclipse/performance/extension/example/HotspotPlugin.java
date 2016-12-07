@@ -2,6 +2,7 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.Perfo
 
 public class HotspotPlugin  implements  PerformancePlugin{
 	
+	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin";
+	
 	  private static final String AVG_EXECUTION_TIME = "avgExecutionTime";
 	  private static final String NAME = "name";
 	  private static final String KIND = "kind";
@@ -62,6 +65,10 @@ public class HotspotPlugin  implements  PerformancePlugin{
 	  private static final String LOOP_MESSAGE_PATTERN = "Critical Loop: Average Total Time is %s (Average Iterations: %s).";
 	  private static final String METHOD_MESSAGE_PATTERN = "Critical method: Average Total Time is %s.";
 
+	  @Override
+	  public String getId() {
+		  	return ID;
+	  }
 
 	  @Override
 	  public List<String> getRequiredTags() {
@@ -79,9 +86,9 @@ public class HotspotPlugin  implements  PerformancePlugin{
 			
 			@Override
 			public PerformanceVisitor visit(Loop loop) {
-				List<Object> entry = loop.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
+				Collection<Object> entry = loop.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
 				if(entry.size() == 1){ //for now exactly one
-					 PredictionNode n = (PredictionNode) entry.get(0);
+					 PredictionNode n = (PredictionNode) entry.iterator().next();
 					 if(n instanceof LoopPrediction){
 						LoopPrediction ln = (LoopPrediction)n;
 						final double predThreshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
@@ -97,7 +104,7 @@ public class HotspotPlugin  implements  PerformancePlugin{
 			public PerformanceVisitor visit(MethodOccurence method) {
 				 final double threshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__HOTSPOTS, PerformanceConfigs.DEFAULT_THRESHOLD_HOTSPOTS);
 				 double averagedTime = 0;
-				 List<Object> entry = method.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
+				 Collection<Object> entry = method.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
 				 int i = 0;
 				 for (double avgExecutionTime :method.getDoubleTags(AVG_EXEC_TIME_TAG)) {
 					 averagedTime+=avgExecutionTime;
@@ -121,7 +128,7 @@ public class HotspotPlugin  implements  PerformancePlugin{
 					 additionalAttributes.put(MarkerAttributes.ARGUMENTS, Joiners.onComma(loc.argumentTypes));
 					 method.markWarning(Ids.PERFORMANCE_MARKER,PerformanceMarkerTypes.HOTSPOT,message, additionalAttributes);
 				 }else if(entry.size() == 1){ //for now exactly one
-					 PredictionNode n = (PredictionNode) entry.get(0);
+					 PredictionNode n = (PredictionNode) entry.iterator().next();
 					 if(n instanceof BlockPrediction){
 						BlockPrediction bn = (BlockPrediction)n;
 						final double predThreshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
@@ -131,8 +138,6 @@ public class HotspotPlugin  implements  PerformancePlugin{
 							 if(method instanceof MethodDeclaration){
 								 MethodDeclaration decl = (MethodDeclaration)method;
 								 IMember mem = (IMember)((org.eclipse.jdt.core.dom.MethodDeclaration)method.getEclipseAstNode()).resolveBinding().getJavaElement();
-									//todo: new tag called average Prediction Time Tag + Build Member
-
 							 }
 						}
 					 

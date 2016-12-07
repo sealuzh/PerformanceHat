@@ -1,6 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.google.common.base.Optional;
 
@@ -16,7 +16,7 @@ public class LoopUtils {
 	public static Double findNumOfIterations(Loop loop, AstContext context){
 		  final Optional<IAstNode> collectionSource = loop.getSourceNode();
 		  if (collectionSource.isPresent()) {
-			 List<Double> colSize = collectionSource.get().getDoubleTags(COLLECTION_SIZE_TAG);
+			 Collection<Double> colSize = collectionSource.get().getDoubleTags(COLLECTION_SIZE_TAG);
 			 if(!colSize.isEmpty()){
 				 double averageSize = 0.0; 
 				 for(double size :colSize)averageSize+=size;

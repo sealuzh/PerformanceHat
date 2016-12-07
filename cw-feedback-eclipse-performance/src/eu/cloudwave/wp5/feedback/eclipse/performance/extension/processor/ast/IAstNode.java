@@ -1,9 +1,11 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -18,16 +20,17 @@ public interface IAstNode {
 	
 	public void attachTag(String name, Object value);
 	
-    public List<Object> getTags(String name);
+    public Collection<Object> getTags(String name);
 	
-	default public List<Double> getDoubleTags(String name){
+	default public Collection<Double> getDoubleTags(String name){
 		return getTags(name).stream().map(t -> {
 			if(t instanceof Double) return (Double) t;
 			else return Double.parseDouble(t.toString());
 		}).collect(Collectors.toList());
 	}
 	
-	default public List<Integer> getIntTags(String name){
+	default public Collection<Integer> getIntTags(String name){
+		
 		return getTags(name).stream().map(t -> {
 			if(t instanceof Integer) return (Integer) t;
 			else return Integer.parseInt(t.toString());

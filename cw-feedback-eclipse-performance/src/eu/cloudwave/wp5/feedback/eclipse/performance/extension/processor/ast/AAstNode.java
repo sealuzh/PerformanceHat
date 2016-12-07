@@ -1,5 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	}
 
 	@Override
-	public List<Object> getTags(String name) {
+	public Collection<Object> getTags(String name) {
 		return ctx.getTagProvider().getTagsForNode(inner, name);
 	}
 

@@ -1,5 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -49,7 +50,7 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	  }
 
 	@Override
-	public List<Object> getTags(String name) {
+	public Collection<Object> getTags(String name) {
 		MethodLocator loc = createCorrespondingMethodLocation();
 		List<Object> res = Lists.newArrayList();
 		res.addAll(ctx.getTagProvider().getTagsForMethod(loc, name));

@@ -16,10 +16,16 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
 
 public class FeedbackHandlerPlugin implements PerformancePlugin{
 	 
+	private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin";
 	private static final String COLLECTION_SIZE_TAG = "CollectionSize";
 	private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
 	  
 	private final FeedbackHandlerEclipseClient fddClient = PerformancePluginActivator.instance(FeedbackHandlerEclipseClient.class);
+	
+	@Override
+	public String getId() {
+		return ID;
+	}	  
 	
 	public List<String> getProvidedTags(){
 		return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});

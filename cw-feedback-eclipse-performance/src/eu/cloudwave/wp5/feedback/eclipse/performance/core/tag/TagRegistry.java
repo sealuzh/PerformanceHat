@@ -7,6 +7,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IPath;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 
 public interface TagRegistry extends TagProvider {
 	
@@ -16,9 +17,7 @@ public interface TagRegistry extends TagProvider {
 	public static TagRegistry getProjectTagRegistry(final FeedbackProject proj){
 		return registries.computeIfAbsent(proj.getFullPath(), x -> new TagRegistryImpl());
 	}
-	
-	//Todo: needs public registry for inter ast Markers
-	//public TagCreator getCreatorFor(FeedbackProject proj);	
-	public TagCreator getCreatorFor(FeedbackJavaFile file);
+		
+	public TagCreator getCreatorFor(FeedbackJavaFile file, PerformancePlugin plugin);
 	
 }

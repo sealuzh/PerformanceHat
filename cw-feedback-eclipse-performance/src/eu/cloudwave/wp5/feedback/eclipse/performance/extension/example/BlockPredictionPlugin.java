@@ -1,7 +1,9 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
@@ -27,10 +29,16 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
 
 public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollectorCallback{
 
-
+	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin";
 	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
 	  private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
 	  public static final String AVG_PRED_TIME_TAG = "AvgPredictionTime";
+	  
+	  @Override
+	  public String getId() {
+			return ID;
+	  }	  
+	
 
 	  @Override
 	  public List<String> getRequiredTags() {
@@ -57,9 +65,8 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 						public PredictionNode generateResults() {
 							final double methodTimeSum = sum(excecutionTimeStats);
 							final PredictionNode methodN = new BlockPrediction("method declaration", methodTimeSum, excecutionTimeStats);	
-							//final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-							//if (methodTimeSum >= threshold) createCriticalMetodMarker(method,context.getTemplateHandler(),methodN);
-							method.attachTag(AVG_PRED_TIME_TAG, methodN);
+							method.attachPublicTag(AVG_PRED_TIME_TAG, methodN);
+							//method.attachTag(AVG_PRED_TIME_TAG, methodN);
 							return methodN;
 						} 
 					  };
@@ -73,13 +80,19 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	  
 	@Override
 	public PredictionNode invocationEncountered(Invocation invocation, AstContext context) {
-		List<Double> tags = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
-		if(tags.isEmpty()) return null;
+		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
+		//Consume own Tags, only works over multiple compiles or else we would need complext tag management
+		Collection<Object> predTags = invocation.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
+		//We prefer predictions currently
+		if(!predTags.isEmpty()) {
+			measurements = predTags.stream().map(p -> ((PredictionNode)p).getPredictedTime()).collect(Collectors.toList());
+		}
+		if(measurements.isEmpty()) return null;
 		double avgExecTime = 0.0;
-		for(double avgT : tags) {
+		for(double avgT : measurements) {
 			avgExecTime+=avgT;
 		}
-		avgExecTime /= tags.size();
+		avgExecTime /= measurements.size();
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
 		return new MethodCallPrediction(loc, avgExecTime);
 	}
@@ -143,7 +156,6 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 			
 			return tryN;
 		}
-	}	  
-	
+	}
 	
 }

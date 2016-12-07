@@ -12,12 +12,11 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFi
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.AstDelegator;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.ProgrammMarkerContextBase;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagRegistry;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 
 public class PerformancePluginsParticipant extends AbstractFeedbackBuilderParticipant implements FeedbackBuilderParticipant{
 
@@ -32,7 +31,7 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 	@Override
 	public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
-			TagCreator crea = reg.getCreatorFor(javaFile);
+			TagCreator crea = reg.getCreatorFor(javaFile, ext);
 			AstContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler);
 			astRoot.accept(new AstDelegator(ext.createPerformanceVisitor(rootContext),rootContext) );
 	}
@@ -41,7 +40,7 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 	public void cleanup(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException {
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
 		for(FeedbackJavaFile javaFile:javaFiles){
-			reg.getCreatorFor(javaFile).clearAssosiatedLocalTags();
+			reg.getCreatorFor(javaFile, ext).clearAssosiatedLocalTags();
 		}
 	}
 	

@@ -16,7 +16,7 @@ public class ExampleController {
     public String example(Model model){
         return "example";
     }
-    
+   
     public void grill(){
     	grull();
     	grall();
@@ -29,7 +29,6 @@ public class ExampleController {
     public void grull(){
         greeting(null);
     }
-    
     
     @RequestMapping("/users")
     public String greeting(Model model) {

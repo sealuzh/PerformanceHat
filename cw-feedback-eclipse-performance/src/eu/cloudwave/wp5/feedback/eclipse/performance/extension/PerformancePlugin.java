@@ -9,6 +9,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
 
 public interface PerformancePlugin {
 
+	public String getId();
+	
 	default List<String> getProvidedTags(){return Collections.emptyList();}
 	default List<String> getRequiredTags(){return Collections.emptyList();}
 	default List<String> getOptionalRequiredTags(){return Collections.emptyList();}
