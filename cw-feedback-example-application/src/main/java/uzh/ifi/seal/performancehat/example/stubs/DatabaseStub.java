@@ -44,7 +44,7 @@ public class DatabaseStub implements IDatabase {
 		
 	}
 
-	
+
 	public List<String> getUserInfo() {
 		List<String> userInfoList = new ArrayList<String>();
 		for(IUser user: userList){

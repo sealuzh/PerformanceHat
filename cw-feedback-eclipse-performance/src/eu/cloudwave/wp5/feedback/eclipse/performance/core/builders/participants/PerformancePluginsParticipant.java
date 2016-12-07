@@ -38,14 +38,6 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 	}
 	
 	@Override
-	public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException {
-		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
-		for(FeedbackJavaFile javaFile:javaFiles){
-			reg.getCreatorFor(javaFile).clearAssosiatedPublicTags();
-		}
-	}
-	
-	@Override
 	public void cleanup(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException {
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
 		for(FeedbackJavaFile javaFile:javaFiles){

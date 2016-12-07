@@ -161,7 +161,8 @@
 	    <command 
 	    	commandId="eu.cloudwave.wp5.feedback.eclipse.performance.commands.ImpactPropagationCommand" 
 	    	label="Propagate Feedback" 
-	    	style="push" />
+	    	style="push" >
+          </command>
 	   </menuContribution>
        
    </extension>

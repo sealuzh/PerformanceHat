@@ -22,8 +22,14 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.URIUtil;
+import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
@@ -52,20 +58,34 @@ public class ImpactPropagationHandler extends AbstractHandler {
   @Override
   public Object execute(final ExecutionEvent event) throws ExecutionException {
 	  
-	  
+	  ISelection sel = HandlerUtil.getCurrentSelection(event);
+	  if(!(sel instanceof ITextSelection)) return null;
+	  final ITextSelection textSel = (ITextSelection)sel;
       IFile file = getFileFromEditorInput(HandlerUtil.getActiveEditor(event).getEditorInput());
-
 	  FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
 	  Optional<? extends FeedbackJavaFile> ojfFile = factory.create(file);  
 	  if(!ojfFile.isPresent())  return null;
 	  FeedbackJavaFile jfFile = ojfFile.get();
-	  FeedbackProject  fp = jfFile.getFeedbackProject();
-	  Optional<? extends FeedbackJavaProject>  ofjP = factory.create(fp.getProject());
-	  if(!ofjP.isPresent()) return null;
-	  FeedbackJavaProject fjp = ofjP.get();
-	  throw new IllegalArgumentException(fjp+" "+jfFile);
-	        
-	  //return null;
+	  Optional<CompilationUnit> astRoot = jfFile.getAstRoot();
+	  if(!astRoot.isPresent()) return null;	
+	  CompilationUnit unit = astRoot.get();
+	  unit.accept(new ASTVisitor() {
+		@Override
+		public boolean visit(MethodDeclaration node) {
+			int off = textSel.getOffset();
+			if(node.getStartPosition() <= off && off <= node.getStartPosition()+node.getLength()){
+				try {
+					ImpactPropagator.calculateImpact((IMember)node.resolveBinding().getJavaElement());
+				} catch (CoreException e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
+			return false;
+		} 
+	  });
+	  
+	 	        
+	  return null;
   }
   
   public static IFile getFileFromEditorInput(IEditorInput input)

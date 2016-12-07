@@ -74,28 +74,16 @@ public class TagRegistryImpl implements TagRegistry{
 
 		@Override
 		public void clearAssosiatedLocalTags() {
-			clearAssosiatedTags(false);			
-		}
-
-		@Override
-		public void clearAssosiatedPublicTags() {
-			clearAssosiatedTags(true);	
-		}
-		
-		private void clearAssosiatedTags(boolean global) {
 			Set<CompositeKey> keys = keyAssoc.remove(key);
 			if(keys == null) return;
 			for(CompositeKey k: keys){
-				if(k.isGlobalKey() == global){
+				if(!k.isGlobalKey()){
 					Map<IPath,List<Object>> e = entries.get(k);
 					e.remove(key);
 					if(e.isEmpty()) entries.remove(k);	
 				}
-			}	
+			}			
 		}
-		
-		
-
 	}
 
 	@Override

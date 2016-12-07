@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
+package eu.cloudwave.wp5.feedback.eclipse.performance.core.handlers;
 
 import java.lang.annotation.Target;
 import java.util.ArrayList;
@@ -8,10 +8,14 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -21,19 +25,29 @@ import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
 import org.eclipse.jdt.internal.corext.callhierarchy.MethodCall;
 import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
+import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
+
 
 public class ImpactPropagator {
 
-	public static void calculateImpact(IMember mem){
+	public static void calculateImpact(IMember mem) throws CoreException{
 		 Queue<IMember> open = Lists.newLinkedList();
 		 open.add(mem);
 		 Set<IMember> visited = Sets.newHashSet();
 		 Map<IPath,Set<IPath>> inedges = Maps.newHashMap(); 
-		 Map<IPath,ICompilationUnit> targets = Maps.newHashMap(); 
+		 Map<IPath,IFile> targets = Maps.newHashMap(); 
+		 List<IPath> paths = Lists.newArrayList();
+
 		 while(!open.isEmpty()){
 			 IMember cur = open.poll();
 			 if(visited.contains(cur)) continue;
@@ -59,8 +73,7 @@ public class ImpactPropagator {
 			 /*if(inter){
 				 mult.compute(cur.getPath(), (k,v)-> )
 			 }*/
-			 
-			 targets.putIfAbsent(cur.getPath(),cur.getCompilationUnit());
+			 targets.putIfAbsent(cur.getPath(),(IFile)cur.getResource());
 			 inedges.merge(cur.getPath(), files, (v1,v2) -> Sets.union(v1, v2));
 			 visited.add(cur);
 			 open.addAll(methodCalls);
@@ -73,7 +86,7 @@ public class ImpactPropagator {
 		 
 		 for(Set<IPath> ms: inedges.values()){
 			 for(IPath m:ms){
-				 outDegree.compute(m, (k,v) -> v+1); 
+				 outDegree.compute(m, (k,v) -> (v==null)?1:v+1); 
 			 }
 		 }
 		 
@@ -90,15 +103,26 @@ public class ImpactPropagator {
 				 }
 			 }
 			 for(IPath p:smallest){
-				 outDegree.remove(p);
-				 
-				 //todo: do something with it
-				 
-				 
+				 outDegree.remove(p); 
+				 analyze(targets.get(p));
 				 for(IPath ip: inedges.get(p)){
 					 outDegree.computeIfPresent(ip, (k,v) -> v-1);
 				 }
 			 }
+
 		 }
+		 
+	}
+	
+	private static void analyze(IFile file) throws CoreException{
+		FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
+		Optional<? extends FeedbackJavaFile> ojfFile = factory.create(file);  
+		if(!ojfFile.isPresent())  throw new IllegalArgumentException("File Fail:"+file.getFullPath());
+		FeedbackJavaFile jfFile = ojfFile.get();
+		FeedbackProject  fp = jfFile.getFeedbackProject();
+		Optional<? extends FeedbackJavaProject>  ofjP = factory.create(fp.getProject());
+		if(!ofjP.isPresent()) throw new IllegalArgumentException("Project Fail");;
+		FeedbackJavaProject fjp = ofjP.get();
+		PerformanceBuilder.processFile(fjp, jfFile);
 	}
 }

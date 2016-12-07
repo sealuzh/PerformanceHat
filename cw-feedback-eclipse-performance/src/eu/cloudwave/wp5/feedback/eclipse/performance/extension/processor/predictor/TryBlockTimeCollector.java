@@ -29,7 +29,7 @@ class TryBlockTimeCollector extends BlockTimeCollector{
 	
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
-		if(finallyBlock.equals(node)){
+		if(finallyBlock != null && finallyBlock.equals(node)){
 			return new BlockTimeCollector(callback, context){
 				@Override
 				public void finish() {

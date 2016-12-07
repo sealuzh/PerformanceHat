@@ -1,7 +1,5 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.tag;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-
 final class MethodKey implements CompositeKey{
 	public final String tagName;
 	public final MethodLocator loc;
