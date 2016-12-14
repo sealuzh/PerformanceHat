@@ -15,7 +15,7 @@ public class CatchClause extends AAstNode<org.eclipse.jdt.core.dom.CatchClause> 
 	//Todo: Exception variable
 	
 	public Block getBody(){
-		return new Block(inner.getBody(),ctx);
+		return StaticAstFactory.createBlock(inner.getBody(),ctx);
 	}
 
 }

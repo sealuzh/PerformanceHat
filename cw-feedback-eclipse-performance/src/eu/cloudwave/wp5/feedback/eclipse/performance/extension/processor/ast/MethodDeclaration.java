@@ -11,10 +11,10 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 		super(methodDeclaration, AMethodRelated.CallType.DECLARATION,ctx);
 	 }
 		
-		 @Override
-		public MethodDeclaration getCurrentMethode() {
+	 @Override
+	 public MethodDeclaration getCurrentMethode() {
 			return this;
-		}
+	 }
 	  
 	  
 	  /**

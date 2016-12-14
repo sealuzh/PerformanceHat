@@ -2,7 +2,6 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -37,10 +36,10 @@ class LoopAnalysisHelper {
 
 	 	private static Optional<ParameterDeclaration> getParameter(final String variableName, AstContext ctx) {
 			int counter = 0;
-		    for (final Object parameter : ctx.getCurrentMethode().inner.parameters()) {
+		    for (final Object parameter : ctx.getCurrentMethod().inner.parameters()) {
 		      if (parameter instanceof SingleVariableDeclaration) { // should always be the case
 		        if (((SingleVariableDeclaration) parameter).getName().toString().equals(variableName)) {
-			      return Optional.of(new eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ParameterDeclaration(counter,ctx.getCurrentMethode(),(SingleVariableDeclaration) parameter,ctx));
+			      return Optional.of(StaticAstFactory.createParameterDeclaration(counter,(SingleVariableDeclaration) parameter,ctx));
 		        }
 		      }
 		      counter++;
@@ -52,7 +51,7 @@ class LoopAnalysisHelper {
 			Box<IAstNode> inv = new Box<>();	
 
 			//todo: adapt to use newAst and not old one, if it somwhen support all these
-			ctx.getCurrentMethode().getEclipseAstNode().getBody().accept(new ASTVisitor() {
+			ctx.getCurrentMethod().getEclipseAstNode().getBody().accept(new ASTVisitor() {
 
 		      @Override
 		      public boolean visit(final VariableDeclarationFragment node) {

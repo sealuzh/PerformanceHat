@@ -60,8 +60,6 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
 
     // reload properties before we call buildFile for every file that has to be rebuilt
     this.reloadProperties(project);
-
-    // build files
     super.prepare(project, javaFiles);
   }
 

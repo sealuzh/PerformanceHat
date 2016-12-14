@@ -93,7 +93,7 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 				return n.orNull();
 			}
 			if(receiver instanceof org.eclipse.jdt.core.dom.MethodInvocation){
-				return new eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)receiver,ctx);
+				return StaticAstFactory.createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)receiver,ctx);
 			}
 			return StaticAstFactory.fromEclipseAstNode(receiver, ctx);
 		}

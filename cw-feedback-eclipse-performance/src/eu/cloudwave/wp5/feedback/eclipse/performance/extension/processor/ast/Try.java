@@ -12,16 +12,16 @@ public class Try extends AAstNode<org.eclipse.jdt.core.dom.TryStatement> {
 	}
 	
 	public Block getBody(){
-		return new Block(inner.getBody(),ctx);
+		return StaticAstFactory.createBlock(inner.getBody(),ctx);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<CatchClause> getCactchClauses(){
-		return ((List<org.eclipse.jdt.core.dom.CatchClause>)inner.catchClauses()).stream().map(b ->  new CatchClause(b,ctx)).collect(Collectors.toList());
+		return ((List<org.eclipse.jdt.core.dom.CatchClause>)inner.catchClauses()).stream().map(b ->  StaticAstFactory.createCatchClause(b,ctx)).collect(Collectors.toList());
 	}
 
 	public Block getFinally(){
 		if(inner.getFinally() == null) return null;
-		return new Block(inner.getFinally(),ctx);
+		return StaticAstFactory.createBlock(inner.getFinally(),ctx);
 	}
 }

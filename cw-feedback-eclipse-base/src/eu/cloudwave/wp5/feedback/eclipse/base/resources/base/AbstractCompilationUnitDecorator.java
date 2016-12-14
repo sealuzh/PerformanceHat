@@ -98,6 +98,7 @@ public abstract class AbstractCompilationUnitDecorator implements ICompilationUn
   /**
    * {@inheritDoc}
    */
+  @SuppressWarnings("unchecked")
   @Override
   public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
     return compilationUnit.getAdapter(adapter);

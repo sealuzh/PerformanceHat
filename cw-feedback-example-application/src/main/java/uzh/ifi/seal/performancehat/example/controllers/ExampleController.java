@@ -30,6 +30,7 @@ public class ExampleController {
         greeting(null);
     }
     
+    
     @RequestMapping("/users")
     public String greeting(Model model) {
     	test:for(String u3: getUserInfo()){

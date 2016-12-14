@@ -1,6 +1,5 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;

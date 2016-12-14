@@ -1,7 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHandler;
-import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
@@ -9,6 +8,11 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 
+/**
+ * An extension wrapper that fills the current MethodGetter of a AstContext
+ * @author Markus Knecht
+ *
+ */
 public class ProgrammMarkerMethodContext implements AstContext{
 	private final  MethodDeclaration decl;
 	final AstContext base;
@@ -33,7 +37,6 @@ public class ProgrammMarkerMethodContext implements AstContext{
 		return base.getTagCreator();
 	}
 
-	//Todo: bettersolution is needed
 	@Override
 	public TemplateHandler getTemplateHandler() {
 		return base.getTemplateHandler();
@@ -50,7 +53,7 @@ public class ProgrammMarkerMethodContext implements AstContext{
 	}
 
 	@Override
-	public MethodDeclaration getCurrentMethode() {
+	public MethodDeclaration getCurrentMethod() {
 		return decl;
 	}
 	

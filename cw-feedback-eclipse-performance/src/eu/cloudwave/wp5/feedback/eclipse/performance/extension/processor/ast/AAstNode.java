@@ -1,7 +1,6 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
@@ -29,17 +28,17 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	}
 
 	public MethodDeclaration getCurrentMethode(){
-		return ctx.getCurrentMethode();
+		return ctx.getCurrentMethod();
 	}
 			
 	@Override
 	public void attachTag(String name, Object value) {
-		ctx.getTagCreator().addAstNodeTag(inner, name, value);
+		ctx.getTagCreator().addAstNodeTag(this, name, value);
 	}
 
 	@Override
 	public Collection<Object> getTags(String name) {
-		return ctx.getTagProvider().getTagsForNode(inner, name);
+		return ctx.getTagProvider().getTagsForNode(this, name);
 	}
 
 	@Override

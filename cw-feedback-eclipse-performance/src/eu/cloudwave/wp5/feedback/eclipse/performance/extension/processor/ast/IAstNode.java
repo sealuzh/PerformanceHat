@@ -1,11 +1,8 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 

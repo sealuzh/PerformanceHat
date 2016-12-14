@@ -1,6 +1,7 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
 import java.util.Stack;
+import java.util.function.BiFunction;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -103,654 +104,965 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Met
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.StaticAstFactory;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
+/**
+ * An eclipse AST visitor which delegates its visit calls to a PerformanceVisitor 
+ * and in the process does some conventions to enable additional features on the Performance AST.
+ * Most notably it allows to switch out the used visitor for a subbranch.
+ * @author Markus Knecht
+ */
 public class AstDelegator extends ASTVisitor  {
 	
+	 //A Entry tracking a sub branch visitor
 	 private static class StackEntry{
-		 public final int depth;
-		 public final PerformanceVisitor usedMarker;
-		 public StackEntry(int depth, PerformanceVisitor usedMarker) {
+		 public final int depth; 					//depth at which the new visitor came into play
+		 public final PerformanceVisitor visitor;	//The Visitor
+		 public StackEntry(int depth, PerformanceVisitor visitor) {
 			this.depth = depth;
-			this.usedMarker = usedMarker;
+			this.visitor = visitor;
 		 }
 	 }
 	
+	 //Stack of all active Visitors
 	 private final Stack<StackEntry> visitors = new Stack<>();
+	 //Current context, needed to enrich created AST nodes
 	 private AstContext context;
-	 
+	 //Current Depth
 	 private int depth = 0;
 	 
+	 /**
+	  * Creates a new AstDelegato
+	  * @param visitor to initially delegate to (may change for sub branches)
+	  * @param context of the current Ast
+	  */
 	 public AstDelegator(final PerformanceVisitor visitor, AstContext context) {
 		 this.context = context;
 		 pushChildVisitor(visitor);
 	 }
 	 
-	@Override
-	public void preVisit(ASTNode node) {
-		depth++;
-	}
-
-	@Override
-	public void postVisit(ASTNode node) {
-		while (!visitors.isEmpty()  && visitors.peek().depth >= depth) visitors.pop().usedMarker.finish();
-		depth--;
-	}
-	
-	public void pushChildVisitor(PerformanceVisitor visitor){
-		if(visitor == null || (!visitors.isEmpty() && visitors.peek().usedMarker == visitor))return;
-		visitors.push(new StackEntry(depth, visitor));
-	}
-
-	public PerformanceVisitor getCurrent(){
-		 return visitors.peek().usedMarker;
+	 
+	 /**
+	  * {@inheritDoc}
+	  */
+	 @Override
+	 public void preVisit(ASTNode node) {
+		 //Increase the depth before processing a node and its children
+		 depth++;
 	 }
 	 
+	 /**
+	  * {@inheritDoc}
+	  */
+	 @Override
+	 public void postVisit(ASTNode node) {
+		 //if their are visitors which are no longer valid after we left this node remove them from the stack
+		 while (!visitors.isEmpty()  && visitors.peek().depth >= depth) visitors.pop().visitor.finish();
+		 //Decrease the depth after processing a node and its children
+		 depth--;
+	 }
 	
-	 private boolean handleVisitStart(IAstNode node){
-		PerformanceVisitor subst = getCurrent().concreteNodeVisitor(node);
-		pushChildVisitor(subst);
-		return getCurrent().shouldVisitNode(node);
+	 //Activates a new Visitor for the current branch
+	 private void pushChildVisitor(PerformanceVisitor visitor){
+		 //if this visitor is already active or is invalid do not change anything
+		 //null is here expected and explicitly is used as a sign to keep the current visitor
+		 if(visitor == null || (!visitors.isEmpty() && visitors.peek().visitor == visitor))return;
+		 //enable the new Visitor
+		 visitors.push(new StackEntry(depth, visitor));
 	 }
 
-	 private boolean handleVisitReturn(PerformanceVisitor pmv){
-		 if(pmv != null)  pushChildVisitor(pmv);
-		 return getCurrent().shouldVisitChilds();
+	 //Fetches the current Visitor, which is the peek of the stack
+	 private PerformanceVisitor getCurrent(){
+		 	return visitors.peek().visitor;
+	 }
+	 
+	 //Helper method, to enable sharing of common Code
+	 //Is called before each Node
+	 private boolean handleVisitEnter(IAstNode node){
+		 //Ask the current Visitor if he would like to process this node with another visitor
+		 //null means No
+		 PerformanceVisitor subst = getCurrent().concreteNodeVisitor(node);
+		 //activate the new visitor (keeps current in case of null)
+		 pushChildVisitor(subst);
+		 //check if the active visitor needs to visit the current node (this is already the new one if a new one was requested)
+		 return getCurrent().shouldVisitNode(node);
+	 }
+
+	 //Helper method, to enable sharing of common Code
+	 //Is called after each Node is processed but before its child's are processed
+	 //the parameter is the visitor used for the child's (if null then the visitor is not changed)
+	 private boolean handleVisitReturn(PerformanceVisitor pmv, IAstNode node){
+		 //enable the new visitor for the child's
+		 pushChildVisitor(pmv);
+		 //ask the child visitor if he wants to visit the child's
+		 return getCurrent().shouldVisitChilds(node);
+	 }
+	 
+	//a higher order function to encapsulate the primary visit logic.
+	/* Called:
+	 * genericVisit(
+	 * 		node, //The eclipse astNode 
+	 * 		StaticAstFactory::create[AstNodeName], //where [AstNodeName] is the name of the node (factory ethod
+     *		(pv,n) -> pv.visit(n),				   //MostSpecific Visit	
+     *		(pv,n) -> pv.visit((SuperType)n),	   //Secondary MostSpecific Visit	
+     *		......							       //.......
+	 */
+	 
+	@SafeVarargs //Generics varargs not supported
+	private final <N extends ASTNode, T extends IAstNode> boolean genericVisit(final N eclipseNode, final BiFunction<N, AstContext, T> factoryMethod, final BiFunction<PerformanceVisitor, T, PerformanceVisitor>... visits){
+		 //create the IAstNode from the AstNode
+		 T node = factoryMethod.apply(eclipseNode, context);
+		 //Process the enter
+		 if(!handleVisitEnter(node)) return false;
+		 //prepare to visit
+		 PerformanceVisitor m = null;
+		 PerformanceVisitor  cur = getCurrent();
+		 //visit from most specific to least specific
+		 for(BiFunction<PerformanceVisitor, T, PerformanceVisitor> visit: visits){
+			 //abort if we already visited one, only visit most specific thats defined
+			 //null signals not defined
+			 if(m != null) break;
+			 //call the visitor
+			 m = visit.apply(cur, node);
+		 }
+		 //process the visit return value
+		 return handleVisitReturn(m,node);
 	 }
 	
+	//Build somehow fails if only one param is passed to vararg of genericVisit, thats why this forwarder exists
+	@SuppressWarnings("unchecked")
+	private final <N extends ASTNode, T extends IAstNode> boolean genericVisit(final N eclipseNode, final BiFunction<N, AstContext, T> factoryMethod, final BiFunction<PerformanceVisitor, T, PerformanceVisitor> visit){
+		//Generics varargs not supported thus raw type
+		return genericVisit(eclipseNode, factoryMethod, new BiFunction[]{visit});
+	 }
+	
+	 //Helper method, used to visit eclipse nodes, that do not have a separate representation in the Performance Ast
+	 // or which do not need special handling
 	 private boolean defaultVisit(final ASTNode node){
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode decl = StaticAstFactory.fromEclipseAstNode(node, context);
-		 if(!handleVisitStart(decl)) return false;
-		 return handleVisitReturn(null);
+		 //just a genericVisit, that uses the generic Factory Method and does not call any visit's
+		 return genericVisit(node, StaticAstFactory::fromEclipseAstNode);
 	 }
-	 
-	 //Todo: lambdafy visiors
-	 
+	
+	 /**
+	  * {@inheritDoc}
+	  */
+	 //This is a nonstandard Visit because it fills the MethodContext
 	 @Override
      public boolean visit(final MethodDeclaration methodDeclaration) {
+		 //this basically is inlined genericVisit with one extra line
 		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration decl = StaticAstFactory.createMethodDeclaration(methodDeclaration,context);
-		 context = new ProgrammMarkerMethodContext(context, decl);
-		 if(!handleVisitStart(decl)) return false;
+		 context = new ProgrammMarkerMethodContext(context, decl); //extra line
+		 if(!handleVisitEnter(decl)) return false;
 		 PerformanceVisitor m = getCurrent().visit(decl);
 		 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
+		 return handleVisitReturn(m,decl);
      }
 	 
+	 /**
+	  * {@inheritDoc}
+	  */
+	 @Override
 	 public void endVisit(final MethodDeclaration methodDeclaration) {
+		 //Remove the MethodContext
 		 context = ((ProgrammMarkerMethodContext)context).base;
 	 }
-	 
-	 private SimpleName label = null;
-	 
-	 @Override
-	 public boolean visit(LabeledStatement node) {
-		label = node.getLabel();
-		node.getBody().accept(this);
-		label = null;
-		return false;
-	 }
 	
-     @Override
+	/**
+	 * {@inheritDoc}
+	 */
+    @Override
 	public boolean visit(SingleVariableDeclaration node) {
+    	 //This visit is special, because the eclipse Ast does treat Parameters as normal variable Declaration, but FeedbackHandler does not
     	 int count = 0;
-    	 
-    	 for(Object param :context.getCurrentMethode().getEclipseAstNode().parameters()){
+    	 //fetch all the parameters of the current Method
+    	 for(Object param :context.getCurrentMethod().getEclipseAstNode().parameters()){
+    		//if this param is the visited variable declaration, treat it as ParameterDeclaration 
     		if(param.equals(node)) {
-    	    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ParameterDeclaration decl = StaticAstFactory.createParameterDeclaration(count,context.getCurrentMethode(),node,context);
-    			 if(!handleVisitStart(decl)) return false;
-    	    	 PerformanceVisitor m = getCurrent().visit(decl);
-    			 return handleVisitReturn(m);
+    			 final int finCount = count; //lambdas can only refer final variables, so we copy
+    			 return genericVisit(
+    					 node, 
+    					 (n,c) -> StaticAstFactory.createParameterDeclaration(finCount,n,c), //we need full lambda because of the extra param
+    					 (pv,n) -> pv.visit(n)
+    			 );
     		}
     		count++;
     	 }
-    	 
+ 		 //if this is the an ordinary variable declaration use the default
     	 return defaultVisit(node);
 
 	}
-
-	@Override
-     public boolean visit(final MethodInvocation methodInvocation) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation decl =StaticAstFactory.createMethodInvocation(methodInvocation,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-   	  	 if(m == null) m = getCurrent().visit((Invocation)decl);
-   	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
-     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean visit(final MethodInvocation methodInvocation) {
+    	 return genericVisit(
+    			 methodInvocation, 
+    			 StaticAstFactory::createMethodInvocation, 
+    			 (pv,n) -> pv.visit(n),
+    			 (pv,n) -> pv.visit((Invocation)n),
+    			 (pv,n) -> pv.visit((MethodOccurence)n)
+		 );
+    }
+  
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean visit(final SuperMethodInvocation methodInvocation) {
+    	 return genericVisit(
+    			 methodInvocation, 
+    			 StaticAstFactory::createMethodInvocation, 
+    			 (pv,n) -> pv.visit(n),
+    			 (pv,n) -> pv.visit((Invocation)n),
+    			 (pv,n) -> pv.visit((MethodOccurence)n)
+		 ); 
+    }
+    
+    /**
+     * {@inheritDoc}
+     */ 
+    @Override
+    public boolean visit(final ClassInstanceCreation newInstance) {
+	   	 return genericVisit(
+	   			 newInstance, 
+				 StaticAstFactory::createConstructorInvocation, 
+				 (pv,n) -> pv.visit(n),
+				 (pv,n) -> pv.visit((Invocation)n),
+				 (pv,n) -> pv.visit((MethodOccurence)n)
+		 ); 
+    }
    
-     @Override
-     public boolean visit(final SuperMethodInvocation methodInvocation) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation decl = StaticAstFactory.createMethodInvocation(methodInvocation,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-   	  	 if(m == null) m = getCurrent().visit((Invocation)decl);
-   	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
-     }
-     
-     @Override
-     public boolean visit(final ClassInstanceCreation newInstance) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(newInstance,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((Invocation)decl);
-   	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
-     }
-     
-	 @Override
-     public boolean visit(final ConstructorInvocation alt) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((Invocation)decl);
-   	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
-     }
-
-	 @Override
-     public boolean visit(final SuperConstructorInvocation alt) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ConstructorInvocation decl = StaticAstFactory.createConstructorInvocation(alt,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((Invocation)decl);
-   	  	 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
-		 return handleVisitReturn(m);
-     }
-     
-     @Override
-     public boolean visit(final EnhancedForStatement foreachStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ForEach decl = StaticAstFactory.createForEach(foreachStatement,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((Loop)decl);
-		 return handleVisitReturn(m);
-     }
-
-     @Override
-     public boolean visit(final ForStatement forStatement) {
-    	 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.For decl = StaticAstFactory.createFor(forStatement,context);
-		 if(!handleVisitStart(decl)) return false;
-    	 PerformanceVisitor m = getCurrent().visit(decl);
-    	 if(m == null) m = getCurrent().visit((Loop)decl);
-		 return handleVisitReturn(m);
-     }    
-     
+    /**
+     * {@inheritDoc}
+     */ 
+	@Override
+	public boolean visit(final ConstructorInvocation alt) {
+		return genericVisit(
+				 alt, 
+				 StaticAstFactory::createConstructorInvocation, 
+				 (pv,n) -> pv.visit(n),
+				 (pv,n) -> pv.visit((Invocation)n),
+				 (pv,n) -> pv.visit((MethodOccurence)n)
+		 );
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean visit(final SuperConstructorInvocation alt) {
+		return genericVisit(
+				 alt, 
+				 StaticAstFactory::createConstructorInvocation, 
+				 (pv,n) -> pv.visit(n),
+				 (pv,n) -> pv.visit((Invocation)n),
+				 (pv,n) -> pv.visit((MethodOccurence)n)
+		 );
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */     
+	@Override
+	public boolean visit(final EnhancedForStatement foreachStatement) {
+		return genericVisit(
+				foreachStatement, 
+				 StaticAstFactory::createForEach, 
+				 (pv,n) -> pv.visit(n),
+				 (pv,n) -> pv.visit((Loop)n)
+		 );
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean visit(final ForStatement forStatement) {
+		return genericVisit(
+				forStatement, 
+				StaticAstFactory::createFor, 
+				(pv,n) -> pv.visit(n),
+				(pv,n) -> pv.visit((Loop)n)
+		 );
+	} 
+	
+	/**
+	 * {@inheritDoc}
+	 */ 
  	@Override
  	public boolean visit(CatchClause catchClause) {
- 		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.CatchClause decl = StaticAstFactory.createCatchClause(catchClause,context);
-		 if(!handleVisitStart(decl)) return false;
- 		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
+ 		return genericVisit(
+ 				catchClause, 
+				StaticAstFactory::createCatchClause, 
+				(pv,n) -> pv.visit(n)
+		);
  	} 
-	
+ 	
+ 	/**
+ 	 * {@inheritDoc}
+ 	 */	
 	@Override
 	public boolean visit(Block block) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Block decl = StaticAstFactory.createBlock(block,context);
-		 if(!handleVisitStart(decl)) return false;
-		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
+		return genericVisit(
+				block, 
+				StaticAstFactory::createBlock, 
+				(pv,n) -> pv.visit(n)
+		);
 	}
 	
-	
+	/**
+	 * {@inheritDoc}
+	 */	
 	@Override
 	public boolean visit(IfStatement ifNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(ifNode,context);
-		 if(!handleVisitStart(decl)) return false;
-		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
-	}
+		return genericVisit(
+				ifNode, 
+				StaticAstFactory::createBranching, 
+				(pv,n) -> pv.visit(n)
+		);
+	}	
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ConditionalExpression condNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(condNode,context);
-		 if(!handleVisitStart(decl)) return false;
-		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
-	}
+		return genericVisit(
+				condNode, 
+				StaticAstFactory::createBranching, 
+				(pv,n) -> pv.visit(n)
+		);
+	}	
 
-	
+	/**
+	 * {@inheritDoc}
+	 */	
 	@Override
 	public boolean visit(SwitchStatement switchNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching decl = StaticAstFactory.createBranching(switchNode,context);
-		 if(!handleVisitStart(decl)) return false;
-		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
-	}
+		return genericVisit(
+				switchNode, 
+				StaticAstFactory::createBranching, 
+				(pv,n) -> pv.visit(n)
+		);
+	}	
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TryStatement tryNode) {
-		 eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try decl = StaticAstFactory.createTry(tryNode,context);
-		 if(!handleVisitStart(decl)) return false;
-		 PerformanceVisitor m = getCurrent().visit(decl);
-		 return handleVisitReturn(m);
+		return genericVisit(
+				tryNode, 
+				StaticAstFactory::createTry, 
+				(pv,n) -> pv.visit(n)
+		);
 	}
 	
-	//Note: nothing special todo: weprocess but do not gen a hook
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SwitchCase node) {
+		//Note: nothing special: we process but do not generate a hook
+		return defaultVisit(node);
+	}
+	
+	//TODO: Note: If Context ever tracks current class, then this needs special handling similar to MethodDeclaration
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean visit(AnonymousClassDeclaration node) {
+		return defaultVisit(node);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean visit(LabeledStatement node) {
 		return defaultVisit(node);
 	}
 
-	//Note: to remember whats still open
+	/**
+	 * {@inheritDoc}
+	 */	
 	@Override
 	public boolean visit(DoStatement node) {
 		return defaultVisit(node);
 	}
 
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(WhileStatement node) {
 		return defaultVisit(node);
 	}
 	
-	
+	/**
+	 * {@inheritDoc}
+	 */	
 	@Override
 	public boolean visit(AnnotationTypeDeclaration node) {
 		return defaultVisit(node);
 	}
 
-	//Better Save then Sorry
-	//Makes sure, that even if we do not have special impl at least equals works in cases someone gens it over IAstNode
-	
-
+	/**
+	 * {@inheritDoc}
+	 */	
 	@Override
 	public boolean visit(AnnotationTypeMemberDeclaration node) {
 		return defaultVisit(node);
 	}
 
-	@Override
-	public boolean visit(AnonymousClassDeclaration node) {
-		return defaultVisit(node);
-	}
+	
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ArrayAccess node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ArrayCreation node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ArrayInitializer node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ArrayType node) {
 		return defaultVisit(node);
 	}
-
+	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(AssertStatement node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(Assignment node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(BooleanLiteral node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(BreakStatement node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(CastExpression node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(CharacterLiteral node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(CompilationUnit node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ContinueStatement node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(CreationReference node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(Dimension node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(EmptyStatement node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(EnumConstantDeclaration node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(EnumDeclaration node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ExpressionMethodReference node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ExpressionStatement node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(FieldAccess node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(FieldDeclaration node) {
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ImportDeclaration node) {
 		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(InfixExpression node) {
 		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(Initializer node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(InstanceofExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(IntersectionType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(Javadoc node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(LambdaExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(MarkerAnnotation node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(MemberRef node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(MemberValuePair node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(MethodRef node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(MethodRefParameter node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(Modifier node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(NameQualifiedType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(NormalAnnotation node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(NullLiteral node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(NumberLiteral node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(PackageDeclaration node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ParameterizedType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ParenthesizedExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(PostfixExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(PrefixExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(PrimitiveType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(QualifiedName node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(QualifiedType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ReturnStatement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SimpleName node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SimpleType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SingleMemberAnnotation node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(StringLiteral node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SuperFieldAccess node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SuperMethodReference node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(SynchronizedStatement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TagElement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TextElement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ThisExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(ThrowStatement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TypeDeclaration node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TypeDeclarationStatement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TypeLiteral node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TypeMethodReference node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(TypeParameter node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(UnionType node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(VariableDeclarationExpression node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(VariableDeclarationStatement node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(VariableDeclarationFragment node) {
-		
 		return defaultVisit(node);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean visit(WildcardType node) {
-		
 		return defaultVisit(node);
 	}
-
-
-	
      
 }
 

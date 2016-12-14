@@ -27,7 +27,19 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaPr
  * A {@link FeedbackBuilderParticipant} is a participant that acts as a part of the whole feedback builder. As soon as
  * it is registered in the feedback builder it is executed each time the feedback builder is triggered.
  */
-public interface FeedbackBuilderParticipant {
+public interface FeedbackBuilderParticipant {	
+	
+ /**
+   * Template method that is triggered once before the build, allowing implementers to prepare for the build. Subclasses should to
+   * the actual work here.
+   * 
+   * @param project
+   *          the {@link FeedbackJavaProject}
+   * @param javaFiles
+   *          the {@link FeedbackJavaFile}s
+   */	
+  public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException;
+
   /**
    * Template method that is triggered during the build for each Java file that has to be built. Subclasses should to
    * the actual work here.
@@ -40,7 +52,17 @@ public interface FeedbackBuilderParticipant {
    *          the {@link CompilationUnit} of the file
    */
   public void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
-  public void prepare(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException;
-  public void cleanup(FeedbackJavaProject project, Set<FeedbackJavaFile> javaSourceFiles) throws CoreException;
+  
+  
+  /**
+   * Template method that is triggered once after the build, allowing implementers to clean up ressources. Subclasses should to
+   * the actual work here.
+   * 
+   * @param project
+   *          the {@link FeedbackJavaProject}
+   * @param javaFiles
+   *          the {@link FeedbackJavaFile}s
+   */
+  public void cleanup(FeedbackJavaProject project, Set<FeedbackJavaFile> javaFiles) throws CoreException;
 
 }

@@ -1,23 +1,9 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
-import org.eclipse.jdt.internal.corext.callhierarchy.MethodCall;
-import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
-import org.eclipse.ui.actions.GlobalBuildAction;
-import org.eclipse.ui.internal.ide.actions.BuildUtilities;
 
 import com.google.common.collect.Maps;
 
@@ -31,14 +17,13 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.LoopPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
@@ -134,11 +119,6 @@ public class HotspotPlugin  implements  PerformancePlugin{
 						final double predThreshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
 						if (bn.getPredictedTime() >= predThreshold) {
 							createCriticalMetodMarker(method,rootContext.getTemplateHandler(),bn);
-								
-							 if(method instanceof MethodDeclaration){
-								 MethodDeclaration decl = (MethodDeclaration)method;
-								 IMember mem = (IMember)((org.eclipse.jdt.core.dom.MethodDeclaration)method.getEclipseAstNode()).resolveBinding().getJavaElement();
-							 }
 						}
 					 
 					 }

@@ -17,7 +17,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try
 
 public abstract class PerformanceVisitor {
 
-	public boolean shouldVisitChilds(){return true;};
+	public boolean shouldVisitChilds(IAstNode node){return true;};
 	public boolean shouldVisitNode(IAstNode node){return true;};
 	//todo: needs better name
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node){return null;};
@@ -25,7 +25,7 @@ public abstract class PerformanceVisitor {
 	protected PerformanceVisitor CONTINUE = this;
 	protected static PerformanceVisitor SKIP_CHILDS = new PerformanceVisitor() {
 		@Override
-		public boolean shouldVisitChilds() {
+		public boolean shouldVisitChilds(IAstNode node) {
 			return false;
 		}
 	};

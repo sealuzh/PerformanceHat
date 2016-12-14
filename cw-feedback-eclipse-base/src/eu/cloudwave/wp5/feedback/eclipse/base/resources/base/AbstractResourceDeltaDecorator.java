@@ -37,6 +37,7 @@ public class AbstractResourceDeltaDecorator implements IResourceDelta {
   /**
    * {@inheritDoc}
    */
+  @SuppressWarnings("unchecked")
   @Override
   public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
     return delta.getAdapter(adapter);

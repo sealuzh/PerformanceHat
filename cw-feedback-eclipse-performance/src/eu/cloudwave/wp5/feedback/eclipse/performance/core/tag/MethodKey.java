@@ -1,5 +1,10 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.tag;
 
+/**
+ * A simply ADT class with all the boilerplate needed from java
+ * Represents the Immutable Tuple Tag name, MethodLocator
+ * @author Markus Knecht
+ */
 final class MethodKey implements CompositeKey{
 	public final String tagName;
 	public final MethodLocator loc;
@@ -8,6 +13,7 @@ final class MethodKey implements CompositeKey{
 		this.loc = loc;
 	}
 	
+	//extra info about the ADT see CompositeKey
 	@Override
 	public boolean isGlobalKey() {
 		return true;

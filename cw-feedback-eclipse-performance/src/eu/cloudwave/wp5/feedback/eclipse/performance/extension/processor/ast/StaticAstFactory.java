@@ -97,10 +97,8 @@ public class StaticAstFactory {
 		return new Block(node, ctx);
 	}
 
-	public static ParameterDeclaration createParameterDeclaration(int count,
-			eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration currentMethode,
-			SingleVariableDeclaration node, AstContext context) {
-		return new ParameterDeclaration(count,currentMethode,node,context);
+	public static ParameterDeclaration createParameterDeclaration(int count, SingleVariableDeclaration node, AstContext context) {
+		return new ParameterDeclaration(count,node,context);
 	}
 
 }

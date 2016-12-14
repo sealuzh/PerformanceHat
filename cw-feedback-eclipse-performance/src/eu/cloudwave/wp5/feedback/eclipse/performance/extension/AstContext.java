@@ -16,7 +16,7 @@ public interface AstContext {
 	
 	TemplateHandler getTemplateHandler();
 	FeedbackJavaFile getFile();
-	MethodDeclaration getCurrentMethode();
+	MethodDeclaration getCurrentMethod();
 	int getLine(int start);
 
 }

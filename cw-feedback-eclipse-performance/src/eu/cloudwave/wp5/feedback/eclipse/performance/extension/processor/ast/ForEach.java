@@ -3,13 +3,8 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.google.common.base.Optional;
 
@@ -53,7 +48,7 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 	    }
 	    // Case 2: the for loop contains a method invocation; example: 'for(Object item : getItems())'
 	    else if (expression instanceof org.eclipse.jdt.core.dom.MethodInvocation) {
-	    	return Optional.of(new eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)expression,ctx));
+	    	return Optional.of(StaticAstFactory.createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)expression,ctx));
 
 	    }
 	    return Optional.absent();

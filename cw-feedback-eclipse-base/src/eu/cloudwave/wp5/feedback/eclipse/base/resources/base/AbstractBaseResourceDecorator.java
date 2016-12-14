@@ -51,6 +51,7 @@ public abstract class AbstractBaseResourceDecorator implements IResource {
   /**
    * {@inheritDoc}
    */
+  @SuppressWarnings("unchecked")
   @Override
   public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
     return resource().getAdapter(adapter);

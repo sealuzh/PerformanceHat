@@ -2,6 +2,11 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.core.tag;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
+/**
+ * A simply ADT class with all the boilerplate needed from java
+ * Represents the Immutable Tuple Tag name, AtsNode
+ * @author Markus Knecht
+ */
 final class AstNodeKey implements CompositeKey{
 	public final String tagName;
 	public final ASTNode node;
@@ -10,6 +15,7 @@ final class AstNodeKey implements CompositeKey{
 		this.node = node;
 	}
 	
+	//extra info about the ADT see CompositeKey
 	@Override
 	public boolean isGlobalKey() {
 		return false;

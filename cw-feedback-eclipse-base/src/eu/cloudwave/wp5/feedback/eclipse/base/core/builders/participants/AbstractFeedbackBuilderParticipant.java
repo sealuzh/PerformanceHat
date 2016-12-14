@@ -15,15 +15,9 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Maps;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaProject;
@@ -34,7 +28,15 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecificat
  */
 public abstract class AbstractFeedbackBuilderParticipant implements FeedbackBuilderParticipant {
   
+  //default do nothing implementations
+  /**
+   * {@inheritDoc}
+   */
   public void prepare(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException{};
+  
+  /**
+   * {@inheritDoc}
+   */
   public void cleanup(final FeedbackJavaProject project, final Set<FeedbackJavaFile> javaFiles) throws CoreException{};
 
 

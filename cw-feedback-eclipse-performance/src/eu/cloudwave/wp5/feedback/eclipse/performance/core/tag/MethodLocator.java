@@ -2,6 +2,12 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.core.tag;
 
 import java.util.Arrays;
 
+/**
+ * An ADT for MethodLocations
+ * By Class Name, Method Name, Argument Types (because of overloads)
+ * @author Markus Knecht
+ *
+ */
 public class MethodLocator {
 	public final String className;
 	public final String methodName;
