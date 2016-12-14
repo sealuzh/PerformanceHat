@@ -14,12 +14,12 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
 
 //todo: do we need seperate class for this (or would inner class do)
 //todo: if we keep make CTR private and use static methode calling the skip thing
-class BranchBlockTimeCollector extends BlockTimeCollector{
+class BranchBlockTimeCollector extends BlockTimePredictor{
 	private final List<List<PredictionNode>> stats = Lists.newArrayList();
     private final Set<IAstNode> branchStarts; //ether the foreach source or the initializer
     private final Branching branch;
 
-	BranchBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, AstContext context, Branching branch) {
+	BranchBlockTimeCollector(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context, Branching branch) {
 		super(parent, callback, context);
 		this.branchStarts = Sets.newHashSet(branch.getBranches());
 		this.branch = branch;
@@ -28,7 +28,7 @@ class BranchBlockTimeCollector extends BlockTimeCollector{
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
 		if(branchStarts.contains(node)){
-			return new BlockTimeCollector(callback, context){
+			return new BlockTimePredictor(callback, context){
 				@Override
 				public void finish() {
 					stats.add(excecutionTimeStats);			

@@ -7,6 +7,12 @@ import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 
+/**
+ * A PredictionNode implementation for if/switch and conditional blocks
+ * @see PredictionNode
+ * @author Markus Knecht
+ *
+ */
 public class BranchingPrediction implements PredictionNode{
 
 	private final double predTime;
@@ -19,18 +25,34 @@ public class BranchingPrediction implements PredictionNode{
 		this.branches = branches;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public boolean isDataNode(){
 		return true;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public String getText(){
 		return "branching";
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public double getPredictedTime(){
 		return predTime;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public Collection<PredictionNode> getChildren(){
 		List<PredictionNode> res = Lists.newArrayList(condition);
 		res.addAll(branches);

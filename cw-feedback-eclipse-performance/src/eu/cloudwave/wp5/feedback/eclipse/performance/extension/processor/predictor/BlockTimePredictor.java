@@ -12,19 +12,26 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loo
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
-public abstract class BlockTimeCollector extends PerformanceVisitor{
+/**
+ * Entry point to the BlockBased Prediction Framework, which allows to analyze the AST in a structured way.
+ * Predictions are made in a hierarchical way, where each block processes the values produced by its child blocks and/or leafs.
+ * The Blocks are: Loop, Branching, Try
+ * The Leafs are: Invocations
+ * @author Markus Knecht
+ */
+public abstract class BlockTimePredictor extends PerformanceVisitor{
 	protected final BlockTimeCollectorCallback callback;
-	protected final BlockTimeCollector parent;
+	protected final BlockTimePredictor parent;
 	protected final AstContext context;
 	protected List<PredictionNode> excecutionTimeStats = Lists.newArrayList();
 
-	BlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, AstContext context) {
+	BlockTimePredictor(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context) {
 		this.parent = parent;
 		this.callback = callback;
 		this.context = context;
 	}
 	
-	public BlockTimeCollector(BlockTimeCollectorCallback callback,AstContext context) {
+	public BlockTimePredictor(BlockTimeCollectorCallback callback,AstContext context) {
 		this(null,callback, context);
 	}
 

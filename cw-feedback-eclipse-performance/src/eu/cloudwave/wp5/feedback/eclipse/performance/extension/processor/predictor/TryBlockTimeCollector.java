@@ -13,14 +13,14 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAs
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
-class TryBlockTimeCollector extends BlockTimeCollector{
+class TryBlockTimeCollector extends BlockTimePredictor{
 	private final List<List<PredictionNode>> catches = Lists.newArrayList();
     private final Set<IAstNode> catchesStarts; //ether the foreach source or the initializer
     private List<PredictionNode> finallyPart = null;
     private final Block finallyBlock;
     private final Try tryStm;
 
-	TryBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, AstContext context, Try tryStm) {
+	TryBlockTimeCollector(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context, Try tryStm) {
 		super(parent, callback, context);
 		this.catchesStarts = Sets.newHashSet(tryStm.getCactchClauses());
 		this.finallyBlock = tryStm.getFinally();
@@ -30,14 +30,14 @@ class TryBlockTimeCollector extends BlockTimeCollector{
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
 		if(finallyBlock != null && finallyBlock.equals(node)){
-			return new BlockTimeCollector(callback, context){
+			return new BlockTimePredictor(callback, context){
 				@Override
 				public void finish() {
 					finallyPart = excecutionTimeStats;			
 				}	
 			};
 		}else if(catchesStarts.contains(node)){
-			return new BlockTimeCollector(callback, context){
+			return new BlockTimePredictor(callback, context){
 				@Override
 				public void finish() {
 					catches.add(excecutionTimeStats);			

@@ -2,13 +2,33 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor;
 
 import java.util.Collection;
 
+/**
+ * A node to represent a Prediction made by the BlockTimePrediction Framework
+ * Each Prediction has a name/text a predicted average Time as well as some Child nodes from which the prediction was made
+ * @author Markus Knecht
+ */
 public interface PredictionNode {
-	//Defines if the node needs to be printed or just its childs
+	/**
+	 * Defines if this node has a text and prediction time associated or is just a grouping node 
+	 * @return true if it has data false otherwise
+	 */
 	public boolean isDataNode();
-	//Get the description text of the node (will be indented)
+	
+	/**
+	 * The Prediction test of the node
+	 * @return the text
+	 */
 	public String getText();
-	//Get the predicted time
+	
+	/**
+	 * The Prediction time of the node
+	 * @return the time
+	 */
 	public double getPredictedTime();
-	//get the childs this prediction depends on
+	
+	/**
+	 * The children of the node
+	 * @return the children
+	 */
 	public Collection<PredictionNode> getChildren();
 }

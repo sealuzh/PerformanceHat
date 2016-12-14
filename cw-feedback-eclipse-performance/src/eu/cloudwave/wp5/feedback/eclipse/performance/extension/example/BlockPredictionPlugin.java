@@ -14,7 +14,6 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.predictio
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchingPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.LoopPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.LoopPredictionError;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.MethodCallPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching;
@@ -22,11 +21,16 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Inv
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimeCollector;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimePredictor;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimeCollectorCallback;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.LoopUtils;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
+/**
+ * A Predictor using the BlockTimePrediction Framework to predict method executioin times
+ * @author Markus Knecht
+ *
+ */
 public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollectorCallback{
 
 	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin";
@@ -34,37 +38,47 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	  private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
 	  public static final String AVG_PRED_TIME_TAG = "AvgPredictionTime";
 	  
+	  /**
+	   * {@inheritDoc}
+	   */
 	  @Override
 	  public String getId() {
 			return ID;
 	  }	  
 	
-
+	  /**
+	   * {@inheritDoc}
+	   */
 	  @Override
 	  public List<String> getRequiredTags() {
 		  	return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
 	  }
 	  
+	  /**
+	   * {@inheritDoc}
+	   */
 	  public List<String> getProvidedTags(){
 		  return Collections.singletonList(AVG_PRED_TIME_TAG);
 	  }
 	  
-	  
-	  
-
-	 
-	  //Same as BlockTimeMeasurer, but react's only on loops, if we would like predictions for Methods, then we could just add them here
-	  //But then Hotspot could fastly get irrelevant, basically it would be easy todo everithing here
+	  /**
+	   * {@inheritDoc}
+	   */
 	  @Override
 	  public PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {
+		  //Visitor that visits all method declaration and predict excecution times
 		  return new PerformanceVisitor() {
 				@Override
 				public PerformanceVisitor visit(MethodDeclaration method) {
-					  return new BlockTimeCollector(BlockPredictionPlugin.this,rootContext){
+					 //Use BlockTimeCollector to measure the method
+					  return new BlockTimePredictor(BlockPredictionPlugin.this,rootContext){
 						@Override
 						public PredictionNode generateResults() {
+							//simply sum up contributions
 							final double methodTimeSum = sum(excecutionTimeStats);
+							//generate a generic Block Prediction for method body
 							final PredictionNode methodN = new BlockPrediction("method declaration", methodTimeSum, excecutionTimeStats);	
+							//publish the results as a Tag (Consumed by Hotspot at least)
 							method.attachPublicTag(AVG_PRED_TIME_TAG, methodN);
 							//method.attachTag(AVG_PRED_TIME_TAG, methodN);
 							return methodN;
@@ -74,10 +88,15 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 		  };
 	} 
 	  
+	//TODO: Move to a toolbox
 	private static double sum(List<PredictionNode> nodes){
 		return nodes.stream().mapToDouble(n -> n.getPredictedTime()).sum();
 	}
 	  
+	/**
+	 * Predicts based on the AVG_EXEC_TIME_TAG and AVG_PRED_TIME_TAG
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode invocationEncountered(Invocation invocation, AstContext context) {
 		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
@@ -97,62 +116,86 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 		return new MethodCallPrediction(loc, avgExecTime);
 	}
 
+	/**
+	 * Predicts based on loop Header and body and the number of iterations
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode loopMeasured(List<PredictionNode> iterationExecutionTime, List<PredictionNode> headerExecutionTime, Loop loop, AstContext context){
 
-		
+		//do we know the iterations
 		Double avgItersLookup = LoopUtils.findNumOfIterations(loop, context);
-		double avgIters = (avgItersLookup == null)?0:avgItersLookup;
+		//at least do one iteration
+		double avgIters = (avgItersLookup == null)?1:avgItersLookup;
 		final double iterExcecTime = sum(iterationExecutionTime);
 		final double headerExectime =  sum(headerExecutionTime);
 
+		//Predict n*body + 1*header
 		final PredictionNode headerN = new BlockPrediction("loop header", headerExectime, headerExecutionTime);
-		PredictionNode bodyN;
-		if(avgItersLookup == null) bodyN = new LoopPredictionError();
-		else bodyN = new BlockPrediction("loop body", iterExcecTime, iterationExecutionTime);		
+		PredictionNode bodyN = new BlockPrediction("loop body", iterExcecTime, iterationExecutionTime);		
 		final PredictionNode loopN = new LoopPrediction((avgIters*bodyN.getPredictedTime())+headerN.getPredictedTime(),avgIters, bodyN, headerN);	
 		
-		//final double threshold = context.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
+		//Publish prediction per tag
 		loop.attachTag(AVG_PRED_TIME_TAG, loopN);
-		//if (totalT >= threshold) createCriticalLoopMarker(loop,context.getTemplateHandler(),avgIters,iterExcecTime, loopN);
 		return loopN;
 	}
 
+	/**
+	 * Predicts based on all branches (assumes equal likelihood)
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode branchMeasured(List<PredictionNode> conditionExecutionTime, List<List<PredictionNode>> branchExecutionTimes, Branching branch, AstContext context){
 		 final List<PredictionNode> branchNodes = Lists.newArrayList();
+		 //for the condition simply sum up
 		 final PredictionNode conditionN = new BlockPrediction("condition", sum(conditionExecutionTime), conditionExecutionTime);
+		 //Create the Branch Prediction by summing up and deviding through number of branches
 		 double tot = 0;
 		 int branchCount = branchExecutionTimes.size();
-		 if(branch.isSkippable())branchCount++;
+		 if(branch.isSkippable())branchCount++; //shows if their is a chance for zero branch in that case we giv it also equal likelyhood
 		 int i = 0;
+		 //factor
 		 double part = 1.0/branchCount;
+		 //calc each branch
 		 for(List<PredictionNode> bet:branchExecutionTimes) {
 			 final double betSum = sum(bet);
 			 branchNodes.add(new BranchPrediction((++i),part, betSum/branchCount, bet));
 			 tot+=betSum;
 		 }
+		 //average
 		 tot /= branchCount;
+		 //main prediction node
 		 final PredictionNode branchN = new BranchingPrediction(tot, conditionN, branchNodes);
 
-		 //Todo: markig/tagging
+		 //Publish prediction per tag
+		 branch.attachTag(AVG_PRED_TIME_TAG, branchN);
 		 
 		 return branchN;
 	}
 
+	/**
+	 * Predicts based on try,finally but ignores catches
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode tryMeasured(List<PredictionNode> tryExecutionTime, List<PredictionNode> finnalyExecutionTime, List<List<PredictionNode>> catchExccutionTimes, Try tryStm, AstContext context) {
-		//todo: make try node
+		//Is a finally present
 		if(finnalyExecutionTime == null){
+			//if not its simply the sum of the try
 			return new BlockPrediction("try",sum(tryExecutionTime), tryExecutionTime);
 		} else {
+			//else record both try and finally
+			//the try
 			final double tryTimeSum = sum(tryExecutionTime);
 			final PredictionNode bodyN = new BlockPrediction("body", tryTimeSum, tryExecutionTime);
+			//the finally
 			final double finallyTimeSum = sum(finnalyExecutionTime);
 			final PredictionNode finallyN = new BlockPrediction("finally", finallyTimeSum, finnalyExecutionTime);		
+			//thr full try/finally
 			final PredictionNode tryN = new BlockPrediction("try", tryTimeSum+finallyTimeSum, bodyN, finallyN);
-			 //Todo: markig/tagging
-
+			
+			 //Publish prediction per tag
+			tryStm.attachTag(AVG_PRED_TIME_TAG, tryN); 
 			
 			return tryN;
 		}

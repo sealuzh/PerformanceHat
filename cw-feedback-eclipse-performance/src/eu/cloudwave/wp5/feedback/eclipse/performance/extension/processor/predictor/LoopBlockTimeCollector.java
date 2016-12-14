@@ -14,13 +14,13 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
 
 //todo: do we need seperate class for this (or would inner class do)
 //todo: if we keep make CTR private and use static methode calling the skip thing
-class LoopBlockTimeCollector extends BlockTimeCollector{
+class LoopBlockTimeCollector extends BlockTimePredictor{
 	
     private final Set<IAstNode> headerExprs; //ether the foreach source or the initializer
     private final Loop loop;
     private final List<PredictionNode> headerTimeStats = Lists.newArrayList();
 
-	LoopBlockTimeCollector(BlockTimeCollector parent, BlockTimeCollectorCallback callback, AstContext context, Loop loop) {
+	LoopBlockTimeCollector(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context, Loop loop) {
 		super(parent, callback, context);
 		this.headerExprs = Sets.newHashSet(loop.getInitNodes());
 		this.loop = loop;
@@ -29,7 +29,7 @@ class LoopBlockTimeCollector extends BlockTimeCollector{
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
 		if(headerExprs.contains(node)){
-			return new BlockTimeCollector(callback, context){
+			return new BlockTimePredictor(callback, context){
 				@Override
 				public void finish() {
 					headerTimeStats.addAll(excecutionTimeStats);				
