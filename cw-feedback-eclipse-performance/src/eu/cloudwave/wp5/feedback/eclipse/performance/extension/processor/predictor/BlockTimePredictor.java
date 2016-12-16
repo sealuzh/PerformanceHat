@@ -20,24 +20,22 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
  * @author Markus Knecht
  */
 public abstract class BlockTimePredictor extends PerformanceVisitor{
-	protected final BlockTimeCollectorCallback callback;
+	protected final BlockTimePredictorCallback callback;
 	protected final BlockTimePredictor parent;
-	protected final AstContext context;
-	protected List<PredictionNode> excecutionTimeStats = Lists.newArrayList();
+	protected final List<PredictionNode> excecutionTimeStats = Lists.newArrayList();
 
-	BlockTimePredictor(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context) {
+	BlockTimePredictor(BlockTimePredictor parent, BlockTimePredictorCallback callback) {
 		this.parent = parent;
 		this.callback = callback;
-		this.context = context;
 	}
 	
-	public BlockTimePredictor(BlockTimeCollectorCallback callback,AstContext context) {
-		this(null,callback, context);
+	public BlockTimePredictor(BlockTimePredictorCallback callback) {
+		this(null,callback);
 	}
 
 	@Override
 	public PerformanceVisitor visit(Invocation invocation) {
-		PredictionNode data = callback.invocationEncountered(invocation, context);
+		PredictionNode data = callback.invocationEncountered(invocation);
 		if(data != null){
 			excecutionTimeStats.add(data);
 		}
@@ -46,17 +44,17 @@ public abstract class BlockTimePredictor extends PerformanceVisitor{
 	
 	@Override
 	public PerformanceVisitor visit(Loop loop) {
-		  return new LoopBlockTimeCollector(this,callback,context, loop);
+		  return new LoopBlockTimePredictor(this,callback, loop);
 	}
 	
 	@Override
 	public PerformanceVisitor visit(Branching branch) {
-		  return new BranchBlockTimeCollector(this,callback,context, branch);
+		  return new BranchBlockTimePredictor(this,callback, branch);
 	}
 
 	@Override
 	public PerformanceVisitor visit(Try tryStm) {
-		  return new TryBlockTimeCollector(this,callback,context, tryStm);
+		  return new TryBlockTimePredictor(this,callback, tryStm);
 	}
 
 	public PredictionNode generateResults(){return null;}

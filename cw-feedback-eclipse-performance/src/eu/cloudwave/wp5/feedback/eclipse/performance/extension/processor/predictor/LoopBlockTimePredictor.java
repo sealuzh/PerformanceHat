@@ -12,24 +12,33 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAs
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
-//todo: do we need seperate class for this (or would inner class do)
-//todo: if we keep make CTR private and use static methode calling the skip thing
-class LoopBlockTimeCollector extends BlockTimePredictor{
+
+/**
+ * Visitor for the LoopPart of the BlockTimePredictor framework
+ * @author Markus Knecht
+ *
+ */
+class LoopBlockTimePredictor extends BlockTimePredictor{
 	
     private final Set<IAstNode> headerExprs; //ether the foreach source or the initializer
     private final Loop loop;
     private final List<PredictionNode> headerTimeStats = Lists.newArrayList();
 
-	LoopBlockTimeCollector(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context, Loop loop) {
-		super(parent, callback, context);
+	LoopBlockTimePredictor(BlockTimePredictor parent, BlockTimePredictorCallback callback, Loop loop) {
+		super(parent, callback);
+		//all the headers
 		this.headerExprs = Sets.newHashSet(loop.getInitNodes());
 		this.loop = loop;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
+		//if we encounter a specific header, do prediction recursively and add them to the list of header predictions
 		if(headerExprs.contains(node)){
-			return new BlockTimePredictor(callback, context){
+			return new BlockTimePredictor(callback){
 				@Override
 				public void finish() {
 					headerTimeStats.addAll(excecutionTimeStats);				
@@ -39,9 +48,13 @@ class LoopBlockTimeCollector extends BlockTimePredictor{
 		return null;
 	}	
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode generateResults() {
-		return callback.loopMeasured(excecutionTimeStats, headerTimeStats, loop, context);
+		//do call back to make the actual prediciton
+		return callback.loopMeasured(excecutionTimeStats, headerTimeStats, loop);
 	}
 	
   }

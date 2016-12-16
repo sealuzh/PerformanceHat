@@ -10,6 +10,12 @@ import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 
+/**
+ * Helper class to analyze loops.
+ * Currently only resolves variables to their initializer
+ * @author Markus Knecht
+ *
+ */
 class LoopAnalysisHelper {
 	
 		public static Optional<IAstNode> resolveName(IAstNode node, SimpleName name, AstContext ctx){			

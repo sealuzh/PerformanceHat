@@ -22,8 +22,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loo
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Try;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimePredictor;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimeCollectorCallback;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.LoopUtils;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predictor.BlockTimePredictorCallback;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 /**
@@ -31,7 +30,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
  * @author Markus Knecht
  *
  */
-public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollectorCallback{
+public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredictorCallback{
 
 	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin";
 	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
@@ -71,7 +70,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 				@Override
 				public PerformanceVisitor visit(MethodDeclaration method) {
 					 //Use BlockTimeCollector to measure the method
-					  return new BlockTimePredictor(BlockPredictionPlugin.this,rootContext){
+					  return new BlockTimePredictor(BlockPredictionPlugin.this){
 						@Override
 						public PredictionNode generateResults() {
 							//simply sum up contributions
@@ -98,7 +97,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PredictionNode invocationEncountered(Invocation invocation, AstContext context) {
+	public PredictionNode invocationEncountered(Invocation invocation) {
 		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
 		//Consume own Tags, only works over multiple compiles or else we would need complext tag management
 		Collection<Object> predTags = invocation.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
@@ -121,10 +120,10 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PredictionNode loopMeasured(List<PredictionNode> iterationExecutionTime, List<PredictionNode> headerExecutionTime, Loop loop, AstContext context){
+	public PredictionNode loopMeasured(List<PredictionNode> iterationExecutionTime, List<PredictionNode> headerExecutionTime, Loop loop){
 
 		//do we know the iterations
-		Double avgItersLookup = LoopUtils.findNumOfIterations(loop, context);
+		Double avgItersLookup = LoopUtils.findNumOfIterations(loop);
 		//at least do one iteration
 		double avgIters = (avgItersLookup == null)?1:avgItersLookup;
 		final double iterExcecTime = sum(iterationExecutionTime);
@@ -145,7 +144,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PredictionNode branchMeasured(List<PredictionNode> conditionExecutionTime, List<List<PredictionNode>> branchExecutionTimes, Branching branch, AstContext context){
+	public PredictionNode branchingMeasured(List<PredictionNode> conditionExecutionTime, List<List<PredictionNode>> branchExecutionTimes, Branching branch){
 		 final List<PredictionNode> branchNodes = Lists.newArrayList();
 		 //for the condition simply sum up
 		 final PredictionNode conditionN = new BlockPrediction("condition", sum(conditionExecutionTime), conditionExecutionTime);
@@ -178,7 +177,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimeCollec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PredictionNode tryMeasured(List<PredictionNode> tryExecutionTime, List<PredictionNode> finnalyExecutionTime, List<List<PredictionNode>> catchExccutionTimes, Try tryStm, AstContext context) {
+	public PredictionNode tryMeasured(List<PredictionNode> tryExecutionTime, List<PredictionNode> finnalyExecutionTime, List<List<PredictionNode>> catchExccutionTimes, Try tryStm) {
 		//Is a finally present
 		if(finnalyExecutionTime == null){
 			//if not its simply the sum of the try

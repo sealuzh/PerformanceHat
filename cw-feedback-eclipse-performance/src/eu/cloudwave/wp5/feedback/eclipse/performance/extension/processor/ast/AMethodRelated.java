@@ -20,7 +20,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	/**
 	 * Fetches the information about the related method
-	 * @return
+	 * @return the corresponding MethodLocator
 	 */
 	public abstract MethodLocator createCorrespondingMethodLocation();
 

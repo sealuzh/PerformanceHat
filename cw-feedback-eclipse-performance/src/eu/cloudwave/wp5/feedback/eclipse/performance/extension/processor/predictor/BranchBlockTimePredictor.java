@@ -12,23 +12,32 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Bra
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
-//todo: do we need seperate class for this (or would inner class do)
-//todo: if we keep make CTR private and use static methode calling the skip thing
-class BranchBlockTimeCollector extends BlockTimePredictor{
+/**
+ * Visitor for the BranchPart of the BlockTimePredictor framework
+ * @author Markus Knecht
+ *
+ */
+class BranchBlockTimePredictor extends BlockTimePredictor{
+	
 	private final List<List<PredictionNode>> stats = Lists.newArrayList();
     private final Set<IAstNode> branchStarts; //ether the foreach source or the initializer
     private final Branching branch;
 
-	BranchBlockTimeCollector(BlockTimePredictor parent, BlockTimeCollectorCallback callback, AstContext context, Branching branch) {
-		super(parent, callback, context);
+	BranchBlockTimePredictor(BlockTimePredictor parent, BlockTimePredictorCallback callback, Branching branch) {
+		super(parent, callback);
+		//all the branches
 		this.branchStarts = Sets.newHashSet(branch.getBranches());
 		this.branch = branch;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PerformanceVisitor concreteNodeVisitor(IAstNode node) {
+		//if we encounter a specific branch, do prediction recursively and add them to the list of branch predictions
 		if(branchStarts.contains(node)){
-			return new BlockTimePredictor(callback, context){
+			return new BlockTimePredictor(callback){
 				@Override
 				public void finish() {
 					stats.add(excecutionTimeStats);			
@@ -38,9 +47,13 @@ class BranchBlockTimeCollector extends BlockTimePredictor{
 		return null;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PredictionNode generateResults() {
-		return callback.branchMeasured(excecutionTimeStats, stats, branch, context);
+		//do call back to make the actual prediciton
+		return callback.branchingMeasured(excecutionTimeStats, stats, branch);
 	}
 
   }

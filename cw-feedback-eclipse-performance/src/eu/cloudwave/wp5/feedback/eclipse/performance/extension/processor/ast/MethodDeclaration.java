@@ -5,12 +5,19 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 
+/**
+ * A IAstNode representing a Method Declaration
+ * @author Markus Knecht
+ */
 public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
 	
 	 MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, AstContext ctx) {
 		super(methodDeclaration, AMethodRelated.Type.DECLARATION,ctx);
 	 }
-		
+
+	  /**
+	   * {@inheritDoc}
+	   */
 	 @Override
 	 public MethodDeclaration getCurrentMethode() {
 			return this;
@@ -33,17 +40,30 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 	    return getStartPosition() + inner.getName().getLength();
 	  }
 	  
-	
+	  /**
+	   * {@inheritDoc}
+	   */
+	  @Override	
 	  public MethodLocator createCorrespondingMethodLocation(){
 		  IMethodBinding bind = inner.resolveBinding().getMethodDeclaration();
 		  return new MethodLocator(bind.getDeclaringClass().getQualifiedName(), bind.getName(), AMethodRelated.getTargetArguments(bind));
 	  }
 	  
+	  /**
+	   * In addition to tags bound by its node, MethodeDeclarations allow to attach a Tag to the actual method and not the node
+	   *  This tag is avaiable from other CompilationUnits and can be accessed as usual over get Tag
+	   *  It is even present on Method calls to the method
+	   * @param name of the tag
+	   * @param value of the tag
+	   */
 	  public void attachPublicTag(String name, Object value) {
 		  MethodLocator loc = createCorrespondingMethodLocation();
 		  ctx.getTagCreator().addMethodTag(loc, name, value);
 	  }
 
+	  /**
+	   * {@inheritDoc}
+	   */
 	  @Override
 	  public String getMethodKind() {
 		  IMethodBinding bind = inner.resolveBinding().getMethodDeclaration();
