@@ -12,12 +12,12 @@ public class MethodInvocation extends AMethodRelated<org.eclipse.jdt.core.dom.Ex
 	private org.eclipse.jdt.core.dom.SuperMethodInvocation superCall = null;
 	
 	MethodInvocation(org.eclipse.jdt.core.dom.MethodInvocation methodInvocation, AstContext ctx) {
-		super(methodInvocation,AMethodRelated.CallType.METHOD,ctx);
+		super(methodInvocation,AMethodRelated.Type.METHOD,ctx);
 		directCall = methodInvocation;
 	}
 	
 	MethodInvocation(org.eclipse.jdt.core.dom.SuperMethodInvocation methodInvocation, AstContext ctx) {
-		super(methodInvocation,AMethodRelated.CallType.METHOD_SUPER,ctx);
+		super(methodInvocation,AMethodRelated.Type.METHOD_SUPER,ctx);
 		superCall = methodInvocation;
 	}
 

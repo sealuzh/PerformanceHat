@@ -5,8 +5,23 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode.NodeWrapper;
 
+/**
+ * Class for generating instances of IAstNode's
+ * All instances should be created over this.
+ * @author Markus Knecht
+ *
+ */
 public class StaticAstFactory {
+	
+	/**
+	 * Allows to create an IAstNode from an Eclipse ASTNode even if the concrete type is unknown
+	 * @param node is the eclipse ASTNode
+	 * @param ctx is the Performance AstContext
+	 * @return the corresponding IAstNode
+	 */
+	//expensive method, but often jit inlining should take care of it
 	public static IAstNode fromEclipseAstNode(org.eclipse.jdt.core.dom.ASTNode node, AstContext ctx){
+		//without Meta programming that allows to add methods to ASTNode's (which java has not), their is no better option
 		if(node instanceof org.eclipse.jdt.core.dom.MethodInvocation){
 			return createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)node, ctx);
 		} else if(node instanceof org.eclipse.jdt.core.dom.SuperMethodInvocation){
@@ -37,9 +52,11 @@ public class StaticAstFactory {
 			return createBlock((org.eclipse.jdt.core.dom.Block)node, ctx);
 		}
 		
-		//todo: make giant switch and create correct if exists
 		return new NodeWrapper(node, ctx);
 	}
+	
+	//Following one method per node type (or multiple if their are multiple option for backing Eclipse Nodes)
+	//TODO: make Java Doc
 	
 	public static MethodInvocation createMethodInvocation(org.eclipse.jdt.core.dom.MethodInvocation node, AstContext ctx){
 		return new MethodInvocation(node, ctx);

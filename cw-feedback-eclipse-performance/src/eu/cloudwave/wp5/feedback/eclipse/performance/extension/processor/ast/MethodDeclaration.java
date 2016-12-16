@@ -8,7 +8,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.MethodDeclaration> implements MethodOccurence {
 	
 	 MethodDeclaration(org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration, AstContext ctx) {
-		super(methodDeclaration, AMethodRelated.CallType.DECLARATION,ctx);
+		super(methodDeclaration, AMethodRelated.Type.DECLARATION,ctx);
 	 }
 		
 	 @Override

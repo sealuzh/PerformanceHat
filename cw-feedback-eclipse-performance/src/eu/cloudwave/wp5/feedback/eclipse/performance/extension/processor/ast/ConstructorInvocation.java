@@ -17,17 +17,17 @@ public class ConstructorInvocation extends AMethodRelated<org.eclipse.jdt.core.d
 
 
 	  ConstructorInvocation(org.eclipse.jdt.core.dom.ClassInstanceCreation newInstance, AstContext ctx) {
-		 super(newInstance,AMethodRelated.CallType.CTR_NEW,ctx);
+		 super(newInstance,AMethodRelated.Type.CTR_NEW,ctx);
 		 this.newInstance = newInstance;
       }
  	  
  	  ConstructorInvocation(org.eclipse.jdt.core.dom.ConstructorInvocation thisCall, AstContext ctx) {
-		 super(thisCall,AMethodRelated.CallType.CTR_DELEGATE,ctx);
+		 super(thisCall,AMethodRelated.Type.CTR_DELEGATE,ctx);
 		 this.thisCall = thisCall;
       }
  	  
  	  ConstructorInvocation(org.eclipse.jdt.core.dom.SuperConstructorInvocation superCall, AstContext ctx) {
-		 super(superCall,AMethodRelated.CallType.CTR_SUPER,ctx);
+		 super(superCall,AMethodRelated.Type.CTR_SUPER,ctx);
 		 this.superCall = superCall;
       }
  	  
