@@ -2,10 +2,15 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 
-//Todo: make methode occurence
+/**
+ * A IAstNode representing all invocations
+ * This includes: Method Calls and Constructor Calls
+ * @author Markus Knecht
+ *
+ */
 public interface Invocation extends MethodOccurence {
-	  
-	  //public ProcedureKind getProcedureKind();
-	  
+	 /**
+	  * {@inheritDoc}
+	  */
 	  public  MethodLocator createCorrespondingMethodLocation();
 }

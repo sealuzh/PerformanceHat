@@ -80,6 +80,9 @@ class LoopAnalysisHelper {
 		    return inv.get();
 		  }
 		  
+		  
+		  //To circumvent javas inability to capture non-final variables in lambdas/anonymous classes
+		  // other languages do this auto boxing automatically
 		  private static class Box<T> {
 		    private T value = null;
 

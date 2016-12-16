@@ -8,8 +8,15 @@ import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 
+/**
+ * A Branching represents every java construct which chooses one branch to execute based on a condition.
+ * Branching includes: ifs, switches and conditional expressions
+ * @author Markus Knecht
+ *
+ */
 public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
 	
+	  //The three possible backing nodes
 	  private org.eclipse.jdt.core.dom.IfStatement ifStat = null;
 	  private org.eclipse.jdt.core.dom.ConditionalExpression condStat = null;
 	  private org.eclipse.jdt.core.dom.SwitchStatement switchStat = null;
@@ -30,10 +37,13 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
  		 this.switchStat = switchStat;
        }
  	  
+ 	 /**
+ 	  * returns all the possible branches
+ 	  * @return IAstNode representing the Branch
+ 	  */
  	  public List<IAstNode> getBranches(){
  		 List<IAstNode> res = Lists.newArrayList();
  		 if(ifStat != null){
- 			 //Posiible is block
  			 org.eclipse.jdt.core.dom.Statement sm = ifStat.getThenStatement();
  			 if(sm != null) res.add(StaticAstFactory.fromEclipseAstNode(sm, ctx));
  			 sm = ifStat.getElseStatement();
@@ -51,6 +61,10 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
  		 return res;
  	  }
  	  
+ 	  /**
+ 	   * Gets the Condition node which defines which bloc is taken
+ 	   * @return IAstNode representing the condition
+ 	   */
  	  public IAstNode getCondition(){
  		 if(ifStat != null){
  			return StaticAstFactory.fromEclipseAstNode(ifStat.getExpression(), ctx);
@@ -62,6 +76,10 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
  		 return null;
  	  }
  	  
+ 	  /**
+ 	   * Checks if it is possible that none of the branches are executed
+ 	   * @return true if no branch may be executed and false if always a branch is executed
+ 	   */
  	  public boolean isSkippable(){
  		 if(ifStat != null){
   			return ifStat.getElseStatement() == null;

@@ -10,23 +10,37 @@ import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 
+/**
+ * A IAstNode for ForEach loops
+ * @author Markus Knecht
+ *
+ */
 public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 		
 	ForEach(EnhancedForStatement foreachStatement,AstContext ctx) {
 		super(foreachStatement,ctx);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected int getStartPosition() {
 		return inner.getParameter().getStartPosition();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected int getEndPosition() {
 		  final org.eclipse.jdt.core.dom.Expression expression = inner.getExpression();
           return expression.getStartPosition() + expression.getLength();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Optional<Integer> getIterations() {
 		return Optional.absent();
@@ -54,16 +68,21 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 	    return Optional.absent();
 	  }
 	  
+	  /**
+	   * {@inheritDoc}
+	   */
+	  @Override
+	  public List<IAstNode> getInitNodes() {
+		  return Collections.singletonList(StaticAstFactory.fromEclipseAstNode(inner.getExpression(),ctx));
+	  }
 
-	@Override
-	public List<IAstNode> getInitNodes() {
-		return Collections.singletonList(StaticAstFactory.fromEclipseAstNode(inner.getExpression(),ctx));
-	}
-
-	@Override
-	public IAstNode getBody() {
-		return StaticAstFactory.fromEclipseAstNode(inner.getBody(), ctx);
-	}
+	  /**
+	   * {@inheritDoc}
+	   */
+	  @Override
+	  public IAstNode getBody() {
+		  return StaticAstFactory.fromEclipseAstNode(inner.getBody(), ctx);
+	  }
 
 	  
 }
