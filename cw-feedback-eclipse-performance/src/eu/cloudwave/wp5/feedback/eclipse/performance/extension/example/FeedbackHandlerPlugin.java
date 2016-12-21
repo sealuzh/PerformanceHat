@@ -9,6 +9,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ParameterDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
@@ -50,6 +52,21 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 		//Creates a visitor, that attaches tags to Method Calls, Method Declaration and Constructor Invocations
 		//  As well as Method parameters
 		return new PerformanceVisitor() {
+			
+			@Override
+			public PerformanceVisitor visit(MethodDeclaration method) {
+				//Find the Definition location of the Method
+				MethodLocator loc = method.createCorrespondingMethodLocation();
+				//get the average Excecution Time for the Method
+				Double measure = fddClient.avgExecTime(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes);
+				//Attach the result if data is provided
+				if(measure != null) method.attachPublicTag(AVG_EXEC_TIME_TAG, measure);
+				//get the collection Size of the return value
+			    Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, "");
+			    //Attach the result if data is provided
+			    if(averageSize != null) method.attachPublicTag(COLLECTION_SIZE_TAG, averageSize);
+			    return CONTINUE;
+			}
 
 			@Override
 			public PerformanceVisitor visit(MethodOccurence method) {
@@ -75,9 +92,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			    //Attach the result if data is provided
 				if(averageSize != null) decl.attachTag(COLLECTION_SIZE_TAG, averageSize); 
 			    return CONTINUE;
-			}
-			
-			
+			}		
 		};
 	}
 	  

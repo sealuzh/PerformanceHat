@@ -55,6 +55,13 @@ public class MethodLocator {
 			return false;
 		return true;
 	}
+
+
+	@Override
+	public String toString() {
+		return "MethodLocator [className=" + className + ", methodName=" + methodName + ", argumentTypes="
+				+ Arrays.toString(argumentTypes) + "]";
+	}
 	
 	
 	

@@ -62,21 +62,28 @@ public class ConstructorInvocation extends AMethodRelated<org.eclipse.jdt.core.d
  		  return regularName;
  	  }
 
+ 	  
+ 	  
  	  /**
  	   * {@inheritDoc}
- 	   */
+ 	   */ 
+ 	  @Override
+ 	  protected IMethodBinding getBinding() {
+		  if(newInstance != null){
+			  return newInstance.resolveConstructorBinding().getMethodDeclaration();
+		  } else if(thisCall != null) {
+			  return thisCall.resolveConstructorBinding().getMethodDeclaration();
+		  } else if(superCall != null) {
+			  return superCall.resolveConstructorBinding().getMethodDeclaration();
+		  }
+		  return null;
+ 	  }
+
+
  	  @Override
  	  public  MethodLocator createCorrespondingMethodLocation(){
- 		  IMethodBinding bind = null;
- 		  if(newInstance != null){
- 			  bind = newInstance.resolveConstructorBinding().getMethodDeclaration();
- 		  } else if(thisCall != null) {
- 			  bind = thisCall.resolveConstructorBinding().getMethodDeclaration();
- 		  } else if(superCall != null) {
- 			  bind = superCall.resolveConstructorBinding().getMethodDeclaration();
- 		  }
-		
- 		  return new MethodLocator(getTargetQualifiedClassName(bind), getTargetMethodName(bind), AMethodRelated.getTargetArguments(bind));	
+ 		 IMethodBinding bind = getBinding();
+ 		 return new MethodLocator(getTargetQualifiedClassName(bind), getTargetMethodName(bind), AMethodRelated.getTargetArguments(bind));	
  	  }
 
  	  /**

@@ -44,6 +44,7 @@ public interface TagProvider {
 	 */
 	public Collection<Object> getTagsForMethod(MethodLocator loc, String tagName);
 	
+	
 	/**
 	 * Gets the attached Tag of a method.
 	 * This returns only the tag of a specified generator

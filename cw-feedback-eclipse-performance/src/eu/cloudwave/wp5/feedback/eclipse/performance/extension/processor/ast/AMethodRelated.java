@@ -23,7 +23,9 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	 * @return the corresponding MethodLocator
 	 */
 	public abstract MethodLocator createCorrespondingMethodLocation();
+	protected abstract IMethodBinding getBinding();
 
+	
 	/**
 	 * The avaiable method relation types
 	 * @author Markus Knecht
@@ -74,7 +76,9 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 		  //beside the node attached tags find the public method attached tags
 		  res.addAll(ctx.getTagProvider().getTagsForMethod(loc, name));
 		  res.addAll(super.getTags(name));
-		  return res;
+		  if(!res.isEmpty()) return res;
+		  return ImplementorTagLookupHelper.getSingleSubclassTags(getBinding(), ctx, name);
+		  //return res;
 	  }
 	  
 	  

@@ -26,17 +26,26 @@ public class MethodInvocation extends AMethodRelated<org.eclipse.jdt.core.dom.Ex
 		superCall = methodInvocation;
 	}
 	
+	  
+	/**
+	 * {@inheritDoc}
+	 */ 
+	@Override
+	protected IMethodBinding getBinding() {
+		if(directCall != null){
+			return directCall.resolveMethodBinding().getMethodDeclaration();
+		} else if(superCall != null) {
+			return superCall.resolveMethodBinding().getMethodDeclaration();
+		}
+		return null;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public MethodLocator createCorrespondingMethodLocation(){
-		IMethodBinding bind = null;
-		if(directCall != null){
-			bind = directCall.resolveMethodBinding().getMethodDeclaration();
-		} else if(superCall != null) {
-			bind = superCall.resolveMethodBinding().getMethodDeclaration();
-		}
+		IMethodBinding bind = getBinding();
 		return new MethodLocator(bind.getDeclaringClass().getQualifiedName(), bind.getName(), AMethodRelated.getTargetArguments(bind));
 	}
 

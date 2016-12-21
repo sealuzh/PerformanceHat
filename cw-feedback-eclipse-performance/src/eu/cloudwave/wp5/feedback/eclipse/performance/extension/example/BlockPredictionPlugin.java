@@ -1,13 +1,24 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.Modifier;
+
 import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
@@ -17,6 +28,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.predictio
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.MethodCallPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Invocation;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
@@ -69,8 +81,8 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		  return new PerformanceVisitor() {
 				@Override
 				public PerformanceVisitor visit(MethodDeclaration method) {
-					 //Use BlockTimeCollector to measure the method
-					  return new BlockTimePredictor(BlockPredictionPlugin.this){
+					//Use BlockTimeCollector to measure the method
+					return new BlockTimePredictor(BlockPredictionPlugin.this){
 						@Override
 						public PredictionNode generateResults() {
 							//simply sum up contributions
@@ -82,10 +94,10 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 							//method.attachTag(AVG_PRED_TIME_TAG, methodN);
 							return methodN;
 						} 
-					  };
-			     }
-		  };
-	} 
+					}; 
+				} 
+		  };	
+	  } 
 	  
 	//TODO: Move to a toolbox
 	private static double sum(List<PredictionNode> nodes){

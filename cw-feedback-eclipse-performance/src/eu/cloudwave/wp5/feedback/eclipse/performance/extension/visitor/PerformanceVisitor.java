@@ -55,24 +55,26 @@ public abstract class PerformanceVisitor {
 		}
 	};
 	
+	protected static PerformanceVisitor USE_NEXT_VISIT = null;
+	
 	//All the visit methods
 	
-	public PerformanceVisitor visit(Loop loop){return null;}
-	public PerformanceVisitor visit(ForEach forEach){return null;}
-	public PerformanceVisitor visit(For forLoop){return null;}
+	public PerformanceVisitor visit(Loop loop){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(ForEach forEach){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(For forLoop){return USE_NEXT_VISIT;}
 
-	public PerformanceVisitor visit(Invocation invocation){return null;}
-	public PerformanceVisitor visit(MethodInvocation methodeCall){return null;}
-	public PerformanceVisitor visit(ConstructorInvocation newInstance){return null;}
+	public PerformanceVisitor visit(Invocation invocation){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(MethodInvocation methodeCall){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(ConstructorInvocation newInstance){return USE_NEXT_VISIT;}
 
-	public PerformanceVisitor visit(MethodOccurence methode){return null;}
-	public PerformanceVisitor visit(MethodDeclaration declaration){return null;}
-	public PerformanceVisitor visit(ParameterDeclaration decl){return null;}
+	public PerformanceVisitor visit(MethodOccurence methode){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(MethodDeclaration declaration){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(ParameterDeclaration decl){return USE_NEXT_VISIT;}
 
-	public PerformanceVisitor visit(CatchClause decl) {return null;}
-	public PerformanceVisitor visit(Block decl) {return null;}
-	public PerformanceVisitor visit(Branching decl){return null;}
-	public PerformanceVisitor visit(Try decl){return null;}
+	public PerformanceVisitor visit(CatchClause decl) {return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(Block decl) {return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(Branching decl){return USE_NEXT_VISIT;}
+	public PerformanceVisitor visit(Try decl){return USE_NEXT_VISIT;}
 	
 	/**
 	 * Is called when this visitor has visited its last node and will be discarded

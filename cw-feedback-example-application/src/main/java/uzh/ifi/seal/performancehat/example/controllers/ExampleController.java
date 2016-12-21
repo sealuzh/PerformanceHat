@@ -22,6 +22,7 @@ public class ExampleController {
     	grall();
     }
     
+    
     public void grall(){
         greeting(null);
     }
@@ -68,7 +69,6 @@ public class ExampleController {
         return "users";
         
     }
-    
     
     private List<String> getUserInfo(){
     	IDatabase myDB = new DatabaseStub();

@@ -1,5 +1,7 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
+import java.util.Collection;
+
 import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
@@ -40,12 +42,21 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 	    return getStartPosition() + inner.getName().getLength();
 	  }
 	  
+	  
+ 	  /**
+ 	   * {@inheritDoc}
+ 	   */ 
+ 	  @Override
+ 	  protected IMethodBinding getBinding() {
+		  return inner.resolveBinding().getMethodDeclaration();
+ 	  }
+	  
 	  /**
 	   * {@inheritDoc}
 	   */
 	  @Override	
 	  public MethodLocator createCorrespondingMethodLocation(){
-		  IMethodBinding bind = inner.resolveBinding().getMethodDeclaration();
+		  IMethodBinding bind = getBinding();
 		  return new MethodLocator(bind.getDeclaringClass().getQualifiedName(), bind.getName(), AMethodRelated.getTargetArguments(bind));
 	  }
 	  
@@ -60,7 +71,8 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 		  MethodLocator loc = createCorrespondingMethodLocation();
 		  ctx.getTagCreator().addMethodTag(loc, name, value);
 	  }
-
+	  
+	  
 	  /**
 	   * {@inheritDoc}
 	   */
@@ -68,6 +80,17 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 	  public String getMethodKind() {
 		  IMethodBinding bind = inner.resolveBinding().getMethodDeclaration();
 		  return bind.isConstructor()?"Constructor":"Method";
+	  }
+	  
+	
+
+	/**
+	   * Returns the Body node of the Method or null if their is none
+	   * @return the body as IAstNode
+	   */
+	  public Block getBody(){
+		  if(inner.getBody() ==  null) return null;
+		  return StaticAstFactory.createBlock(inner.getBody(), ctx);
 	  }
 
 }

@@ -7,7 +7,6 @@ import uzh.ifi.seal.performancehat.example.interfaces.IDatabase;
 import uzh.ifi.seal.performancehat.example.interfaces.IUser;
 
 public class DatabaseStub implements IDatabase {
-
 	
 	private List<IUser> userList = new ArrayList<IUser>();
 	
@@ -21,9 +20,7 @@ public class DatabaseStub implements IDatabase {
 		userList.add(new UserStub("jstevens", "publisher", "jessica.stevens@example.com"));
 	
 	}
-	
-	
-	
+		
 	public List<String> getUserNames() {
 		List<String> usernames = new ArrayList<String>();
 		for(IUser user : userList){
@@ -31,20 +28,17 @@ public class DatabaseStub implements IDatabase {
 		}
 		return usernames;
 	}
-
 	
 	public List<String> getUserEmails() {
 		List<String> useremails = new ArrayList<String>();
 		for(IUser user : userList){
 			useremails.add(user.getEmail());
-		}
-		
-		
+		}	
 		return useremails;
 		
 	}
-
-
+	
+	
 	public List<String> getUserInfo() {
 		List<String> userInfoList = new ArrayList<String>();
 		for(IUser user: userList){

@@ -1,9 +1,20 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 
 import com.google.common.collect.Maps;
 
@@ -17,6 +28,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
@@ -24,6 +37,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.predictio
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
@@ -118,8 +132,8 @@ public class HotspotPlugin  implements  PerformancePlugin{
 				  }
 				  return CONTINUE;
 			  }
-			  
-			  @Override
+
+			@Override
 			  public PerformanceVisitor visit(MethodOccurence method) {
 				  
 				  //find the maximum measured time for now (their will max be one measurement per Datasource)

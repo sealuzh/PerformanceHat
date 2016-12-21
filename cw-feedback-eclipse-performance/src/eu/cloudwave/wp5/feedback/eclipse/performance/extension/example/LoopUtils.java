@@ -4,12 +4,11 @@ import java.util.Collection;
 
 import com.google.common.base.Optional;
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
 
 /**
- * A utility class to analyse loops
+ * A utility class to analyze loops
  * @author Markus Knecht
  *
  */
