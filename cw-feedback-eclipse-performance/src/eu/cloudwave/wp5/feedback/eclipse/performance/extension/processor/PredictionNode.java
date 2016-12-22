@@ -8,6 +8,15 @@ import java.util.Collection;
  * @author Markus Knecht
  */
 public interface PredictionNode {
+	
+	/**
+	 * Get the Header information
+	 *  Children are assumed to deliver the same value for  getHeaders()
+	 * @return the Header description
+	 */
+	public PredictionNodeHeader getHeader();
+	
+	
 	/**
 	 * Defines if this node has a text and prediction time associated or is just a grouping node 
 	 * @return true if it has data false otherwise
@@ -15,7 +24,7 @@ public interface PredictionNode {
 	public boolean isDataNode();
 	
 	/**
-	 * The Prediction test of the node
+	 * The Prediction text of the node
 	 * @return the text
 	 */
 	public String getText();
@@ -24,7 +33,13 @@ public interface PredictionNode {
 	 * The Prediction time of the node
 	 * @return the time
 	 */
-	public double getPredictedTime();
+	public Collection<Double> getPredictedTime();
+	
+	/**
+	 * The Prediction text of the node
+	 * @return the time
+	 */
+	public Collection<String> getPredictedText();
 	
 	/**
 	 * The children of the node

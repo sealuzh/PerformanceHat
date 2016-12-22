@@ -21,6 +21,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.APrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchingPrediction;
@@ -86,9 +87,11 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 						@Override
 						public PredictionNode generateResults() {
 							//simply sum up contributions
-							final double methodTimeSum = sum(excecutionTimeStats);
+							final double methodTimeSumPred = sumPred(excecutionTimeStats);
+							final double methodTimeSumMes = sumMes(excecutionTimeStats);
+
 							//generate a generic Block Prediction for method body
-							final PredictionNode methodN = new BlockPrediction("method declaration", methodTimeSum, excecutionTimeStats);	
+							final PredictionNode methodN = new BlockPrediction("method declaration", methodTimeSumPred, methodTimeSumMes, excecutionTimeStats);	
 							//publish the results as a Tag (Consumed by Hotspot at least)
 							method.attachPublicTag(AVG_PRED_TIME_TAG, methodN);
 							//method.attachTag(AVG_PRED_TIME_TAG, methodN);
@@ -99,11 +102,14 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		  };	
 	  } 
 	  
-	//TODO: Move to a toolbox
-	private static double sum(List<PredictionNode> nodes){
-		return nodes.stream().mapToDouble(n -> n.getPredictedTime()).sum();
+	private static double sumPred(List<PredictionNode> nodes){
+		return nodes.stream().mapToDouble(n -> ((APrediction)n).avgTimePred).sum();
 	}
-	  
+
+	private static double sumMes(List<PredictionNode> nodes){
+		return nodes.stream().mapToDouble(n -> ((APrediction)n).avgTimeMes).sum();
+	}
+	
 	/**
 	 * Predicts based on the AVG_EXEC_TIME_TAG and AVG_PRED_TIME_TAG
 	 * {@inheritDoc}
@@ -113,18 +119,38 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
 		//Consume own Tags, only works over multiple compiles or else we would need complext tag management
 		Collection<Object> predTags = invocation.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
-		//We prefer predictions currently
-		if(!predTags.isEmpty()) {
-			measurements = predTags.stream().map(p -> ((PredictionNode)p).getPredictedTime()).collect(Collectors.toList());
+		//final values once for prediction prefered and once for measurement prefered
+		Collection<Double> predPref = predTags.stream().map(p -> ((APrediction)p).avgTimePred).collect(Collectors.toList());
+		Collection<Double> mesPref = null;
+		
+		//if we do not have mesurements use predictions
+		if(measurements.isEmpty()){
+			mesPref = predTags.stream().map(p -> ((APrediction)p).avgTimeMes).collect(Collectors.toList());
+		} else {
+			mesPref = measurements;
 		}
-		if(measurements.isEmpty()) return null;
-		double avgExecTime = 0.0;
-		for(double avgT : measurements) {
-			avgExecTime+=avgT;
+		
+		//if we do not have predictions use measurement
+		if(predPref.isEmpty()) {
+			predPref = mesPref;
 		}
-		avgExecTime /= measurements.size();
+
+		//Calc Avg Prediction
+		double avgExecTimePred = 0.0;
+		for(double avgT : predPref) {
+			avgExecTimePred+=avgT;
+		}
+		avgExecTimePred /= predPref.size();
+		
+		//Calc Avg mesurement
+		double avgExecTimeMes= 0.0;
+		for(double avgT : mesPref) {
+			avgExecTimeMes+=avgT;
+		}
+		avgExecTimeMes /= mesPref.size();
+		
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
-		return new MethodCallPrediction(loc, avgExecTime);
+		return new MethodCallPrediction(loc, avgExecTimePred, avgExecTimeMes);
 	}
 
 	/**
@@ -138,13 +164,17 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		Double avgItersLookup = LoopUtils.findNumOfIterations(loop);
 		//at least do one iteration
 		double avgIters = (avgItersLookup == null)?1:avgItersLookup;
-		final double iterExcecTime = sum(iterationExecutionTime);
-		final double headerExectime =  sum(headerExecutionTime);
-
+		final double iterExcecTimePred = sumPred(iterationExecutionTime);
+		final double headerExectimePred =  sumPred(headerExecutionTime);
+		final double iterExcecTimeMes = sumMes(iterationExecutionTime);
+		final double headerExectimeMes  =  sumMes(headerExecutionTime);
+		
 		//Predict n*body + 1*header
-		final PredictionNode headerN = new BlockPrediction("loop header", headerExectime, headerExecutionTime);
-		PredictionNode bodyN = new BlockPrediction("loop body", iterExcecTime, iterationExecutionTime);		
-		final PredictionNode loopN = new LoopPrediction((avgIters*bodyN.getPredictedTime())+headerN.getPredictedTime(),avgIters, bodyN, headerN);	
+		final APrediction headerN = new BlockPrediction("loop header", headerExectimePred, headerExectimeMes, headerExecutionTime);
+		final APrediction bodyN = new BlockPrediction("loop body", iterExcecTimePred, iterExcecTimeMes, iterationExecutionTime);		
+		double loopTimePred = (avgIters*bodyN.avgTimePred)+headerN.avgTimePred;
+		double loopTimeMes = (avgIters*bodyN.avgTimeMes)+headerN.avgTimeMes;
+		final PredictionNode loopN = new LoopPrediction(loopTimePred, loopTimeMes ,avgIters, bodyN, headerN);	
 		
 		//Publish prediction per tag
 		loop.attachTag(AVG_PRED_TIME_TAG, loopN);
@@ -159,9 +189,10 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 	public PredictionNode branchingMeasured(List<PredictionNode> conditionExecutionTime, List<List<PredictionNode>> branchExecutionTimes, Branching branch){
 		 final List<PredictionNode> branchNodes = Lists.newArrayList();
 		 //for the condition simply sum up
-		 final PredictionNode conditionN = new BlockPrediction("condition", sum(conditionExecutionTime), conditionExecutionTime);
+		 final PredictionNode conditionN = new BlockPrediction("condition", sumPred(conditionExecutionTime), sumMes(conditionExecutionTime), conditionExecutionTime);
 		 //Create the Branch Prediction by summing up and deviding through number of branches
-		 double tot = 0;
+		 double totPred = 0;
+		 double totMes = 0;
 		 int branchCount = branchExecutionTimes.size();
 		 if(branch.isSkippable())branchCount++; //shows if their is a chance for zero branch in that case we giv it also equal likelyhood
 		 int i = 0;
@@ -169,14 +200,20 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		 double part = 1.0/branchCount;
 		 //calc each branch
 		 for(List<PredictionNode> bet:branchExecutionTimes) {
-			 final double betSum = sum(bet);
-			 branchNodes.add(new BranchPrediction((++i),part, betSum/branchCount, bet));
-			 tot+=betSum;
+			 final double betSumPred = sumPred(bet);
+			 final double betSumMes = sumPred(bet);
+			 
+			 branchNodes.add(new BranchPrediction((++i),part, betSumPred/branchCount, betSumMes/branchCount , bet));
+			 totPred+=betSumPred;
+			 totMes+=betSumMes;
+
 		 }
 		 //average
-		 tot /= branchCount;
+		 totPred /= branchCount;
+		 totMes /= branchCount;
+
 		 //main prediction node
-		 final PredictionNode branchN = new BranchingPrediction(tot, conditionN, branchNodes);
+		 final PredictionNode branchN = new BranchingPrediction(totPred,totMes, conditionN, branchNodes);
 
 		 //Publish prediction per tag
 		 branch.attachTag(AVG_PRED_TIME_TAG, branchN);
@@ -193,17 +230,21 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		//Is a finally present
 		if(finnalyExecutionTime == null){
 			//if not its simply the sum of the try
-			return new BlockPrediction("try",sum(tryExecutionTime), tryExecutionTime);
+			return new BlockPrediction("try",sumPred(tryExecutionTime), sumMes(tryExecutionTime), tryExecutionTime);
 		} else {
 			//else record both try and finally
 			//the try
-			final double tryTimeSum = sum(tryExecutionTime);
-			final PredictionNode bodyN = new BlockPrediction("body", tryTimeSum, tryExecutionTime);
+			final double tryTimeSumPred = sumPred(tryExecutionTime);
+			final double tryTimeSumMes = sumMes(tryExecutionTime);
+
+			final PredictionNode bodyN = new BlockPrediction("body", tryTimeSumPred, tryTimeSumMes, tryExecutionTime);
 			//the finally
-			final double finallyTimeSum = sum(finnalyExecutionTime);
-			final PredictionNode finallyN = new BlockPrediction("finally", finallyTimeSum, finnalyExecutionTime);		
+			final double finallyTimeSumPred = sumPred(finnalyExecutionTime);
+			final double finallyTimeSumMes = sumMes(finnalyExecutionTime);
+
+			final PredictionNode finallyN = new BlockPrediction("finally", finallyTimeSumPred, finallyTimeSumMes, finnalyExecutionTime);		
 			//thr full try/finally
-			final PredictionNode tryN = new BlockPrediction("try", tryTimeSum+finallyTimeSum, bodyN, finallyN);
+			final PredictionNode tryN = new BlockPrediction("try", tryTimeSumPred+finallyTimeSumPred,tryTimeSumMes+finallyTimeSumMes, bodyN, finallyN);
 			
 			 //Publish prediction per tag
 			tryStm.attachTag(AVG_PRED_TIME_TAG, tryN); 

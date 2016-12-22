@@ -2,9 +2,13 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.predicti
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNodeHeader;
 
 /**
  * A PredictionNode implementation for method call leafs
@@ -12,23 +16,14 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.Predict
  * @author Markus Knecht
  *
  */
-public class MethodCallPrediction implements PredictionNode{
+public class MethodCallPrediction extends APrediction{
 	private final MethodLocator loc;
-	private final double avgTime;
-
-	public MethodCallPrediction(MethodLocator loc, double avgTime) {
-		super();
+	
+	public MethodCallPrediction(MethodLocator loc, double avgTimePred, double avgTimeMes) {
+		super(avgTimePred,avgTimeMes);
 		this.loc = loc;
-		this.avgTime = avgTime;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isDataNode(){
-		return true;
-	}
 	
 	/**
 	 * {@inheritDoc}
@@ -42,15 +37,16 @@ public class MethodCallPrediction implements PredictionNode{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getPredictedTime(){
-		return avgTime;
+	public Collection<PredictionNode> getChildren(){
+		return Collections.emptyList();
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Collection<PredictionNode> getChildren(){
-		return Collections.emptyList();
+	public Collection<String> getPredictedText() {
+		return getPredictedTime().stream().map(p -> (p/1000)+"s").collect(Collectors.toList());
 	}
+
 }

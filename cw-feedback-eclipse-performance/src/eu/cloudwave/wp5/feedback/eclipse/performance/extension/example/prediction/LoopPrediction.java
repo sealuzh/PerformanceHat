@@ -1,10 +1,12 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNodeHeader;
 
 /**
  * A PredictionNode implementation for for and foreach blocks
@@ -12,26 +14,17 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.Predict
  * @author Markus Knecht
  *
  */
-public class LoopPrediction implements PredictionNode{
+public class LoopPrediction extends APrediction{
 
-	private final double predTime;
 	public final double avgIters;
-	public final PredictionNode body;
-	public final PredictionNode header;
+	public final APrediction body;
+	public final APrediction headerTime;
 
-	public LoopPrediction(double predTime, double avgIters, PredictionNode body, PredictionNode header) {
-		this.predTime = predTime;
+	public LoopPrediction(double avgTimePred, double avgTimeMes, double avgIters, APrediction body, APrediction headerTime) {
+		super(avgTimePred,avgTimeMes);
 		this.avgIters = avgIters;
-		this.header = header;
+		this.headerTime = headerTime;
 		this.body = body;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isDataNode(){
-		return true;
 	}
 	
 	/**
@@ -39,15 +32,7 @@ public class LoopPrediction implements PredictionNode{
 	 */
 	@Override
 	public String getText(){
-		return "loop("+avgIters+"x)";
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public double getPredictedTime(){
-		return predTime;
+		return "loop";
 	}
 	
 	/**
@@ -55,6 +40,17 @@ public class LoopPrediction implements PredictionNode{
 	 */
 	@Override
 	public Collection<PredictionNode> getChildren(){
-		return Lists.newArrayList(header,body);
+		return Lists.newArrayList(headerTime,body);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Collection<String> getPredictedText() {
+		return getPredictedTime().stream().map(p -> {
+			double t = (p/1000);
+			return avgIters+"*"+(t/avgIters)+"s = "+t+"s";
+		}).collect(Collectors.toList());
 	}
 }

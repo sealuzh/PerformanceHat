@@ -2,6 +2,7 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.predicti
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
@@ -13,24 +14,14 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.Predict
  * @author Markus Knecht
  *
  */
-public class BranchingPrediction implements PredictionNode{
-
-	private final double predTime;
+public class BranchingPrediction extends APrediction{
 	private final PredictionNode condition;
 	private final Collection<PredictionNode> branches;
 
-	public BranchingPrediction(double predTime, PredictionNode condition, Collection<PredictionNode> branches) {
-		this.predTime = predTime;
+	public BranchingPrediction(double avgTimePred, double avgTimeMes, PredictionNode condition, Collection<PredictionNode> branches) {
+		super(avgTimePred,avgTimeMes);
 		this.condition = condition;
 		this.branches = branches;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isDataNode(){
-		return true;
 	}
 	
 	/**
@@ -45,17 +36,18 @@ public class BranchingPrediction implements PredictionNode{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getPredictedTime(){
-		return predTime;
+	public Collection<PredictionNode> getChildren(){
+		List<PredictionNode> res = Lists.newArrayList(condition);
+		res.addAll(branches);
+		return res;
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Collection<PredictionNode> getChildren(){
-		List<PredictionNode> res = Lists.newArrayList(condition);
-		res.addAll(branches);
-		return res;
+	public Collection<String> getPredictedText() {
+		return getPredictedTime().stream().map(p -> (p/1000)+"s").collect(Collectors.toList());
+
 	}
 }

@@ -46,7 +46,7 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-    
+  
     	int x = getUserInfo().size();
    
     	for(int i = 0; i < x; i++){
@@ -70,8 +70,13 @@ public class ExampleController {
         
     }
     
+    
     private List<String> getUserInfo(){
     	IDatabase myDB = new DatabaseStub();
+    	int x = getUserInfo().size();
+    	for(int i = 0; i < x; i++){
+    		lulo:getUserInfo();	 
+    	}
     	List<String> userList = myDB.getUserInfo();
     	return userList;
     }

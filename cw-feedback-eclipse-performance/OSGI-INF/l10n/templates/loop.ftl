@@ -17,7 +17,9 @@
 		<#if node.isDataNode()>
 		   	<tr>
 		     	<td style='padding-right: 20px;'>${spc}${node.getText()}:</td>
-	    	 	<td>${node.getPredictedTime()/1000}s</td>
+	    	 	<#list node.getPredictedText() as text>
+					<td>${text}</td>
+	  			</#list>
 	    	</tr>
 	    	<#list node.getChildren() as child>
 				<@timeNode node=child indent=indent+1 />
@@ -35,5 +37,11 @@ Average Iterations: ${avgInterations}; Average Time per Iteration: ${avgTimePerI
 
 <div><strong>Measured Operations:</strong></div>
 <table border="0" cellspacing="0">
+		<tr>
+			<td><b>Measurements</b></td>
+			<#list procedureExecutions.getHeader().getText() as headerText>
+				<td><b>${headerText}</b></td>
+	  		</#list>
+		</tr>
 		<@timeNode node=procedureExecutions indent=0 />
 </table>

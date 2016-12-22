@@ -32,6 +32,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.APrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.LoopPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
@@ -107,28 +108,24 @@ public class HotspotPlugin  implements  PerformancePlugin{
 				  //Get prediction times for loop (we do not yet measure time for loops so no need to get Measured Time
 				  Collection<Object> entry = loop.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
 				  //if their is something find highest (for now we show highest prediction)
-				  double max = Double.MIN_VALUE;
+				  double max = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
 				  LoopPrediction maxNode = null;
 				  for(Object o: entry){
 					  //get the correct type
 					  if(o instanceof LoopPrediction){
 						  LoopPrediction ln = (LoopPrediction)o;
-						  //check if its better
-						  if(ln.getPredictedTime() > max){
+						  //check if its better then best and threshold
+						  if(Math.max(ln.avgTimePred, ln.avgTimeMes) >= max){
 							  maxNode = ln;
+							  max = Math.max(ln.avgTimePred, ln.avgTimeMes);
 						  }
 					  }
 				  }
 				  
 				  //is their at least one appropriate result
 				  if(maxNode != null){
-					  //get threshhold
-					  final double predThreshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-					  //does it exeed threshold
-					  if (maxNode.getPredictedTime() >= predThreshold) {
-						  //Create the marker
-						  createCriticalLoopMarker(loop,rootContext.getTemplateHandler(),maxNode);
-					  } 
+					  //Create the marker
+					  createCriticalLoopMarker(loop,rootContext.getTemplateHandler(),maxNode);
 				  }
 				  return CONTINUE;
 			  }
@@ -173,28 +170,24 @@ public class HotspotPlugin  implements  PerformancePlugin{
 				  //Get prediction times for loop (we do not yet measure time for loops so no need to get Measured Time
 				  Collection<Object> entry = method.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
 				  //if their is something find highest (for now we show highest prediction)
-				  double max = Double.MIN_VALUE;
+				  double max = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
 				  BlockPrediction maxNode = null;
 				  for(Object o: entry){
 					  //get the correct type
 					  if(o instanceof BlockPrediction){
 						  BlockPrediction bn = (BlockPrediction)o;
 						  //check if its better
-						  if(bn.getPredictedTime() > max){
+						  if(Math.max(bn.avgTimePred, bn.avgTimeMes) >= max){
 							  maxNode = bn;
+							  max = Math.max(bn.avgTimePred, bn.avgTimeMes);
 						  }
 					  }
 				  }
 				  
 				  //is their at least one appropriate result
 				  if(maxNode != null){
-					  //get threshhold
-					  final double predThreshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__LOOPS, PerformanceConfigs.DEFAULT_THRESHOLD_LOOPS);
-					  //does it exeed threshold
-					  if (maxNode.getPredictedTime() >= predThreshold) {
-						  //Create the marker
-						  createCriticalMethodMarker(method,rootContext.getTemplateHandler(),maxNode);
-					  } 
+					  //Create the marker
+					  createCriticalMethodMarker(method,rootContext.getTemplateHandler(),maxNode);
 				  }
 				  return CONTINUE;				 
 			  }
@@ -214,12 +207,14 @@ public class HotspotPlugin  implements  PerformancePlugin{
 	  private static void createCriticalLoopMarker(Loop loop, TemplateHandler template, LoopPrediction loopExecutionSummary ){
 		  //build the parts of the marker info
 		  final String avgIterationsText = new Double(Numbers.round(loopExecutionSummary.avgIters, DECIMAL_PLACES)).toString();
-		  final String avgTotalExecTimeText = TimeValues.toText(loopExecutionSummary.getPredictedTime(), DECIMAL_PLACES);
+		  double maxLoop = Math.max(loopExecutionSummary.avgTimePred,loopExecutionSummary.avgTimeMes);
+		  final String avgTotalExecTimeText = TimeValues.toText(maxLoop, DECIMAL_PLACES);
 		  final String msg = String.format(LOOP_MESSAGE_PATTERN, avgTotalExecTimeText, avgIterationsText);
 		  final Map<String, Object> context = Maps.newHashMap();
 		  context.put(AVG_TOTAL, avgTotalExecTimeText);
 		  context.put(AVG_INTERATIONS, avgIterationsText);
-		  context.put(AVG_TIME_PER_ITERATION, TimeValues.toText(loopExecutionSummary.body.getPredictedTime(), DECIMAL_PLACES));
+		  double maxLoopBody = Math.max(loopExecutionSummary.body.avgTimePred,loopExecutionSummary.body.avgTimeMes);
+		  context.put(AVG_TIME_PER_ITERATION, TimeValues.toText(maxLoopBody, DECIMAL_PLACES));
 		  context.put(PROCEDURE_EXECUTIONS,loopExecutionSummary);
 		  //put them together
 		  final String desc = template.getContent(LOOP, context);
@@ -228,9 +223,10 @@ public class HotspotPlugin  implements  PerformancePlugin{
 	  }
 	  
 	  //Helper to collect the Method info data		
-	  private static void createCriticalMethodMarker(MethodOccurence decl, TemplateHandler template,PredictionNode procedureExecutionSummary ){
+	  private static void createCriticalMethodMarker(MethodOccurence decl, TemplateHandler template, APrediction procedureExecutionSummary ){
 		  //build the parts of the marker info
-		  final String avgTotalExecTimeText = TimeValues.toText(procedureExecutionSummary.getPredictedTime(), DECIMAL_PLACES);
+		  double maxProcedur = Math.max(procedureExecutionSummary.avgTimePred,procedureExecutionSummary.avgTimeMes);
+		  final String avgTotalExecTimeText = TimeValues.toText(maxProcedur, DECIMAL_PLACES);
 		  final String msg = String.format(METHOD_MESSAGE_PATTERN, avgTotalExecTimeText);
 		  final Map<String, Object> context = Maps.newHashMap();
 		  context.put(AVG_TOTAL, avgTotalExecTimeText);
