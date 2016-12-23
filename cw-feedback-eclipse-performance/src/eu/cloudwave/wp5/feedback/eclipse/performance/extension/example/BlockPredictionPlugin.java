@@ -140,14 +140,14 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		for(double avgT : predPref) {
 			avgExecTimePred+=avgT;
 		}
-		avgExecTimePred /= predPref.size();
-		
+		if(predPref.size() != 0)avgExecTimePred /= predPref.size();
+	
 		//Calc Avg mesurement
 		double avgExecTimeMes= 0.0;
 		for(double avgT : mesPref) {
 			avgExecTimeMes+=avgT;
 		}
-		avgExecTimeMes /= mesPref.size();
+		if(mesPref.size() != 0)avgExecTimeMes /= mesPref.size();
 		
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
 		return new MethodCallPrediction(loc, avgExecTimePred, avgExecTimeMes);

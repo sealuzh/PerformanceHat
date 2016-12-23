@@ -46,7 +46,7 @@ public class ExampleController {
 	        	}
 	    	}
     	}
-  
+
     	int x = getUserInfo().size();
    
     	for(int i = 0; i < x; i++){

@@ -140,6 +140,7 @@ public class HotspotPlugin  implements  PerformancePlugin{
 						  maxAvgTime =  avgExecutionTime; 
 					  }
 				  }
+				  //we prefer Mesurement over prediction
 				  //get the threshhold
 				  final double threshold = rootContext.getProject().getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__HOTSPOTS, PerformanceConfigs.DEFAULT_THRESHOLD_HOTSPOTS);
 				  if(maxAvgTime >= threshold){ //note  Double.MIN_VALUE; always < threshold (if nothing was found)
@@ -176,6 +177,7 @@ public class HotspotPlugin  implements  PerformancePlugin{
 					  //get the correct type
 					  if(o instanceof BlockPrediction){
 						  BlockPrediction bn = (BlockPrediction)o;
+					  
 						  //check if its better
 						  if(Math.max(bn.avgTimePred, bn.avgTimeMes) >= max){
 							  maxNode = bn;
