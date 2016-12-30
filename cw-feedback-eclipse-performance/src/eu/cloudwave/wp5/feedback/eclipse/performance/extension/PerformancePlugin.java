@@ -46,5 +46,6 @@ public interface PerformancePlugin {
 	 * @return the Visistor
 	 */
 	//TODO: if we can give better access to some of the elements over the Ast we can remove the AstContext parameter and make this class an implementation detail
-	public PerformanceVisitor createPerformanceVisitor(final AstContext rootContext);
+	public PerformanceVisitor createPerformanceVisitor(final AstContext rootContext);	
+	
 }

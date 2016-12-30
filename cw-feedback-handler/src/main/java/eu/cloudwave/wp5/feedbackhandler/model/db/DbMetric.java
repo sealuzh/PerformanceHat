@@ -15,6 +15,8 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedbackhandler.model.db;
 
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import eu.cloudwave.wp5.common.model.Metric;
@@ -25,6 +27,9 @@ import eu.cloudwave.wp5.feedbackhandler.constants.DbTableNames;
  * MongoDB-specific extension of {@link Metric}.
  */
 @Document(collection = DbTableNames.METRICS)
+@CompoundIndexes({
+    @CompoundIndex(name = "metrics_lookup", def = "{'type': 1, 'procedure.className': 1, 'procedure.name': 1, 'procedure.arguments': 1, 'additionalQualifier': 1}")
+})
 public interface DbMetric extends Metric, DbEntity {
 
   public DbApplication getApplication();

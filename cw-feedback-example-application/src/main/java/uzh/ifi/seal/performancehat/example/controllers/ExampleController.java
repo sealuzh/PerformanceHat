@@ -31,10 +31,9 @@ public class ExampleController {
         greeting(null);
     }
     
-    
     @RequestMapping("/users")
     public String greeting(Model model) {
-    	test:for(String u3: getUserInfo()){
+    	/*test:for(String u3: getUserInfo()){
 	    	for(String u: getUserInfo()){
 	    		for(String u2: getUserInfo()){
 	    			//# branches: 0.5, 0.5
@@ -62,7 +61,7 @@ public class ExampleController {
     		} finally{
         		getUserInfo();
     		}
-    	}
+    	}*/
     	
     	List<String> userList = getUserInfo();
         model.addAttribute("userList", userList);
@@ -73,10 +72,10 @@ public class ExampleController {
     
     private List<String> getUserInfo(){
     	IDatabase myDB = new DatabaseStub();
-    	int x = getUserInfo().size();
-    	for(int i = 0; i < x; i++){
-    		lulo:getUserInfo();	 
-    	}
+    	//int x = getUserInfo().size();
+    	//for(int i = 0; i < x; i++){
+    	//	lulo:getUserInfo();	 
+    	//}
     	List<String> userList = myDB.getUserInfo();
     	return userList;
     }

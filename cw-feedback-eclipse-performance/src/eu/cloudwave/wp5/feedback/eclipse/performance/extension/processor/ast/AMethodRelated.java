@@ -76,9 +76,9 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 		  //beside the node attached tags find the public method attached tags
 		  res.addAll(ctx.getTagProvider().getTagsForMethod(loc, name));
 		  res.addAll(super.getTags(name));
-		  if(!res.isEmpty()) return res;
-		  return ImplementorTagLookupHelper.getSingleSubclassTags(getBinding(), ctx, name);
-		  //return res;
+		  //if(!res.isEmpty()) return res;
+		  //return ImplementorTagLookupHelper.getSingleSubclassTags(getBinding(), ctx, name);
+		  return res;
 	  }
 	  
 	  

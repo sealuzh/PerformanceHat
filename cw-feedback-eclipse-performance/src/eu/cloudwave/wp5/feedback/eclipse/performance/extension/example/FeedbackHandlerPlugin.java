@@ -43,7 +43,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 	public List<String> getProvidedTags(){
 		return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -51,7 +51,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 	public PerformanceVisitor createPerformanceVisitor(AstContext rootContext) {
 		//Creates a visitor, that attaches tags to Method Calls, Method Declaration and Constructor Invocations
 		//  As well as Method parameters
-		return new PerformanceVisitor() {
+		return new PerformanceVisitor() {	
 			
 			@Override
 			public PerformanceVisitor visit(MethodDeclaration method) {
@@ -93,7 +93,6 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 				if(averageSize != null) decl.attachTag(COLLECTION_SIZE_TAG, averageSize); 
 			    return CONTINUE;
 			}		
-		};
+		};	  
 	}
-	  
 }

@@ -53,27 +53,6 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
    * {@inheritDoc}
    */
   @Override
-  public MethodInfoSummarized newRelicSummarized(final String apiKey, final String applicationId, final String className, final String procedureName) {
-    final String url = url(Urls.NEW_RELIC__SUMMARIZE);
-    final Map<String, String> urlVariables = ImmutableMap.of(Params.APPLICATION_ID, applicationId, Params.CLASS_NAME, className, Params.PROCEDURE_NAME, procedureName);
-    return restClient.get(url, urlVariables, MethodInfoSummarized.class, RestRequestHeader.of(Headers.X_API_KEY, apiKey));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public AggregatedProcedureMetricsDto[] hotspots(final String accessToken, final String applicationId, final Double threshold) {
-    final String url = url(Urls.ANALYIS__HOTSPOTS);
-    final Map<String, String> urlVariables = ImmutableMap.of(Params.THRESHOLD, threshold.toString());
-    return restClient.get(url, urlVariables, AggregatedProcedureMetricsDto[].class, RestRequestHeader.of(Headers.APPLICATION_ID, applicationId),
-        RestRequestHeader.of(Headers.ACCESS_TOKEN, accessToken));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
   public ProcedureExecutionMetricDto[] procedure(final String accessToken, final String applicationId, final String className, final String procedureName, final String[] arguments) {
     final String url = url(Urls.ANALYIS__PROCEDURE);
     final Map<String, String> urlVariables = ImmutableMap.of(Params.CLASS_NAME, className, Params.PROCEDURE_NAME, procedureName, Params.ARGUMENTS, Joiners.onComma(arguments));

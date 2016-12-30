@@ -27,43 +27,6 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 public interface FeedbackHandlerEclipseClient {
 
   /**
-   * Gets summarized information about the execution of a method from New Relic.
-   * 
-   * @param project
-   *          the project
-   * @param className
-   *          the name of the class that contains the method
-   * @param procedureName
-   *          the name of the method
-   * @return summarized information about the execution of a method from New Relic
-   */
-  public MethodInfoSummarized newRelicSummarized(FeedbackProject project, String className, String procedureName);
-
-  /**
-   * Get information about hotspots (i.e. methods that take very or too long)
-   * 
-   * @param project
-   *          the project
-   * @return An array of {@link AggregatedProcedureMetricsDto} containing the hotspots
-   */
-  public AggregatedProcedureMetricsDto[] hotspots(FeedbackProject project);
-
-  /**
-   * Fetches all execution metrics for the procedure with the given properties (if it exists).
-   * 
-   * @param project
-   *          the project
-   * @param className
-   *          the name of the class of the procedure
-   * @param procedureName
-   *          the name of the procedure
-   * @param arguments
-   *          the arguments of the procedure (qualified class names)
-   * @return An array containing all metrics for the procedure with the given properties
-   */
-  public ProcedureExecutionMetricDto[] procedure(final FeedbackProject project, final String className, final String procedureName, final String[] arguments);
-
-  /**
    * Get the average execution time of the procedure with the given properties.
    * 
    * @param project

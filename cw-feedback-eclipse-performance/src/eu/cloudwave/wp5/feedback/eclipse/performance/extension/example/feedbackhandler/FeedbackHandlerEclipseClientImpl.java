@@ -15,17 +15,19 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler;
 
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 
-import eu.cloudwave.wp5.common.dto.AggregatedProcedureMetricsDto;
-import eu.cloudwave.wp5.common.dto.model.ProcedureExecutionMetricDto;
-import eu.cloudwave.wp5.common.dto.newrelic.MethodInfoSummarized;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.preferences.FeedbackPreferences;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
-import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
-import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.PerformanceConfigs;
 
 /**
  * Implementation of {@link FeedbackHandlerEclipseClient}.
@@ -39,36 +41,116 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
 
   private FeedbackHandlerClient feedbackHandlerClient;
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public MethodInfoSummarized newRelicSummarized(final FeedbackProject project, final String className, final String procedureName) {
-    final String apiKey = property(project, PerformanceFeedbackProperties.NEW_RELIC__API_KEY);
-    final String applicationId = property(project, PerformanceFeedbackProperties.NEW_RELIC__APPLICATION_ID);
-    return feedbackHandlerClient().newRelicSummarized(apiKey, applicationId, className, procedureName);
+  private static class MethodCacheKey{
+	  public final String id;
+	  public final String token;
+	  public final String className;
+	  public final String procedureName;
+	  public final String[] arguments;	
+	  
+	  public MethodCacheKey(FeedbackProject project, String className, String procedureName, String[] arguments) {
+		  this.id = project.getApplicationId();
+		  this.token = project.getAccessToken();
+		  this.className = className;
+		  this.procedureName = procedureName;
+		  this.arguments = arguments;
+	  }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(arguments);
+		result = prime * result + ((className == null) ? 0 : className.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((procedureName == null) ? 0 : procedureName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MethodCacheKey other = (MethodCacheKey) obj;
+		if (!Arrays.equals(arguments, other.arguments))
+			return false;
+		if (className == null) {
+			if (other.className != null)
+				return false;
+		} else if (!className.equals(other.className))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (procedureName == null) {
+			if (other.procedureName != null)
+				return false;
+		} else if (!procedureName.equals(other.procedureName))
+			return false;
+		return true;
+	}  
+	
+  }
+  
+  private static class MethodCacheEntry{
+	  final boolean hasExecTime;
+	  public final double execTime;
+	  final boolean hasColSize;
+	  public final double colSize;
+	  
+	  public MethodCacheEntry(Double execTime, Double colSize){
+		  this.hasExecTime = execTime != null;
+		  this.execTime = hasExecTime?execTime:0;
+		  this.hasColSize = colSize != null;
+		  this.colSize = hasColSize?colSize:0;
+	  }
+
+	public Double getColSize() {
+		if(hasColSize) return colSize;
+		return null;
+	}
+
+	public Double getExecTime() {
+		if(hasExecTime) return execTime;
+		return null;
+	}
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public AggregatedProcedureMetricsDto[] hotspots(final FeedbackProject project) {
-    final Double threshold = project.getFeedbackProperties().getDouble(PerformanceFeedbackProperties.TRESHOLD__HOTSPOTS, PerformanceConfigs.DEFAULT_THRESHOLD_HOTSPOTS);
-    return feedbackHandlerClient().hotspots(project.getAccessToken(), project.getApplicationId(), threshold);
+  private final LoadingCache<MethodCacheKey, MethodCacheEntry> methodCache;
+  
+  public FeedbackHandlerEclipseClientImpl() {
+	  methodCache = CacheBuilder.newBuilder()
+			    .concurrencyLevel(4)
+			    .maximumSize(10000)
+			    .expireAfterWrite(10, TimeUnit.MINUTES)
+			    .build(
+			        new CacheLoader<MethodCacheKey, MethodCacheEntry>() {
+			          public MethodCacheEntry load(MethodCacheKey key) {
+			            return fetch(key);
+			          }
+			        });
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public ProcedureExecutionMetricDto[] procedure(final FeedbackProject project, final String className, final String procedureName, final String[] arguments) {
-    return feedbackHandlerClient().procedure(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments);
+    
+  private MethodCacheEntry fetch(MethodCacheKey key){
+	  Double time = feedbackHandlerClient().avgExecTime(key.token, key.id, key.className, key.procedureName, key.arguments);
+	  Double size = feedbackHandlerClient().collectionSize(key.token, key.id, key.className, key.procedureName, key.arguments, "");
+	  return new MethodCacheEntry(time, size);
   }
 
   @Override
   public Double avgExecTime(final FeedbackProject project, final String className, final String procedureName, final String[] arguments) {
-    return feedbackHandlerClient().avgExecTime(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments);
+	  try {
+		  return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getExecTime();
+	  } catch (ExecutionException e) {
+		  e.printStackTrace();
+	  }
+	  return null;
   }
 
   /**
@@ -76,7 +158,13 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    */
   @Override
   public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, final String[] arguments, final String number) {
-    return feedbackHandlerClient().collectionSize(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments, number);
+	  	if(!number.equals("")) return feedbackHandlerClient().collectionSize(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments, number);
+	  	try {
+	  		return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize();
+	  	} catch (ExecutionException e) {
+	  		e.printStackTrace();
+	  	}
+	  	return null;
   }
 
   private FeedbackHandlerClient feedbackHandlerClient() {
@@ -91,4 +179,5 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
     final IEclipsePreferences properties = project.getFeedbackProperties();
     return properties.get(key, EMPTY);
   }
+  
 }

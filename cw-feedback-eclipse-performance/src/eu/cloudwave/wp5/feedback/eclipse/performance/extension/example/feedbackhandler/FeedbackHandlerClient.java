@@ -24,33 +24,7 @@ import eu.cloudwave.wp5.common.dto.newrelic.MethodInfoSummarized;
  */
 public interface FeedbackHandlerClient {
 
-  /**
-   * Gets summarized information about the execution of a method from New Relic.
-   * 
-   * @param apiKey
-   *          the New Relic API key
-   * @param applicationId
-   *          the application ID
-   * @param className
-   *          the name of the class that contains the method
-   * @param procedureName
-   *          the name of the method
-   * @return summarized information about the execution of a method from New Relic
-   */
-  public MethodInfoSummarized newRelicSummarized(final String apiKey, final String applicationId, String className, String procedureName);
-
-  /**
-   * Get information about hotspots (i.e. methods that take very or too long)
-   * 
-   * @param accessToken
-   *          the access token
-   * @param applicationId
-   *          the application ID
-   * @param threshold
-   *          the threshold specifying the minimum value of a hotspot
-   * @return An array of {@link AggregatedProcedureMetricsDto} containing the hotspots
-   */
-  public AggregatedProcedureMetricsDto[] hotspots(final String accessToken, final String applicationId, final Double threshold);
+  
 
   /**
    * Fetches all execution metrics for the procedure with the given properties (if it exists).

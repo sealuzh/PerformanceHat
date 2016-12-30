@@ -30,6 +30,13 @@
   <name>PerformanceHat Performance Eclipse-Plugin</name>
   <description>Contains the code of the performance eclipse plugin.</description>
   
+  <dependencies>
+	<dependency>
+	  <groupId>com.google.guava</groupId>
+	  <artifactId>guava</artifactId>
+	  <version>20.0</version>
+	</dependency>
+  </dependencies>
   
   <packaging>eclipse-plugin</packaging>
   
