@@ -55,7 +55,7 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 	    final ITypeBinding[] argumentTypes = binding.getParameterTypes();
 	    final String[] argumentNames = new String[argumentTypes.length];
 	    for (int i = 0; i < argumentTypes.length; i++) {
-	      final String argument = argumentTypes[i].getQualifiedName();
+	      final String argument = argumentTypes[i].getErasure().getQualifiedName();
 		    final int genericBeginIndex = argument.indexOf("<");
 		    if (genericBeginIndex != -1) {
 		    	argumentNames[i] = argument.substring(0, genericBeginIndex);
@@ -76,6 +76,7 @@ public abstract class AMethodRelated<T extends ASTNode> extends AAstNode<T> {
 		  //beside the node attached tags find the public method attached tags
 		  res.addAll(ctx.getTagProvider().getTagsForMethod(loc, name));
 		  res.addAll(super.getTags(name));
+		  //Note: Is to slow
 		  //if(!res.isEmpty()) return res;
 		  //return ImplementorTagLookupHelper.getSingleSubclassTags(getBinding(), ctx, name);
 		  return res;

@@ -14,6 +14,7 @@ package eu.cloudwave.wp5.monitoring.tracing;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import java.util.Map;
 
 import eu.cloudwave.wp5.common.debug.ProcedureExecutionPrinter;
 import eu.cloudwave.wp5.common.model.MetricType;
@@ -82,8 +83,11 @@ public class TracingHandler extends AbstractAroundJoinPointHandlerTemplate {
 
   private void addReturnTypeCollectionSize(final Object result) {
     if (result instanceof Collection<?>) {
-      final int size = ((Collection<?>) result).size();
-      addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
+    	final int size = ((Collection<?>) result).size();
+    	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
+    } else if(result instanceof Map<?,?>){
+    	final int size = ((Map<?,?>) result).size();
+    	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
     }
   }
 
@@ -93,6 +97,9 @@ public class TracingHandler extends AbstractAroundJoinPointHandlerTemplate {
       if (argument instanceof Collection<?>) {
         final int size = ((Collection<?>) argument).size();
         addMetric(MetricTypeImpl.COLLECTION_SIZE, String.valueOf(i), size);
+      }else if(argument instanceof Map<?,?>){
+      	final int size = ((Map<?,?>) argument).size();
+      	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
       }
     }
   }

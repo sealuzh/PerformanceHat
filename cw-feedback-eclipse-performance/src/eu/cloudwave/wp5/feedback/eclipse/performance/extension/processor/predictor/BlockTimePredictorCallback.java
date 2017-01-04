@@ -2,7 +2,6 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.predic
 
 import java.util.List;
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Invocation;

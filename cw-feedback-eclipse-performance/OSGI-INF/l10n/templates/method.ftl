@@ -17,9 +17,13 @@
 		<#if node.isDataNode()>
 		   	<tr>
 		     	<td style='padding-right: 20px;'>${spc}${node.getText()}:</td>
-		     	<#list node.getPredictedText() as text>
-					<td>${text}</td>
-	  			</#list>
+		     	<#if !singleLineMode>	
+	    	 		<#list node.getPredictedText() as text>
+						<td>${text}</td>
+		  			</#list>
+		    	<#else>
+		    		<td>${node.getPredictedText()[0]}</td>		    	
+		    	</#if>
 	    	</tr>
 	    	<#list node.getChildren() as child>
 				<@timeNode node=child indent=indent+1 />
@@ -37,11 +41,13 @@
 
 <div><strong>Measured Operations:</strong></div>
 <table border="0" cellspacing="0">
-		<tr>
-			<td><b>Measurements</b></td>
-			<#list procedureExecutions.getHeader().getText() as headerText>
-				<td><b>${headerText}</b></td>
-	  		</#list>	
-		</tr>
+		<#if !singleLineMode>
+			<tr>
+				<td><b>Measurements</b></td>
+				<#list procedureExecutions.getHeader().getText() as headerText>
+					<td><b>${headerText}</b></td>
+		  		</#list>
+			</tr>
+	    </#if>	
 		<@timeNode node=procedureExecutions indent=0 />
 </table>

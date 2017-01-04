@@ -62,8 +62,19 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 	    }
 	    // Case 2: the for loop contains a method invocation; example: 'for(Object item : getItems())'
 	    else if (expression instanceof org.eclipse.jdt.core.dom.MethodInvocation) {
+	    	String accessor =  ((org.eclipse.jdt.core.dom.MethodInvocation)expression).getName().getIdentifier();
+	    	//Simple Map support
+	    	if(accessor.equals("keySet") || accessor.equals("entrySet") || accessor.equals("values")){
+	    		final org.eclipse.jdt.core.dom.Expression reciver = ((org.eclipse.jdt.core.dom.MethodInvocation)expression).getExpression();
+	    		// Case 1: the for loop contains a variable; 'for(Object item : items)'
+	    	    if (reciver instanceof SimpleName) {
+	    	      return LoopAnalysisHelper.resolveName(this, (SimpleName)reciver, ctx);
+	    		// Case 2: the for loop contains a method invocation; example: 'for(Object item : getItems())'
+	    	    } else if (reciver instanceof org.eclipse.jdt.core.dom.MethodInvocation) {
+	    	    	return Optional.of(StaticAstFactory.createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)reciver,ctx)); 
+	    	    }
+	    	} 
 	    	return Optional.of(StaticAstFactory.createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)expression,ctx));
-
 	    }
 	    return Optional.absent();
 	  }

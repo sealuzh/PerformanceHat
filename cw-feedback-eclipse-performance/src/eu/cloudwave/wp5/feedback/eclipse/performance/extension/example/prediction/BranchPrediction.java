@@ -49,9 +49,8 @@ public class BranchPrediction extends APrediction{
 	@Override
 	public Collection<String> getPredictedText() {
 		return getPredictedTime().stream().map(p -> {
-			double part = new BigDecimal((fraction*100)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-			double t = (p/1000);
-			return part+"% of "+(t/fraction)+"s = "+ t+"s";
+			double part = round(fraction*100,1);
+			return part+"% of "+round(p/fraction)+"ms = "+ round(p)+"ms";
 		}).collect(Collectors.toList());
 	}
 }

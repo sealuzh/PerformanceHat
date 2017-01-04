@@ -70,13 +70,12 @@ public class PerformanceBuilder extends FeedbackBuilder {
 	 		participant.cleanup(project, Collections.singleton(file));
 	 	}
   }
-
+  
   /**
    * A static version of the getParticipants function
    * @return list of PerformancePluginParticipants
    */
   private static List<FeedbackBuilderParticipant> getParticipantsStatic(){
-		 //TODO: cache??
 	    List<PerformancePlugin> markers  = Lists.newArrayList();
 	    IExtensionRegistry reg = Platform.getExtensionRegistry();
 	    

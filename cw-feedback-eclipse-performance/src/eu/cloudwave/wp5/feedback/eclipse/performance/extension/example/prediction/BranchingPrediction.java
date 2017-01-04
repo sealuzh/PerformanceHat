@@ -47,7 +47,7 @@ public class BranchingPrediction extends APrediction{
 	 */
 	@Override
 	public Collection<String> getPredictedText() {
-		return getPredictedTime().stream().map(p -> (p/1000)+"s").collect(Collectors.toList());
+		return getPredictedTime().stream().map(p -> round(p)+"ms").collect(Collectors.toList());
 
 	}
 }

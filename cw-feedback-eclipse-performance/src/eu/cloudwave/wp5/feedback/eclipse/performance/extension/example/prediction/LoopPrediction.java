@@ -49,8 +49,7 @@ public class LoopPrediction extends APrediction{
 	@Override
 	public Collection<String> getPredictedText() {
 		return getPredictedTime().stream().map(p -> {
-			double t = (p/1000);
-			return avgIters+"*"+(t/avgIters)+"s = "+t+"s";
+			return avgIters+"*"+round(p/avgIters)+"ms = "+round(p)+"ms";
 		}).collect(Collectors.toList());
 	}
 }

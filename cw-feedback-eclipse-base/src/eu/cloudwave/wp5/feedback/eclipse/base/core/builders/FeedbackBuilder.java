@@ -90,7 +90,6 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
    *           if markers could not be correctly added or removed
    */
   private void fullBuild(final FeedbackJavaProject project) throws CoreException {
-    System.out.println("fullBuild");
     this.getFeedbackCleaner().cleanAll(project);
 	
  	List<FeedbackBuilderParticipant> participants = this.getParticipants();
@@ -119,7 +118,6 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
    *           if markers could not be correctly added or removed
    */
   private void incrementalBuild(final FeedbackJavaProject project) throws CoreException {
-    System.out.println("incrementalBuild");
     final IResourceDelta resourceDelta = getDelta(getProject());
     final Optional<? extends FeedbackJavaResourceDelta> feedbackDeltaOptional = this.getFeedbackJavaResourceFactory().create(resourceDelta);
 
@@ -140,6 +138,9 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 	  	      participant.buildFile(project, javaFile, astRoot.get());
 	  	    }
 	  	}
+	  	for (final FeedbackBuilderParticipant participant : participants) {
+	        participant.cleanup(project, files);
+	    }
     }
   }
 }

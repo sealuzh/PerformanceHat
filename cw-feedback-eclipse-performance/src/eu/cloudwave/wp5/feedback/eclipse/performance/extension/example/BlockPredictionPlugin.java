@@ -149,6 +149,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		}
 		if(mesPref.size() != 0)avgExecTimeMes /= mesPref.size();
 		
+		if(avgExecTimeMes == 0 && avgExecTimePred == 0) return null;
 		MethodLocator loc = invocation.createCorrespondingMethodLocation();
 		return new MethodCallPrediction(loc, avgExecTimePred, avgExecTimeMes);
 	}
@@ -174,8 +175,10 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		final APrediction bodyN = new BlockPrediction("loop body", iterExcecTimePred, iterExcecTimeMes, iterationExecutionTime);		
 		double loopTimePred = (avgIters*bodyN.avgTimePred)+headerN.avgTimePred;
 		double loopTimeMes = (avgIters*bodyN.avgTimeMes)+headerN.avgTimeMes;
+		if(loopTimeMes == 0 && loopTimePred == 0) return null;
 		final PredictionNode loopN = new LoopPrediction(loopTimePred, loopTimeMes ,avgIters, bodyN, headerN);	
 		
+
 		//Publish prediction per tag
 		loop.attachTag(AVG_PRED_TIME_TAG, loopN);
 		return loopN;
@@ -212,6 +215,8 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		 totPred /= branchCount;
 		 totMes /= branchCount;
 
+		 if(totMes == 0 && totPred == 0) return null;
+
 		 //main prediction node
 		 final PredictionNode branchN = new BranchingPrediction(totPred,totMes, conditionN, branchNodes);
 
@@ -241,6 +246,8 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 			//the finally
 			final double finallyTimeSumPred = sumPred(finnalyExecutionTime);
 			final double finallyTimeSumMes = sumMes(finnalyExecutionTime);
+
+			if(tryTimeSumMes+finallyTimeSumMes == 0 && tryTimeSumPred+finallyTimeSumPred == 0) return null;
 
 			final PredictionNode finallyN = new BlockPrediction("finally", finallyTimeSumPred, finallyTimeSumMes, finnalyExecutionTime);		
 			//thr full try/finally

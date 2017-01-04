@@ -26,6 +26,7 @@ public interface TagCreator {
 	 */
 	public void addMethodTag(MethodLocator loc, String tagName, Object tagValue);
 	
+	
 	/**
 	 * Removes all local (addAstNodeTag) tags
 	 */
