@@ -13,6 +13,7 @@
 package eu.cloudwave.wp5.monitoring.aop.joinpoints;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.aspectj.lang.reflect.SourceLocation;
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -68,6 +72,12 @@ public class ProcedureCallJoinPoint extends AbstractProceedingJoinPointDecorator
   private final String getTargetProcedureClassName() {
     // if the procedure is of kind method, the target is NOT null and it should be considered to identify its real type
     if (getTargetKind().equals(ProcedureKind.METHOD)) {
+      //Spring support
+      if(AopUtils.isAopProxy(getTarget())){
+    	 //will not respect hierarchy 
+    	 return AopProxyUtils.ultimateTargetClass(getTarget()).getName();
+      } 
+      
       return getTarget().getClass().getName();
     }
     // If the procedure is a static method or a constructor, the target is null.

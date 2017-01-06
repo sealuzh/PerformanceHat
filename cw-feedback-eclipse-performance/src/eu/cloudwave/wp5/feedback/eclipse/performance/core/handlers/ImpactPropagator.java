@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -45,7 +49,7 @@ public class ImpactPropagator {
 	 * @param mem the member to propagate the impact from
 	 * @throws CoreException
 	 */
-	public static void calculateImpact(IMember mem) throws CoreException{
+	public static void calculateImpact(IMember mem, IProgressMonitor monitor) throws CoreException{
 		 //Queue of unprocessed members
 		 Queue<IMember> open = Lists.newLinkedList();
 		 open.add(mem); //Start with the source
@@ -55,7 +59,7 @@ public class ImpactPropagator {
 		 Map<IPath,Set<IPath>> inedges = Maps.newHashMap(); 
 		 //just an association between Paths and Files (we work on paths because I do not know how equality on Ifile is defined)
 		 Map<IPath,IFile> targets = Maps.newHashMap(); 
-
+		 SubMonitor subMonitor = SubMonitor.convert(monitor);
 		 //As long as more dependencies are found continue
 		 while(!open.isEmpty()){
 			 //get next
@@ -74,8 +78,9 @@ public class ImpactPropagator {
 			 ArrayList<IMember> methodCalls = new ArrayList<IMember>();
 			 Set<IPath> files = Sets.newHashSet();
 			 //boolean inter = false;
+			 
 			 for (int i1 = 0; i1 < callerWrapper.length; i1++) {
-			     for(MethodWrapper wrapper: callerWrapper[i1].getCalls(new NullProgressMonitor())){
+			     for(MethodWrapper wrapper: callerWrapper[i1].getCalls(subMonitor.setWorkRemaining(100).newChild(1))){
 			    	 IMember member = wrapper.getMethodCall().getMember(); 
 				     methodCalls.add(member);
 				     //if(!inter && cur.getPath().equals(member.getPath())) inter = true;
@@ -109,6 +114,7 @@ public class ImpactPropagator {
 			 }
 		 }
 		 
+		 List<IFile> jobs = Lists.newArrayList();
 		 //Do the topological search iteratively (as long as their are nodes in the graph)
 		 while (!outDegree.isEmpty()) {
 			 //all the elems with smallest outDegree (we take non zeroes, so we can still calc cycles, but the info may not be accurate)
@@ -129,7 +135,7 @@ public class ImpactPropagator {
 			 //Remove all smallest and reanalyze them
 			 for(IPath p:smallest){
 				 outDegree.remove(p); 
-				 analyze(targets.get(p));
+				 jobs.add(targets.get(p));
 				 //update outdegree
 				 for(IPath ip: inedges.get(p)){
 					 outDegree.computeIfPresent(ip, (k,v) -> v-1);
@@ -137,24 +143,23 @@ public class ImpactPropagator {
 			 }
 
 		 }
-		 
+		 analyze(jobs,subMonitor);
 	}
 	
 	//Helper for reanalyzing a file
-	private static void analyze(IFile file) throws CoreException{
+	private static void analyze(List<IFile> files, IProgressMonitor monitor) throws CoreException{
 		FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
 		//lookup File
-		Optional<? extends FeedbackJavaFile> ojfFile = factory.create(file);  
-		if(!ojfFile.isPresent())  throw new IllegalArgumentException("File Fail:"+file.getFullPath());
-		FeedbackJavaFile jfFile = ojfFile.get();
+		List<FeedbackJavaFile> jfiles = files.stream().map(f -> factory.create(f)).filter(f -> f.isPresent()).map(f -> f.get()).collect(Collectors.toList());
+		if(jfiles.isEmpty()) return;
 		
 		//Lookup Project
-		FeedbackProject  fp = jfFile.getFeedbackProject();
+		FeedbackProject  fp = jfiles.get(0).getFeedbackProject();
 		Optional<? extends FeedbackJavaProject>  ofjP = factory.create(fp.getProject());
 		if(!ofjP.isPresent()) throw new IllegalArgumentException("Project Fail");
 		FeedbackJavaProject fjp = ofjP.get();
-		
+				
 		//Do the analyzing
-		PerformanceBuilder.processFile(fjp, jfFile);
+		PerformanceBuilder.processFile(fjp, jfiles, monitor);
 	}
 }

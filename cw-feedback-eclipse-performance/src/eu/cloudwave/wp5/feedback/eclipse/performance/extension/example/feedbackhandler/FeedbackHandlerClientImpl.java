@@ -15,6 +15,7 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -71,7 +72,7 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
    */
   @Override
   public Double collectionSize(final String accessToken, final String applicationId, final String className, final String procedureName, final String[] arguments, final String number) {
-    final String url = url(Urls.ANALYIS__COLLECTION_SIZE);
+    final String url = url(Urls.ANALYIS__COLLECTION_SIZE);		
     final Map<String, String> urlVariables = ImmutableMap.of(Params.CLASS_NAME, className, Params.PROCEDURE_NAME, procedureName, Params.ARGUMENTS, Joiners.onComma(arguments), Params.NUMBER, number);
     return restClient.get(url, urlVariables, Double.class, RestRequestHeader.of(Headers.APPLICATION_ID, applicationId), RestRequestHeader.of(Headers.ACCESS_TOKEN, accessToken));
   }

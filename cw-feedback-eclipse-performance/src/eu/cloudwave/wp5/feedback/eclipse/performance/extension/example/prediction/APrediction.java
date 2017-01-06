@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import com.google.common.collect.Lists;
 
+import eu.cloudwave.wp5.common.util.Numbers;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNodeHeader;
 
@@ -24,10 +25,7 @@ public abstract class APrediction implements PredictionNode{
 	}
 	protected static double round(double value, int places) {
 	    if (places < 0) throw new IllegalArgumentException();
-
-	    BigDecimal bd = new BigDecimal(value);
-	    bd = bd.setScale(places, RoundingMode.HALF_UP);
-	    return bd.doubleValue();
+	    return Numbers.round(value,places);
 	}
 	
 	/**

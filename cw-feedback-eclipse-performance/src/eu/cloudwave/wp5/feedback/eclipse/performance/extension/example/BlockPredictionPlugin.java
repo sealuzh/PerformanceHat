@@ -176,7 +176,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		double loopTimePred = (avgIters*bodyN.avgTimePred)+headerN.avgTimePred;
 		double loopTimeMes = (avgIters*bodyN.avgTimeMes)+headerN.avgTimeMes;
 		if(loopTimeMes == 0 && loopTimePred == 0) return null;
-		final PredictionNode loopN = new LoopPrediction(loopTimePred, loopTimeMes ,avgIters, bodyN, headerN);	
+		final PredictionNode loopN = new LoopPrediction(loopTimePred, loopTimeMes ,(avgItersLookup == null)?Double.NaN:avgItersLookup, bodyN, headerN);	
 		
 
 		//Publish prediction per tag

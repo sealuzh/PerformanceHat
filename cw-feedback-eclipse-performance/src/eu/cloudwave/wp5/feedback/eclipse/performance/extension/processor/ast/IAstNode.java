@@ -20,7 +20,7 @@ public interface IAstNode {
 	 * Gets the currently active MethodeDeclaration node
 	 * @return MethodeDeclaration node
 	 */
-	public MethodDeclaration getCurrentMethode();
+	public MethodDeclaration getCurrentMethod();
 	
 	/**
 	 * Get backing Eclipse Ast node
@@ -88,5 +88,4 @@ public interface IAstNode {
 			super(inner, ctx);
 		}
 	}
-
 }

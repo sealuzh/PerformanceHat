@@ -17,16 +17,21 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.FeedbackCleaner;
@@ -51,24 +56,34 @@ public class PerformanceBuilder extends FeedbackBuilder {
    * @param file is the file to process
    * @throws CoreException
    */
-  public static void processFile(FeedbackJavaProject project, FeedbackJavaFile file)  throws CoreException{
-	 	//Get the Ast
-	  	Optional<CompilationUnit> astRoot = file.getAstRoot();
-	 	if(!astRoot.isPresent()) return;	
+  public static void processFile(FeedbackJavaProject project, List<FeedbackJavaFile> files, IProgressMonitor monitor)  throws CoreException{
 	 	//Get all participants
 	 	List<FeedbackBuilderParticipant> participants = getParticipantsStatic();
-	 	//Prepare all Participants
+	 		
+	 	Set<FeedbackJavaFile> jFilesSet = Sets.newHashSet(files); 
 	 	for (final FeedbackBuilderParticipant participant : participants) {
-		 	participant.prepare(project, Collections.singleton(file));
-	  	}
-	 	//Excecute all Participants
-	 	for (final FeedbackBuilderParticipant participant : participants) {
-	 		participant.buildFile(project, file, astRoot.get());
-	 	}
-	 	//Clean up all Participants
-	 	for (final FeedbackBuilderParticipant participant : participants) {
-	 		participant.cleanup(project, Collections.singleton(file));
-	 	}
+	 		participant.prepare(project, jFilesSet);
+ 	    }
+ 	    try {
+ 	    	int remaining = files.size();
+ 	    	final SubMonitor subMonitor = SubMonitor.convert(monitor,remaining);
+
+ 	    	for(FeedbackJavaFile javaFile:files){
+ 		  		if(subMonitor.isCanceled()) throw new OperationCanceledException();
+ 	    		subMonitor.setWorkRemaining(remaining--);
+ 	    		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+ 	    		if(!astRoot.isPresent()) continue;
+ 	    		subMonitor.newChild(1);
+ 	    		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
+ 	    		for (final FeedbackBuilderParticipant participant : participants) {
+ 	    	      participant.buildFile(project, javaFile, astRoot.get());
+ 	    	    }
+ 	    	}
+ 	    } finally {
+ 	    	for (final FeedbackBuilderParticipant participant : participants) {
+ 	    	      participant.cleanup(project, jFilesSet);
+ 		    }
+ 	    }   
   }
   
   /**

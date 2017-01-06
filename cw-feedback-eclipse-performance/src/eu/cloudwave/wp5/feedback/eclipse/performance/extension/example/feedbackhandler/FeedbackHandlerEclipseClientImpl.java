@@ -158,6 +158,7 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    */
   @Override
   public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, final String[] arguments, final String number) {
+	  	//cache
 	  	if(!number.equals("")) return feedbackHandlerClient().collectionSize(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments, number);
 	  	try {
 	  		return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize();

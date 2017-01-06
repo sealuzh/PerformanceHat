@@ -58,7 +58,7 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 
 	    // Case 1: the for loop contains a variable; 'for(Object item : items)'
 	    if (expression instanceof SimpleName) {
-	      return LoopAnalysisHelper.resolveName(this, (SimpleName)expression, ctx);
+	    	return LoopAnalysisHelper.resolveName(this, (SimpleName)expression, ctx);
 	    }
 	    // Case 2: the for loop contains a method invocation; example: 'for(Object item : getItems())'
 	    else if (expression instanceof org.eclipse.jdt.core.dom.MethodInvocation) {

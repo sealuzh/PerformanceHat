@@ -21,7 +21,7 @@ public class MethodDeclaration extends AMethodRelated<org.eclipse.jdt.core.dom.M
 	   * {@inheritDoc}
 	   */
 	 @Override
-	 public MethodDeclaration getCurrentMethode() {
+	 public MethodDeclaration getCurrentMethod() {
 			return this;
 	 }
 	  

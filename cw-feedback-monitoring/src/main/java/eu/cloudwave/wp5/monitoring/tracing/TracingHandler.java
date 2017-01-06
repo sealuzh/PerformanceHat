@@ -80,27 +80,48 @@ public class TracingHandler extends AbstractAroundJoinPointHandlerTemplate {
     addMetric(MetricTypeImpl.EXECUTION_TIME, executionTime());
     addMetric(MetricTypeImpl.CPU_USAGE, cpuUsage());
   }
+  
+  private Integer getCollectionSize(final Object result){
+	  if (result instanceof Collection<?>) {
+		  return ((Collection<?>) result).size();
+	  } else if(result instanceof Map<?,?>){
+		  return ((Map<?,?>) result).size();
+	  } else if(result instanceof boolean[]){
+		  return ((boolean[]) result).length;		  
+	  }else if(result instanceof byte[]){
+		  return ((byte[]) result).length;		  
+	  }else if(result instanceof short[]){
+		  return ((short[]) result).length;		  
+	  }else if(result instanceof char[]){
+		  return ((char[]) result).length;		  
+	  }else if(result instanceof int[]){
+		  return ((int[]) result).length;		  
+	  }else if(result instanceof long[]){
+		  return ((long[]) result).length;		  
+	  }else if(result instanceof float[]){
+		  return ((float[]) result).length;		  
+	  }else if(result instanceof double[]){
+		  return ((double[]) result).length;		  
+	  }else if(result instanceof Object[]){
+		  return ((Object[]) result).length;		  
+	  }
+	  return null;
+  }
 
   private void addReturnTypeCollectionSize(final Object result) {
-    if (result instanceof Collection<?>) {
-    	final int size = ((Collection<?>) result).size();
+	Integer size = getCollectionSize(result);
+    if (size != null) {
     	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
-    } else if(result instanceof Map<?,?>){
-    	final int size = ((Map<?,?>) result).size();
-    	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
-    }
+    } 
   }
 
   private void addParametersCollectionSizes(final ProcedureCallJoinPoint joinPoint) {
     for (int i = 0; i < joinPoint.getArgs().length; i++) {
       final Object argument = joinPoint.getArgs()[i];
-      if (argument instanceof Collection<?>) {
-        final int size = ((Collection<?>) argument).size();
-        addMetric(MetricTypeImpl.COLLECTION_SIZE, String.valueOf(i), size);
-      }else if(argument instanceof Map<?,?>){
-      	final int size = ((Map<?,?>) argument).size();
-      	addMetric(MetricTypeImpl.COLLECTION_SIZE, size);
-      }
+      Integer size = getCollectionSize(argument);
+      if (size != null) {
+          addMetric(MetricTypeImpl.COLLECTION_SIZE, String.valueOf(i), size);
+      }   
     }
   }
 

@@ -49,7 +49,11 @@ public class LoopPrediction extends APrediction{
 	@Override
 	public Collection<String> getPredictedText() {
 		return getPredictedTime().stream().map(p -> {
-			return avgIters+"*"+round(p/avgIters)+"ms = "+round(p)+"ms";
+			if(Double.isNaN(avgIters)){
+				return round(p)+"ms = "+round(p)+"ms";
+			}else {
+				return avgIters+"*"+round(p/avgIters)+"ms";
+			}
 		}).collect(Collectors.toList());
 	}
 }

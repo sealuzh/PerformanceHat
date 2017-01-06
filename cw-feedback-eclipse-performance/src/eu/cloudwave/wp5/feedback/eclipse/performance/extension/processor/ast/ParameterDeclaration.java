@@ -24,4 +24,8 @@ public class ParameterDeclaration extends AAstNode<org.eclipse.jdt.core.dom.Sing
 	public int getPosition(){
 		return paramPos;
 	}
+
+	public MethodDeclaration getMethod() {
+		return getCurrentMethod();
+	}
 }

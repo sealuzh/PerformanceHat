@@ -42,7 +42,7 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	 * {@inheritDoc}
 	 */	
 	@Override
-	public MethodDeclaration getCurrentMethode(){
+	public MethodDeclaration getCurrentMethod(){
 		return ctx.getCurrentMethod();
 	}
 			

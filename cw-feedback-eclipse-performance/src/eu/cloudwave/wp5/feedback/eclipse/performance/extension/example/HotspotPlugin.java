@@ -195,7 +195,7 @@ public class HotspotPlugin  implements  PerformancePlugin{
 	  //Helper to collect the Loop info data
 	  private static void createCriticalLoopMarker(Loop loop, TemplateHandler template, LoopPrediction loopExecutionSummary ){
 		  //build the parts of the marker info
-		  final String avgIterationsText = new Double(Numbers.round(loopExecutionSummary.avgIters, DECIMAL_PLACES)).toString();
+		  final String avgIterationsText =Double.isNaN(loopExecutionSummary.avgIters)?" - ":Numbers.round(loopExecutionSummary.avgIters, DECIMAL_PLACES)+"";
 		  double maxLoop = Math.max(loopExecutionSummary.avgTimePred,loopExecutionSummary.avgTimeMes);
 		  final String avgTotalExecTimeText = TimeValues.toText(maxLoop, DECIMAL_PLACES);
 		  final String msg = String.format(LOOP_MESSAGE_PATTERN, avgTotalExecTimeText, avgIterationsText);

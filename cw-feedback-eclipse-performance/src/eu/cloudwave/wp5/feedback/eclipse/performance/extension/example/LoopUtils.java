@@ -6,6 +6,7 @@ import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Loop;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ParameterDeclaration;
 
 /**
  * A utility class to analyze loops
@@ -26,6 +27,7 @@ public class LoopUtils {
 		  //has the loop a loop source
 		  final Optional<IAstNode> collectionSource = loop.getSourceNode();
 		  if (collectionSource.isPresent()) {
+			  		  
 			 //has it a Collection size Tag
 			 Collection<Double> colSize = collectionSource.get().getDoubleTags(COLLECTION_SIZE_TAG);
 			 //we average all of them out and use that

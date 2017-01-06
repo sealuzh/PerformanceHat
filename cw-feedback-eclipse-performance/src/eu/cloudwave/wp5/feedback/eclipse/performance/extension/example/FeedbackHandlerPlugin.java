@@ -87,7 +87,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			@Override
 			public PerformanceVisitor visit(ParameterDeclaration decl) {
 				//Find the current Method the parameter belongs to
-				MethodLocator loc = decl.getCurrentMethode().createCorrespondingMethodLocation();
+				MethodLocator loc = decl.getCurrentMethod().createCorrespondingMethodLocation();
 				//get the collection Size of the parameter				
 				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, decl.getPosition()+"");
 			    //Attach the result if data is provided

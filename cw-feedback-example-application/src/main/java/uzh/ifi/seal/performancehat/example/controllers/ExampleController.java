@@ -10,25 +10,11 @@ import uzh.ifi.seal.performancehat.example.interfaces.IDatabase;
 import uzh.ifi.seal.performancehat.example.stubs.DatabaseStub;
 
 @Controller
-public class ExampleController {
+public class ExampleController extends AController{
 
     @RequestMapping("/example")
     public String example(Model model){
         return "example";
-    }
-   
-    public void grill(){
-    	grull();
-    	grall();
-    }
-    
-    
-    public void grall(){
-        greeting(null);
-    }
-    
-    public void grull(){
-        greeting(null);
     }
     
     @RequestMapping("/users")
@@ -62,7 +48,7 @@ public class ExampleController {
         		getUserInfo();
     		}
     	}*/
-    	
+    	test();
     	List<String> userList = getUserInfo();
         model.addAttribute("userList", userList);
         return "users";

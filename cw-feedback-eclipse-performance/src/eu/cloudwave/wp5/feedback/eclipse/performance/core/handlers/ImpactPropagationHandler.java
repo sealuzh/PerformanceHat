@@ -20,6 +20,10 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -34,6 +38,7 @@ import com.google.common.base.Optional;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaResourceFactory;
+import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 
 /**
@@ -46,46 +51,50 @@ public class ImpactPropagationHandler extends AbstractHandler {
    */
   @Override
   public Object execute(final ExecutionEvent event) throws ExecutionException {
-	  
-	  //Get the currently selected Text
-	  ISelection sel = HandlerUtil.getCurrentSelection(event);
-	  // Make sure their is a selection
-	  if(!(sel instanceof ITextSelection)) return null;
-	  final ITextSelection textSel = (ITextSelection)sel;
-	  //get the current File
-      IFile file = getFileFromEditorInput(HandlerUtil.getActiveEditor(event).getEditorInput());
-	  //fetch Performance representations
-      FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
-	  Optional<? extends FeedbackJavaFile> ojfFile = factory.create(file);  
-	  if(!ojfFile.isPresent())  return null;
-	  FeedbackJavaFile jfFile = ojfFile.get();
-	  //get Ast Root
-	  Optional<CompilationUnit> astRoot = jfFile.getAstRoot();
-	  if(!astRoot.isPresent()) return null;	
-	  CompilationUnit unit = astRoot.get();
-	  
-	  //Visit ast to discover clicked method
-	  unit.accept(new ASTVisitor() {
-		boolean done = false;
+	  new Job("Feedback propagator"){
 		@Override
-		public boolean visit(MethodDeclaration node) {
-			if(done) return false;
-			int off = textSel.getOffset();
-			//Does position match?
-			if(node.getStartPosition() <= off && off <= node.getStartPosition()+node.getLength()){
-				try {
-					//Jep it does, lets Go
-					done = true;
-					ImpactPropagator.calculateImpact((IMember)node.resolveBinding().getJavaElement());
-				} catch (CoreException e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-			return false;
-		} 
-	  });
-	  
-	 	        
+		protected IStatus run(final IProgressMonitor monitor) {
+			  //Get the currently selected Text
+			  ISelection sel = HandlerUtil.getCurrentSelection(event);
+			  // Make sure their is a selection
+			  if(!(sel instanceof ITextSelection)) return new Status(Status.ERROR,Ids.PLUGIN,"No Valid Selection");
+			  final ITextSelection textSel = (ITextSelection)sel;
+			  //get the current File
+		      IFile file = getFileFromEditorInput(HandlerUtil.getActiveEditor(event).getEditorInput());
+			  //fetch Performance representations
+		      FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
+			  Optional<? extends FeedbackJavaFile> ojfFile = factory.create(file);  
+			  if(!ojfFile.isPresent()) return new Status(Status.ERROR,Ids.PLUGIN,"Operation must be used on a Feedback enabled file");
+			  FeedbackJavaFile jfFile = ojfFile.get();
+			  //get Ast Root
+			  Optional<CompilationUnit> astRoot = jfFile.getAstRoot();
+			  if(!astRoot.isPresent()) return new Status(Status.ERROR,Ids.PLUGIN,"Could not find corresponding compilation unit");	
+			  CompilationUnit unit = astRoot.get();
+			  //Visit ast to discover clicked method
+			  unit.accept(new ASTVisitor() {
+				boolean done = false;
+				@Override
+				public boolean visit(MethodDeclaration node) {
+					if(done) return false;
+					int off = textSel.getOffset();
+					//Does position match?
+					if(node.getStartPosition() <= off && off <= node.getStartPosition()+node.getLength()){
+						try {
+							//Jep it does, lets Go
+							done = true;
+							ImpactPropagator.calculateImpact((IMember)node.resolveBinding().getJavaElement(), monitor);
+						} catch (CoreException e) {
+							throw new IllegalArgumentException(e);
+						}
+					}
+					return false;
+				} 
+			  });
+			 	        
+			  return new Status(Status.OK,Ids.PLUGIN,"");
+		}
+		  
+	  }.schedule();
 	  return null;
   }
   

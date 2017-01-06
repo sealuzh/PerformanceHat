@@ -24,6 +24,8 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.google.common.base.Optional;
@@ -70,10 +72,10 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
         final FeedbackJavaProject project = javaProjectOptional.get();
         Logger.print(String.format("Triggered %S.", BuildTypes.INSTANCE.get(kind)));
         if (kind == IncrementalProjectBuilder.FULL_BUILD || kind == IncrementalProjectBuilder.CLEAN_BUILD) {
-          fullBuild(project);
+          fullBuild(project, monitor);
         }
         else {
-          incrementalBuild(project);
+          incrementalBuild(project, monitor);
         }
       }
     }
@@ -89,26 +91,35 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
    * @throws CoreException
    *           if markers could not be correctly added or removed
    */
-  private void fullBuild(final FeedbackJavaProject project) throws CoreException {
+  private void fullBuild(final FeedbackJavaProject project, final IProgressMonitor monitor) throws CoreException {
     this.getFeedbackCleaner().cleanAll(project);
 	
  	List<FeedbackBuilderParticipant> participants = this.getParticipants();
  	Set<FeedbackJavaFile> files = project.getJavaSourceFiles();
- 	
+ 	 	
     for (final FeedbackBuilderParticipant participant : participants) {
       participant.prepare(project, files);
     }
-	for(FeedbackJavaFile javaFile:files){
-		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
-		if(!astRoot.isPresent()) continue;
-		for (final FeedbackBuilderParticipant participant : participants) {
-	      participant.buildFile(project, javaFile, astRoot.get());
+    try {
+    	int remaining = files.size();
+    	final SubMonitor subMonitor = SubMonitor.convert(monitor,remaining);
+
+    	for(FeedbackJavaFile javaFile:files){
+	  		if(subMonitor.isCanceled()) throw new OperationCanceledException();
+    		subMonitor.setWorkRemaining(remaining--);
+    		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+    		if(!astRoot.isPresent()) continue;
+    		subMonitor.newChild(1);
+    		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
+    		for (final FeedbackBuilderParticipant participant : participants) {
+    	      participant.buildFile(project, javaFile, astRoot.get());
+    	    }
+    	}
+    } finally {
+    	for (final FeedbackBuilderParticipant participant : participants) {
+    	      participant.cleanup(project, files);
 	    }
-	}
-	for (final FeedbackBuilderParticipant participant : participants) {
-      participant.cleanup(project, files);
-    }
-   
+    }   
   }
 
   /**
@@ -117,7 +128,7 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
    * @throws CoreException
    *           if markers could not be correctly added or removed
    */
-  private void incrementalBuild(final FeedbackJavaProject project) throws CoreException {
+  private void incrementalBuild(final FeedbackJavaProject project, final IProgressMonitor monitor) throws CoreException {
     final IResourceDelta resourceDelta = getDelta(getProject());
     final Optional<? extends FeedbackJavaResourceDelta> feedbackDeltaOptional = this.getFeedbackJavaResourceFactory().create(resourceDelta);
 
@@ -131,16 +142,26 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 	    for (final FeedbackBuilderParticipant participant : participants) {
 	        participant.prepare(project, files);
 	    }
-	  	for(FeedbackJavaFile javaFile:files){
-	  		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
-	  		if(!astRoot.isPresent()) continue;
-	  		for (final FeedbackBuilderParticipant participant : participants) {
-	  	      participant.buildFile(project, javaFile, astRoot.get());
-	  	    }
-	  	}
-	  	for (final FeedbackBuilderParticipant participant : participants) {
-	        participant.cleanup(project, files);
-	    }
+	    try {
+	    	int remaining = files.size();
+	    	final SubMonitor subMonitor = SubMonitor.convert(monitor,remaining);
+
+		  	for(FeedbackJavaFile javaFile:files){
+		  		if(subMonitor.isCanceled()) throw new OperationCanceledException();
+	    		subMonitor.setWorkRemaining(remaining--);
+		  		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
+		  		if(!astRoot.isPresent()) continue;
+		  		subMonitor.newChild(1);
+	    		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
+		  		for (final FeedbackBuilderParticipant participant : participants) {
+		  	      participant.buildFile(project, javaFile, astRoot.get());
+		  	    }
+		  	}
+	    }finally{
+	    	for (final FeedbackBuilderParticipant participant : participants) {
+		        participant.cleanup(project, files);
+		    }
+	    } 	
     }
   }
 }
