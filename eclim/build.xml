@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2005 - 2014  Eric Van Dewoestine
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<project name="eclim" default="deploy" basedir=".">
+  <property file="user.properties"/>
+
+  <target name="clean" description="Deletes the build directory.">
+    <delete dir="build"/>
+    <delete file="org.eclim/nailgun/ng"/>
+  </target>
+
+  <target name="build" description="Build eclim without deploying">
+    <antcall target="gant"> <param name="target" value="build"/> </antcall>
+  </target>
+
+  <target name="deploy"
+      description="(Default) Build and deploy the eclipse and vim plugins.">
+    <antcall target="gant"> <param name="target" value="deploy"/> </antcall>
+  </target>
+
+  <target name="deploy.eclipse"
+      description="Build and deploy only the eclipse plugins.">
+    <antcall target="gant"> <param name="target" value="deploy.eclipse"/> </antcall>
+  </target>
+
+  <target name="deploy.vim"
+      description="Build and deploy only the vim plugins.">
+    <antcall target="gant"> <param name="target" value="deploy.vim"/> </antcall>
+  </target>
+
+  <target name="checkstyle" description="Runs checkstyle on the eclim source files.">
+    <antcall target="gant"> <param name="target" value="checkstyle"/> </antcall>
+  </target>
+
+  <target name="plugin.create" description="Initialize a new eclim plugin">
+    <antcall target="gant"> <param name="target" value="plugin.create"/> </antcall>
+  </target>
+
+  <target name="build.eclipse.plugin">
+    <antcall target="gant"> <param name="target" value="build.eclipse.plugin"/> </antcall>
+  </target>
+
+  <target name="test">
+    <antcall target="gant"> <param name="target" value="test"/> </antcall>
+  </target>
+
+  <target name="test.core">
+    <antcall target="gant"> <param name="target" value="org.eclim.core.test"/> </antcall>
+  </target>
+
+  <target name="test.cdt">
+    <antcall target="gant"> <param name="target" value="org.eclim.cdt.test"/> </antcall>
+  </target>
+
+  <target name="test.dltkruby">
+    <antcall target="gant"> <param name="target" value="org.eclim.dltkruby.test"/> </antcall>
+  </target>
+
+  <target name="test.jdt">
+    <antcall target="gant"> <param name="target" value="org.eclim.jdt.test"/> </antcall>
+  </target>
+
+  <target name="test.pdt">
+    <antcall target="gant"> <param name="target" value="org.eclim.pdt.test"/> </antcall>
+  </target>
+
+  <target name="test.wst">
+    <antcall target="gant"> <param name="target" value="org.eclim.wst.test"/> </antcall>
+  </target>
+
+  <target name="test.adt">
+    <antcall target="gant"> <param name="target" value="org.eclim.adt.test"/> </antcall>
+  </target>
+
+  <target name="test.groovy">
+    <antcall target="gant"> <param name="target" value="org.eclim.groovy.test"/> </antcall>
+  </target>
+
+  <target name="test.pydev">
+    <antcall target="gant"> <param name="target" value="org.eclim.pydev.test"/> </antcall>
+  </target>
+
+  <target name="test.sdt">
+    <antcall target="gant"> <param name="target" value="org.eclim.sdt.test"/> </antcall>
+  </target>
+
+  <target name="test.performancehat">
+    <antcall target="gant"> <param name="target" value="org.eclim.performancehat.test"/> </antcall>
+  </target>
+
+  <target name="dist" depends="clean">
+    <antcall target="gant"> <param name="target" value="dist"/> </antcall>
+  </target>
+
+  <target name="installer">
+    <antcall target="gant"> <param name="target" value="installer"/> </antcall>
+  </target>
+
+  <target name="javadoc">
+    <antcall target="gant"> <param name="target" value="javadoc"/> </antcall>
+  </target>
+
+  <target name="docs">
+    <antcall target="gant"> <param name="target" value="docs"/> </antcall>
+  </target>
+
+  <target name="vimdocs">
+    <antcall target="gant"> <param name="target" value="vimdocs"/> </antcall>
+  </target>
+
+  <target name="eclipse.init">
+    <antcall target="gant"> <param name="target" value="eclipse.init"/> </antcall>
+  </target>
+
+  <target name="eclipse.gc">
+    <antcall target="gant"> <param name="target" value="eclipse.gc"/> </antcall>
+  </target>
+
+  <target name="eclipse.docs">
+    <antcall target="gant"> <param name="target" value="eclipse.docs"/> </antcall>
+  </target>
+
+  <target name="eclipse.src">
+    <antcall target="gant"> <param name="target" value="eclipse.src"/> </antcall>
+  </target>
+
+  <target name="patch">
+    <antcall target="gant"> <param name="target" value="patch"/> </antcall>
+  </target>
+
+  <target name="patch.revert">
+    <antcall target="gant"> <param name="target" value="patch.revert"/> </antcall>
+  </target>
+
+  <target name="gant">
+    <antversion property="ant.version.valid" atleast="1.7.1"/>
+    <fail unless="ant.version.valid">
+      To build eclim, you must use ant 1.7.1 or greater.
+    </fail>
+
+    <path id="gant-classpath">
+      <fileset dir="ant/lib" includes="*.jar"/>
+      <fileset dir="org.eclim" includes="lib/*.jar"/>
+    </path>
+    <taskdef name="gant" classname="org.codehaus.gant.ant.Gant"
+        classpathref="gant-classpath"/>
+
+    <property name="target" value="deploy"/>
+    <gant
+        file="ant/build.gant"
+        target="${target}"
+        inheritAll="true"
+        useCache="true"
+        cacheDir="build/temp/gant"
+      />
+  </target>
+
+</project>

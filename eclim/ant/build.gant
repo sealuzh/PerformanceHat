@@ -1,0 +1,1412 @@
+/**
+ * Copyright (C) 2005 - 2016  Eric Van Dewoestine
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+import javax.xml.XMLConstants
+
+import groovy.json.JsonSlurper
+import groovy.util.XmlSlurper
+
+import org.apache.tools.ant.BuildException
+import org.apache.tools.ant.taskdefs.condition.Os
+
+ant.property(environment: 'env')
+ant.property(file: 'ant/build.properties')
+ant.defaultexcludes(add: '**/*.swp')
+ant.defaultexcludes(add: '**/*.bak')
+
+if (System.getProperty('user.name') == 'root' &&
+    getVariable('env.FAKEROOTKEY') == null)
+{
+  ant.fail('''
+    Abort:
+
+    #####
+    Building eclim as root is highly discouraged.
+    #####
+  ''')
+}
+
+gitAvailable = getGitAvailable()
+
+eclipseHome = binding.getVariable(getEclipseHomeProp())
+if (eclipseHome == '' || eclipseHome == '${env.ECLIM_ECLIPSE_HOME}'){
+  ant.echo('''
+    $${eclipse.home} not set.
+    Please set this value one of the following ways:
+    1. create a user.properties file with eclipse.home=... in it.
+    2. supply the property when invoking ant: ant -Declipse.home=...
+    3. set the supported environment variable: export ECLIM_ECLIPSE_HOME="..."
+  ''')
+  ant.fail(message: 'missing required property (see above)')
+}else{
+  ant.property(name: 'eclipse', value: eclipseHome)
+  ant.property(name: 'eclipse.local', value: eclipseHome)
+  ant.property(name: 'eclipse.dest', value: binding.getVariable('eclipse.local'))
+  ant.echo('$${eclipse}: ${eclipse}')
+  if (binding.getVariable('eclipse') != binding.getVariable('eclipse.local')){
+    ant.echo('$${eclipse.local}: ${eclipse.local}')
+  }
+  if (binding.getVariable('eclipse.local') != binding.getVariable('eclipse.dest')){
+    ant.echo('$${eclipse.dest}: ${eclipse.dest}')
+  }
+
+  eclipseDestDir = new File(binding.getVariable('eclipse.dest'))
+  if (!eclipseDestDir.exists()){
+    ant.fail(message: "Eclipse destination directory does not exist: $eclipseDestDir")
+  }
+  if (!eclipseDestDir.canWrite()){
+    ant.echo('''
+    The chosen eclipse home directory is not writable. When building eclim as
+    a regular user against a root installed eclipse, you will need to set the
+    eclipse.local property to your user local eclipse path located in your
+    user's .eclipse directory:
+
+      $ ant \\
+          -Declipse.home=/opt/eclipse \\
+          -Declipse.local=$HOME/.eclipse/org.eclipse.platform_<version>
+
+    If that directory does not yet exist, then you can run the following to
+    initialize it:
+
+      $ ant -Declipse.home=/opt/eclipse eclipse.init
+
+    In both cases be sure to replace /opt/eclipse with the actual location of
+    your eclipse installation.
+    ''')
+    ant.fail(message: "Eclipse home directory is not writable: $eclipseDestDir")
+  }
+}
+
+pluginNames = initPlugins()
+
+target(name: 'init'){
+  File dotversion = new File("${basedir}/.version")
+  if (!gitAvailable && !dotversion.exists()){
+    fail('''
+      Abort:
+      You must build eclim from a git checkout or a .version file
+      must exist at the eclim root containing the eclim version number.
+    ''')
+  }else if (dotversion.exists()){ // only used by source distribution (tar.gz)
+    version = dotversion.getText().trim()
+    release = version
+    release_indigo = 'none'
+  }else{
+    // set eclim version based on current repos state (most recent tag w/
+    // possible suffix including number of revisions since that tag + last commit
+    // id, if last tag is not at the head)
+    version = execute('git', 'describe')
+    // handle 4 part eclim version number tag before next step to ensure a
+    // valid osgi verion number
+    version = version.replaceFirst(/^(\d+\.\d+\.\d+)(\.\d+)(.*)?/, '$1$3')
+    // ensure version is a valid osgi version
+    version = version.replaceFirst(/^(\d+\.\d+\.\d+)-(\d+-\w+)$/, '$1.$2')
+
+    release = execute('git', 'describe --abbrev=0')
+    try {
+        release_indigo = execute('git', 'describe --abbrev=0 indigo',
+          failonerror=true, output=null, suppresserror=true)
+    }catch(ex) {
+        release_indigo = 'none'
+    }
+  }
+  property(name: 'eclim.version', value: version)
+  property(name: 'eclim.release', value: release)
+  property(name: 'eclim.release.indigo', value: release_indigo)
+  echo('eclim.version: ${eclim.version}')
+  echo('eclim.release: ${eclim.release}')
+  echo('eclim.release.indigo: ${eclim.release.indigo}')
+
+  property(name: 'eclim.features', value: '${eclipse.dest}/features')
+  property(name: 'eclim.plugins', value: '${eclipse.dest}/plugins')
+  property(name: 'eclim.home', value: '${eclim.plugins}/org.eclim_${eclim.version}')
+
+  // set location of vim files if not already set
+  if (!hasVariable('vim.files')){
+    property(name: 'vim.files', value: (
+      Os.isFamily(Os.FAMILY_WINDOWS) ?
+      '${user.home}/vimfiles' : '${user.home}/.vim'
+    ))
+  }
+
+  // prep plugin specific classpath additions
+  pluginNames.each(){ name ->
+    if (hasVariable("${name}.classpath.prepare")){
+      binding.getVariable("${name}.classpath.prepare")()
+    }
+  }
+
+  classpaths = [getVariable('eclipse')]
+  if (getVariable('eclipse') != getVariable('eclipse.local')){
+    classpaths << getVariable('eclipse.local')
+  }
+  path(id: 'classpath'){
+    fileset(dir: '.', includes: '**/lib/*.jar')
+    for (path in classpaths){
+      fileset(dir: path){
+        include(name: 'startup.jar')
+        include(name: 'dropins/**/plugins/org.eclipse.*.jar')
+        include(name: 'plugins/javax.*.jar')
+        include(name: 'plugins/org.eclipse.*.jar')
+        include(name: 'plugins/org.apache.ant_*/lib/ant*.jar')
+        include(name: 'plugins/org.w3c.*.jar')
+        include(name: 'plugins/com.ibm.*.jar')
+      }
+      dirset(dir: path){
+        include(name: 'dropins/**/plugins/org.eclipse.*')
+        include(name: 'plugins/org.eclipse.*')
+      }
+    }
+    // for gentoo
+    fileset(dir: '/usr/share/', erroronmissingdir: false,
+      includes: 'swt-*/lib/*.jar')
+
+    // plugin specific classpath additions
+    pluginNames.each(){ name ->
+      if (hasVariable("${name}.classpath")){
+        binding.getVariable("${name}.classpath")()
+      }
+    }
+  }
+}
+
+target(name: 'build'){
+  depends('build.eclipse', 'build.vim')
+}
+
+target(name: 'build.eclipse'){
+  depends(init)
+
+  delete(includeemptydirs: true, failonerror: false){
+    fileset(dir: '${build.plugins}', includes: '**/*')
+  }
+  pluginNames.each(){ name -> plugin(name) }
+}
+
+target(name: 'build.vim'){
+  depends(init)
+
+  delete(dir: '${build.vimfiles}')
+  mkdir(dir: '${build.vimfiles}')
+  pluginNames.each(){ name ->
+    if (new File("${name}/vim").exists()){
+      copy(todir: '${build.vimfiles}/' + name){
+        fileset(dir: "${name}/vim", includes: '**/*')
+      }
+    }
+
+    // run plugin specific gant target
+    if (hasVariable("${name}.build.vim")){
+      binding.getVariable("${name}.build.vim")()
+    }
+  }
+}
+
+target(name: 'build.eclipse.plugin'){
+  depends(init)
+
+  if (!hasVariable('plugin.name')){
+    fail('${plugin.name} property must be set.')
+  }
+  pluginName = binding.getVariable('plugin.name')
+  if (!pluginNames.contains(pluginName)){
+    fail(
+      'The plugin ${plugin.name} either doesn\'t ' +
+      'exist or is missing it\'s required dependency')
+  }
+
+  plugin(pluginName)
+}
+
+target(name: 'deploy'){
+  depends('deploy.eclipse', 'deploy.vim')
+  mkdir(dir: '${user.home}/.eclim/resources/ext')
+}
+
+target(name: 'deploy.eclipse'){
+  depends('build')
+
+  mkdir(dir: '${eclim.features}')
+  mkdir(dir: '${eclim.plugins}')
+
+  // if the eclim version has changed, stop eclimd before deploying
+  pluginsDir = new File(binding.getVariable('eclim.plugins'))
+  existing = null
+  pluginsDir.eachDirMatch(~/org\.eclim_.*/){
+    file -> existing = file
+  }
+
+  version = binding.getVariable('eclim.version')
+  if (existing != null && existing.getName() != "org.eclim_${version}"){
+    echo('###\n# New eclim version, shutting down old version...###')
+    instances = new File(binding.getVariable('user.home') + '/.eclim/.eclimd_instances')
+    if (instances.exists()){
+      eclipse = binding.getVariable('eclipse')
+      parser = new JsonSlurper()
+      instances.eachLine { line ->
+        json = parser.parseText(line)
+        port = json.port
+        echo("#  shutdown: ${json.workspace}:${json.port}")
+        eclim('-command shutdown',
+          port=port, failonerror=false, dir=existing.toString() + '/bin')
+      }
+    }
+    echo('###')
+  }
+
+  delete(includeemptydirs: true){
+    fileset(dir: '${eclim.features}', includes: 'org.eclim*/**/*')
+    dirset(dir: '${eclim.features}', includes: 'org.eclim*')
+    fileset(dir: '${eclim.plugins}', includes: 'org.eclim*/**/*')
+    dirset(dir: '${eclim.plugins}', includes: 'org.eclim*')
+  }
+  copy(todir: '${eclim.plugins}'){
+    fileset(dir: '${build.plugins}', includes: '**/*')
+  }
+
+  if (Os.isFamily(Os.FAMILY_WINDOWS)){
+    // remove the current eclimd/eclim/ng files
+    delete{ fileset(dir: '${eclipse}', includes: 'eclim*,ng.exe') }
+
+    // the vimfiles will look for eclim and ng in the plugin's bin dir in
+    // accordance to the .eclimd_instances file, but third party eclim clients
+    // may continue to expect them at the eclipse root, so we'll copy them
+    // there.
+    copy(todir: '${eclipse}'){
+      fileset(dir: '${eclim.plugins}/org.eclim_${eclim.version}/bin',
+          includes: 'eclimd.bat,eclim.bat,ng.exe')
+    }
+  }else{
+    delete{
+      fileset(dir: '${eclim.plugins}/org.eclim_${eclim.version}/bin',
+          includes: '*.bat,*.exe')
+    }
+    replace(file: '${eclim.plugins}/org.eclim_${eclim.version}/bin/eclimd',
+        token: '#$${eclipse.home}', value: 'ECLIM_ECLIPSE_HOME="${eclipse}"')
+    chmod(dir: '${eclim.plugins}/org.eclim_${eclim.version}/bin',
+        includes: '**/*', perm: 'ugo+x')
+    // java symlink support sucks, especially if the link is broken
+    exec(executable: 'rm', errorproperty: 'ignore'){
+      arg(line: '"${eclipse.dest}/eclim" "${eclipse.dest}/eclimd"')
+    }
+    // if ln supports it (gnu), make the links relative, otherwise fallback to
+    // absolute
+    try{
+      exec(executable: 'ln', dir: '${eclipse.dest}',
+          failonerror: true, errorproperty: 'ignore'){
+        arg(line: '-rs ${eclim.plugins}/org.eclim_${eclim.version}/bin/eclim .')
+      }
+      exec(executable: 'ln', dir: '${eclipse.dest}', failonerror: true){
+        arg(line: '-rs ${eclim.plugins}/org.eclim_${eclim.version}/bin/eclimd .')
+      }
+    }catch(e){
+      exec(executable: 'ln', dir: '${eclipse.dest}', failonerror: true){
+        arg(line: '-s ${eclim.plugins}/org.eclim_${eclim.version}/bin/eclim .')
+      }
+      exec(executable: 'ln', dir: '${eclipse.dest}', failonerror: true){
+        arg(line: '-s ${eclim.plugins}/org.eclim_${eclim.version}/bin/eclimd .')
+      }
+    }
+  }
+
+  replace(file: '${eclim.plugins}/org.eclim_${eclim.version}/plugin.properties',
+      token: '$${vim.files}', value: '${vim.files}')
+  replace(dir: '${eclim.plugins}/org.eclim.vimplugin_${eclim.version}',
+      includes: 'plugin.properties'){
+    replacefilter(token: '$${eclim.gvim}', value: '${eclim.gvim}')
+    replacefilter(token: '$${eclim.gvim.embed}', value: '${eclim.gvim.embed}')
+  }
+
+  // precautionary forcing of bundles.info to have the correct bundle versions
+  // I don't like this one bit, it's hacky as all hell. Hopefully one day
+  // eclipse won't need its hand held (could convert to using dropins, but I've
+  // had issues with that as well in the past)
+  replaceregexp(
+    file: '${eclipse.local}/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info',
+    match: 'org.eclim(.[a-z]+)?([,_])\\d+\\.\\d+\\.\\d+(\\.\\d+-g[a-f0-9]+)?',
+    replace: 'org.eclim\\1\\2${eclim.version}',
+    flags: 'g')
+}
+
+target(name: 'deploy.vim'){
+  depends('build.vim')
+
+  delete(includeemptydirs: true, failonerror: false){
+    fileset(dir: '${vim.files}/eclim',
+      includes: '**/*',
+      excludes: 'after/**/*, doc/**/*, resources/**/*')
+  }
+  pluginNames.each(){ name ->
+    if (new File(binding.getVariable('build.vimfiles') + '/' + name).exists()){
+      copy(todir: '${vim.files}', overwrite: true){
+        fileset(dir: '${build.vimfiles}/' + name, includes: '**/*')
+      }
+    }
+
+    // run plugin specific gant target
+    if (hasVariable("${name}.deploy.vim")){
+      binding.getVariable("${name}.deploy.vim")()
+    }
+  }
+}
+
+target(name: 'test.init'){
+  depends('init')
+
+  // we can't overwrite jar files on windows while eclimd is running so we skip
+  // the deploy here and instead require the user to ensure the latest code has
+  // been deployed prior to testing.
+  if (!Os.isFamily(Os.FAMILY_WINDOWS)){
+    depends('deploy')
+  }
+
+  property(file: 'org.eclim.core/test/eclimrc.test')
+  property(name: 'test.include', value: '**/*Test')
+
+  userHome = binding.getVariable('user.home').replace('\\', '/')
+  property(name: 'eclipse.workspace', value: "${userHome}/workspace.unittest")
+
+  if (!pingEclim(Integer.parseInt(binding.getVariable('nailgun.server.port')))){
+    fail(message: 'Failed to connect to test eclimd instance.')
+  }
+
+  delete(includeEmptyDirs: true, failonerror: false){
+    fileset(dir: '${user.home}/.eclim/cache', includes: '**/*')
+  }
+
+  delete(includeEmptyDirs: true, failonerror: false){
+    fileset(dir: '${eclipse.workspace}', includes: 'unit_test_*/**/*')
+    fileset(dir: '${eclipse.workspace}', includes: 'unit_test_*')
+  }
+}
+
+target(name: 'test'){
+  depends('init')
+  pluginNames.each(){ name ->
+    if (hasVariable("${name}.test")){
+      binding.getVariable("${name}.test")()
+    }
+  }
+}
+
+target(name: 'dist'){
+  // load dependencies.xml so we know if any plugins are disabled
+  slurper = new XmlSlurper(true, false, true)
+  slurper.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, 'all')
+  dependencies = slurper.parse(
+    new File('org.eclim.installer/build/resources/dependencies.xml'))
+
+  // validate that all released plugins will be built.
+  new File('.').eachDirMatch(~/org\.eclim(\.\w*|$)/){ dir ->
+    name = dir.getName()
+    if (name != 'org.eclim.installer' && !pluginNames.contains(name)){
+      id = name.split('\\.')[-1]
+      dep = dependencies.feature.findAll{ f -> f.@id == id }[0]
+      if (dep.@status != 'unreleased'){
+        fail('All plugin dependencies must be met before building an eclim distribution.')
+      }
+    }
+  }
+
+  depends('build', 'javadoc', 'docs', 'vimdocs')
+
+  mkdir(dir: '${build.installer}')
+
+  // docs archive
+  zip(destfile: '${build.plugins}/org.eclim_${eclim.version}/doc.zip'){
+    fileset(dir: 'build/doc', includes: 'api/**/*, site/**/*')
+  }
+
+  // src archive + custom dist target
+  pluginNames.each(){ name ->
+    zip(destfile: '${build.plugins}/' + name + '_${eclim.version}/src.zip'){
+      fileset(dir: "${name}/java", includes: '**/*', erroronmissingdir: false)
+      fileset(dir: "${name}/scala", includes: '**/*', erroronmissingdir: false)
+    }
+
+    // run plugin specific gant target
+    if (hasVariable("${name}.plugin.dist")){
+      binding.getVariable("${name}.plugin.dist")()
+    }
+  }
+
+  copy(todir: '${build.update-site}'){
+    fileset(dir: 'org.eclim.installer/build/resources/update-sites/eclim')
+    filtermapper{
+      replacestring(from: 'org.eclim', to: 'org.eclim_${eclim.version}')
+    }
+  }
+  replace(dir: '${build.update-site}', includes: '**/*.xml'){
+    replacefilter(token: '$${eclim.version}', value: '${eclim.version}')
+  }
+
+  // eclipse site archive
+  zip(destfile: '${build.installer}/eclim-update-site.zip'){
+    fileset(dir: '${build.update-site}', includes: '**/*')
+    zipfileset(prefix: 'plugins', dir: '${build.plugins}'){
+      include(name: 'org.eclim_${eclim.version}/**/*')
+      include(name: 'org.eclim.*_${eclim.version}/**/*')
+      exclude(name: 'org.eclim.installer*_${eclim.version}/**/*')
+      exclude(name: 'org.eclim.installer*_${eclim.version}')
+    }
+  }
+
+  // vim plugins jar
+  zip(destfile: '${build.installer}/vim-plugins.zip'){
+    fileset(dir: '${build.vimfiles}', includes: '**/*')
+    zipfileset(dir: 'build/doc/vimdocs', includes: '**/*.txt',
+      prefix: 'org.eclim.core/eclim/doc')
+  }
+
+  installer()
+
+  // full source tar
+  version = binding.getVariable('eclim.version')
+  new File("${basedir}/build/.version").withWriter(){ out ->
+    out.writeLine("${version}")
+  }
+  tar(destfile: 'build/dist/eclim_${eclim.version}.tar.gz',
+      compression: 'gzip', longfile: 'gnu'){
+    tarfileset(dir: 'build/', prefix: 'eclim_${eclim.version}'){
+      include(name: '.version')
+    }
+    tarfileset(dir: '.', prefix: 'eclim_${eclim.version}'){
+      include(name: '**/*')
+      exclude(name: '.git/**/*')
+      exclude(name: '.git/')
+      exclude(name: '.ropeproject/**/*')
+      exclude(name: '.ropeproject/')
+      exclude(name: 'build/**/*')
+      exclude(name: 'build/')
+      exclude(name: 'patch/**/*')
+      exclude(name: 'patch/')
+      exclude(name: 'org.eclim/nailgun/config.log')
+      exclude(name: 'org.eclim/nailgun/config.status')
+      exclude(name: 'org.eclim/nailgun/Makefile')
+      exclude(name: 'org.eclim/nailgun/ng')
+    }
+  }
+}
+
+target(name: 'installer'){
+  depends('init')
+  exec(executable: '${formic.home}/bin/formic.bat', failonerror: true, dir: '.'){
+    arg(value: '-Declipse.home=${eclipse}')
+    arg(value: '-Declim.version=${eclim.version}')
+    arg(value: '-buildfile')
+    arg(value: 'org.eclim.installer/build/build.xml')
+  }
+}
+
+target(name: 'javadoc'){
+  depends('init')
+
+  mkdir(dir: 'build/doc/api')
+  javadoc(sourcepath: '.', packagenames: 'org.eclim', destdir: 'build/doc/api'){
+    classpath(refid: 'classpath')
+    pluginNames.each(){ name ->
+      if (new File("${name}/java").exists()){
+        fileset(dir: "${name}/java",
+          includes: "org/eclim/**/*.java,org/eclipse/**/*.java")
+      }
+    }
+  }
+}
+
+target(name: 'docs'){
+  depends('init')
+
+  property(file: 'org.eclim.installer/build/resources/install.properties')
+  property(name: 'sphinx.args', value: '')
+  mkdir(dir: 'build/doc/site')
+
+  // generate site documention via sphinx
+  exec(executable: 'bin/sphinx', failonerror: true, dir: '.'){
+    arg(line: '${sphinx.args} -b html doc/content build/doc/site')
+  }
+
+  // copy over any images that sphinx neglects to
+  copy(todir: 'build/doc/site/_images'){
+    fileset(dir: 'doc/content/images', includes: '**/*')
+  }
+  // copy over any statics that sphinx neglects to
+  copy(todir: 'build/doc/site/_static'){
+    fileset(dir: 'doc/content/static', includes: '**/*')
+  }
+
+  copy(todir: 'build/doc/site', file: 'doc/content/.htaccess')
+
+  echo(file: 'build/doc/site/google4c368e38cc6ac62e.html',
+      'google-site-verification: google4c368e38cc6ac62e.html')
+
+  replace(dir: 'build/doc/site', includes: '**/*.html'){
+    replacefilter(token: 'eclim_release_indigo', value: '${eclim.release.indigo}')
+    replacefilter(token: 'eclim_release', value: '${eclim.release}')
+    replacefilter(token: 'eclipse_version', value: '${eclipse.version}')
+  }
+
+  // support for google sitemap
+  echo('Building sitemap.xml...')
+  new File("${basedir}/build/doc/site/sitemap.xml").withWriter(){ out ->
+    out.writeLine('<?xml version="1.0" encoding="UTF-8"?>')
+    out.writeLine('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    new File("${basedir}/build/doc/site").eachFileRecurse(){ file ->
+      if (file =~ /.*\.html$/){
+        path = file.getPath().replace("${basedir}/build/doc/site/", '')
+        out.writeLine("<url><loc>http://eclim.org/${path}</loc></url>")
+      }
+    }
+    out.writeLine('</urlset>')
+  }
+  gzip(src: 'build/doc/site/sitemap.xml', destfile: 'build/doc/site/sitemap.xml.gz')
+  delete(file: 'build/doc/site/sitemap.xml')
+
+  // hack for 404 page to make statics + hrefs absolute since the 404 may be
+  // rendered in a sub dir.
+  replaceregexp(
+    file: 'build/doc/site/404.html',
+    match: '(href|src)="(?!/|https?:)',
+    replace: '\\1="/',
+    flags: 'g')
+
+  // sync to github pages repo/branch if it exists
+  if (new File("${basedir}/gh-pages").exists()){
+    sync(todir: 'gh-pages', overwrite: true){
+      fileset(dir: 'build/doc/site'){
+        exclude(name: '.buildinfo')
+        exclude(name: '.doctrees/**/*')
+        exclude(name: '.doctrees/')
+      }
+      preserveintarget{
+        include(name: '.git/**/*')
+        include(name: '.gitignore')
+        include(name: '.nojekyll')
+      }
+    }
+  }
+}
+
+target(name: 'vimdocs'){
+  depends('init')
+
+  property(name: 'sphinx.args', value: '')
+  mkdir(dir: 'build/doc/vimdocs')
+
+  // generate site documention via sphinx
+  exec(executable: 'bin/sphinx', failonerror: true, dir: '.'){
+    arg(line: '${sphinx.args} -b vimdoc doc/content build/doc/vimdocs')
+  }
+
+  replace(dir: 'build/doc/vimdocs', includes: '**/*.txt'){
+    replacefilter(token: 'eclim_release_indigo', value: '${eclim.release.indigo}')
+    replacefilter(token: 'eclim_release', value: '${eclim.release}')
+  }
+
+  delete(dir: '${vim.files}/eclim/doc')
+  copy(todir: '${vim.files}/eclim/doc'){
+    fileset(dir: 'build/doc/vimdocs',
+      includes: '**/*',
+      excludes: '.doctrees/**/*, .doctrees')
+  }
+}
+
+target(name: 'checkstyle'){
+  path(id: 'checkstyle-classpath'){
+    fileset(dir: 'ant/lib/', includes: 'checkstyle-*.jar')
+    pathelement(path: '${build.classes}/checkstyle')
+  }
+  mkdir(dir: '${build.classes}/checkstyle')
+  javac(
+      destdir: '${build.classes}/checkstyle',
+      srcdir: 'ant/ext/checkstyle',
+      classpathref: 'checkstyle-classpath',
+      debug: 'on', optimize: false, deprecation: '${javac.deprecation}',
+      target: '${javac.target}', source: '${javac.target}',
+      failonerror: true,
+      includeantruntime: false) {
+    compilerarg(value: '-Xlint:-options')
+  }
+
+  // ant may contain an antlr jar that is incompatible w/ checkstyle, but
+  // checkstyle doesn't support forking of it's own, so we have to use the java
+  // task to ensure that ant's antlr jar doesn't get loaded.
+  //taskdef(resource: 'checkstyletask.properties', classpathref: 'checkstyle-classpath')
+  //checkstyle(config: 'ant/checkstyle.xml'){
+  //  pluginNames.each(){ name ->
+  //    if (new File("${name}/java").exists()){
+  //      fileset(dir: "${name}/java",
+  //        includes: 'org/eclim/**/*.java',
+  //        excludes: 'org/eclim/util/file/BufferedReader.java')
+  //      //property(key: 'checkstyle.cache.file', file: 'build/temp/checkstyle/cache')
+  //    }
+  //  }
+  //}
+  java(
+      classname: 'com.puppycrawl.tools.checkstyle.Main',
+      classpathref: 'checkstyle-classpath'){
+    arg(value: '-c')
+    arg(value: "ant/checkstyle.xml")
+    pluginNames.each(){ name ->
+      if (new File("${name}/java").exists()){
+        arg(value: '-r')
+        arg(value: "${name}/java")
+      }
+    }
+  }
+}
+
+target(name: 'plugin.create'){
+  println "Please enter the plugin name, which:"
+  println "    * should relate to the name of the eclipse plugin"
+  println "      this new plugin will integrate with"
+  println "    * must be all lower case"
+  println "    * must not contain any non-alphanumeric chars"
+  println "    * must not start with a number"
+  println "    * must not collide with the name of an existing eclim plugin"
+
+  def name = null
+  while (!name) {
+    System.in.withReader{
+      print "Name (Ctrl-C to cancel): "
+      name = "plaintest"
+      if (name.toLowerCase() != name){
+        println '* must be all lowercase'
+        name = null
+      }else if (!name.matches(/^[a-z][a-z0-9]*$/)) {
+        println "* must start with alpha and only contain alphanumic chars"
+        name = null
+      }else if (new File("org.eclim.${name}").exists()){
+        println "* must not collide with the name of an existing eclim plugin"
+        name = null
+      }
+    }
+  }
+
+  if (name){
+    println "----"
+
+    def year = Calendar.getInstance().get(Calendar.YEAR)
+    copy(todir: '.'){
+      fileset(dir: 'ant/template',
+        includes: 'org.eclim.$${plugin}/**/*', excludes: '**/.keep')
+      filtermapper{
+        replacestring(from: '$${plugin}', to: "${name}")
+      }
+      filterset(begintoken: '${', endtoken: '}'){
+        filter(token: 'plugin', value: "${name}")
+        filter(token: 'year', value: "${year}")
+      }
+    }
+    println "    * created org.eclim.${name}"
+
+    insertIntoFile(
+        new File("build.xml"),
+        "  <target name=\"test.${name}\">\n" +
+        "    <antcall target=\"gant\"> " +
+              "<param name=\"target\" value=\"org.eclim.${name}.test\"/> " +
+            "</antcall>\n" +
+        "  </target>\n",
+        "<target\\b.*name=.*>",
+        "<target name=['\"]test\\.\\w+['\"].*>",
+    )
+    println "    * updated build.xml"
+
+    insertIntoFile(
+        new File(".classpath"),
+        "  <classpathentry kind=\"src\" path=\"org.eclim.${name}/java\"/>\n" +
+        "  <classpathentry kind=\"src\" path=\"org.eclim.${name}/test/junit\"/>",
+        "<(classpathentry\\b.*|/classpath)>",
+        "<classpathentry kind=\"src\".*>",
+    )
+    println "    * updated .classpath"
+  }
+}
+
+target(name: 'eclipse.init'){
+  launcher = null
+  new File("${eclipseHome}/plugins")
+    .eachFileMatch(~/org.eclipse.equinox.launcher_.*\.jar/){ file ->
+      launcher = file.getAbsolutePath()
+    }
+
+  if (launcher == null){
+    fail("Unable to find the eclipse launch in ${eclipseHome}/plugins")
+  }
+  echo('Running eclipse initilization...')
+  java(jar: launcher, fork: true, failonerror: true){
+    jvmarg(value: '-Xmx256m')
+    arg(value: '-debug')
+    arg(value: '-clean')
+    arg(value: '-refresh')
+    arg(value: '-initialize')
+  }
+  echo('Finished eclipse initialization.')
+}
+
+target(name: 'eclipse.gc'){
+  launcher = null
+  new File("${eclipseHome}/plugins")
+    .eachFileMatch(~/org.eclipse.equinox.launcher_.*\.jar/){ file ->
+      launcher = file.getAbsolutePath()
+    }
+
+  if (launcher == null){
+    fail("Unable to find the eclipse launch in ${eclipseHome}/plugins")
+  }
+  echo('Running eclipse garbage collection...')
+  java(jar: launcher, fork: true, failonerror: true){
+    jvmarg(value: '-Xmx256m')
+    arg(value: '-debug')
+    arg(value: '-clean')
+    arg(value: '-refresh')
+    arg(value: '-application')
+    arg(value: 'org.eclipse.equinox.p2.garbagecollector.application')
+  }
+  echo('Finished eclipse garbage collection.')
+}
+
+target(name: 'eclipse.docs'){
+  new File("${eclipseHome}/plugins").eachFileMatch(~/.*\.doc\..*\.jar/){ file ->
+    docDir = file.getName().replaceFirst('_.*', '')
+    unjar(src: file.getPath(), dest: '${eclipse.local}/docs/' + docDir)
+  }
+}
+
+target(name: 'eclipse.src'){
+  property(name: 'src.dir', value: "${eclipseHome}/plugins")
+  srcDir = binding.getVariable('src.dir')
+
+  echo('Extracting source jars from ${src.dir} ...')
+  new File("${srcDir}").eachFileRecurse(){ file ->
+    if (file =~ /.*\.source_.*\.jar/){
+      unjar(src: file.getPath(), dest: '${eclipse.local}/src')
+    }
+  }
+}
+
+target(name: 'patch'){
+  depends(init)
+
+  patchPlugins(){ plugin ->
+    resolved = patchPluginResolve(plugin)
+
+    if (resolved != null){
+      path = new File(resolved)
+
+      echo("Patching plugin: ${path}")
+
+      mkdir(dir: '${build.classes}/' + plugin)
+      compile("patch/${plugin}", '${build.classes}/' + plugin){
+        compilerarg(value: '-Xlint:-options')
+        include(name: '**/*.java')
+      }
+
+      if (path.isDirectory()){
+        // backup plugin dir if necessary
+        if (!new File("${eclipseHome}/patch.backup/${path.name}").exists()){
+          mkdir(dir: "${eclipseHome}/patch.backup")
+          exec(executable: 'cp', failonerror: true){
+            arg(line: "-a ${path} ${eclipseHome}/patch.backup/")
+          }
+        }
+        copy(todir: "${path}"){
+          fileset(dir: '${build.classes}/' + plugin, includes: '**/*.class')
+        }
+      }else{
+        // backup plugin file if necessary
+        if (!new File("${path}.bak").exists()){
+          exec(executable: 'cp', failonerror: true){
+            arg(line: "-a ${path} ${path}.bak")
+          }
+        }
+
+        jar(jarfile: path, update: true){
+          fileset(dir: '${build.classes}/' + plugin, includes: '**/*.class')
+        }
+      }
+    }
+  }
+}
+
+target(name: 'patch.revert'){
+  patchPlugins(){ plugin ->
+    resolved = patchPluginResolve(plugin)
+
+    if (resolved != null){
+      path = new File(resolved)
+
+      echo("Reverting patch for plugin: ${path}")
+
+      if (path.isDirectory()){
+        if (new File("${eclipseHome}/patch.backup/${path.name}").exists()){
+          exec(executable: 'rm', failonerror: true){
+            arg(line: "-r ${path}")
+          }
+          exec(executable: 'mv', failonerror: true){
+            arg(line: "${eclipseHome}/patch.backup/${path.name} ${path}")
+          }
+        }
+      }else{
+        if (new File("${path}.bak").exists()){
+          move(file: "${path}.bak", tofile: path)
+        }
+      }
+
+      delete(dir: "build/patch/${plugin}")
+    }
+  }
+}
+
+def getSysPath() {
+  for (path in ['env.PATH', 'env.Path']) {
+    if (hasVariable(path)) {
+      return binding.getVariable(path)
+    }
+  }
+  return null
+}
+
+def getGitAvailable(){
+  if (!new File("${basedir}/.git").exists()){
+    return false
+  }
+
+  syspath = getSysPath()
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    ant.available(file: 'git.cmd', filepath: syspath, property: 'git.available')
+    ant.available(file: 'git.exe', filepath: syspath, property: 'git.available')
+  }else{
+    ant.available(file: 'git', filepath: syspath, property: 'git.available')
+  }
+  return hasVariable('git.available')
+}
+
+def getEclipseHomeProp(){
+  if (!gitAvailable){
+    return 'eclipse.home'
+  }
+
+  // try branch specific eclipse home vars
+  try {
+    branch = execute('git', 'rev-parse --abbrev-ref HEAD')
+    eclipseHomeProp = 'eclipse.home.' + branch
+    binding.getVariable(eclipseHomeProp)
+    return eclipseHomeProp
+  }catch(MissingPropertyException mpe){
+    return 'eclipse.home'
+  }
+}
+
+def pluginInclude(name){
+  shortName = name.replaceFirst('org\\.eclim\\.?', '')
+  buildName = shortName != '' ? "build_${shortName}" : 'build'
+  pluginBuild = new File("${name}/${buildName}.gant")
+  if (pluginBuild.exists()){
+    //ant.echo("loading: ${pluginBuild}")
+    includeTargets << pluginBuild
+  }
+}
+
+def initPlugins(){
+  names = []
+  features = []
+  exclude = ['org.eclim.installer']
+
+  pluginWhiteList = []
+  pluginWhiteListStr = getVariable('plugin.whitelist')
+  if (pluginWhiteListStr) {
+    pluginWhiteList += pluginWhiteListStr.tokenize(',')
+  }
+
+  defaults = ['org.eclim', 'org.eclim.core', 'org.eclim.vimplugin']
+  defaults.each{ name -> pluginInclude(name)}
+
+  // find all the available eclipse features
+  featurePaths = [new File(getVariable('eclipse') + '/features')]
+  dropinDirs = [new File(getVariable('eclipse') + '/dropins')]
+  if (getVariable('eclipse') != getVariable('eclipse.local')){
+    featurePaths << new File(getVariable('eclipse.local') + '/features')
+    dropinDirs << new File(getVariable('eclipse.local') + '/dropins')
+  }
+
+  dropinDirs.each { dropins ->
+    ant.echo("Scan dropins dir: ${dropins}", level: 'debug')
+    if (dropins.exists()){
+      dropins.eachDirRecurse{ dropin ->
+        if (dropin.getName().equals("features")){
+          featurePaths << new File(dropin.getAbsolutePath())
+        }
+      }
+    }
+  }
+
+  featurePaths.each { path ->
+    if (path.exists()){
+      ant.echo("Feature path: ${path}", level: 'debug')
+      path.eachFile{ file ->
+        name = file.getName()
+        if (file.isDirectory() || name.endsWith('.jar')){
+          name = name.replaceFirst(/_\d.*/, '')
+          ant.echo("  feature: ${name}", level: 'debug')
+          features << name
+        }
+      }
+    }
+  }
+
+  // enable eclim plugins whose required features have been found
+  new File('.').eachDirMatch(~/org\.eclim\.\w*/){ dir ->
+    name = dir.getName()
+    if (!exclude.contains(name) && !defaults.contains(name)){
+      if (pluginWhiteList.size() > 0 && !pluginWhiteList.contains(name)) {
+        ant.echo("# Skipping ${name} since it's not in whitelist")
+        return
+      }
+      pluginInclude(name)
+      feature = getVariable("feature_${shortName}")
+      if (!feature || features.contains(feature)){
+        names << name
+      }else{
+        ant.echo("# Skipping ${name}, missing ${feature}")
+      }
+    }
+  }
+  ant.echo("Plugins:")
+  names.sort()
+  names.each{ name -> ant.echo("  ${name}") }
+  // FIXME: hack to move jdt above groovy. Better solution would be to scan the
+  // plugin manifests to determine the ordering.
+  if (names.contains("org.eclim.jdt")){
+    names.remove("org.eclim.jdt")
+    names.add(0, "org.eclim.jdt")
+  }
+  return defaults + names
+}
+
+def compile(srcdir, destdir, failonerror=true, errorproperty=null, nested){
+  ant.mkdir(dir: destdir)
+  ant.javac(
+      destdir: destdir,
+      srcdir: srcdir,
+      classpathref: 'classpath',
+      debug: 'on', optimize: false, deprecation: '${javac.deprecation}',
+      target: '${javac.target}', source: '${javac.target}',
+      failonerror: failonerror,
+      errorproperty: errorproperty,
+      includeantruntime: false,
+      nested)
+}
+
+def plugin(name){
+  // edge case for python until we integrate w/ pydev
+  if (name == 'org.eclim.python') {
+    return
+  }
+
+  ant.echo("\nbuilding plugin: ${name}\n")
+
+  version = binding.getVariable('eclim.version')
+  pluginsDir = binding.getVariable('build.plugins')
+  pluginPath = "${pluginsDir}/${name}_${version}"
+  ant.mkdir(dir: pluginPath)
+
+  if (new File("${name}/java").exists()){
+    compile("${name}/java", '${build.classes}/' + name, failonerror=true){
+      compilerarg(value: '-Xlint:-options')
+      include(name: "**/*.java")
+      classpath{fileset(dir: '${build.plugins}', includes: 'org.eclim*/eclim*.jar')}
+    }
+  }
+
+  // run plugin specific gant target
+  if (hasVariable("${name}.plugin.compile")){
+    binding.getVariable("${name}.plugin.compile")()
+  }
+
+  jarName = name.replaceFirst('^org\\.', '')
+  ant.jar(jarfile: "${pluginPath}/${jarName}.jar"){
+    ant.fileset(dir: '${build.classes}/' + name,
+      includes: "eclim/**,org/eclim/**,org/eclipse/**")
+    ant.fileset(dir: "${name}/java", erroronmissingdir: false,
+        includes: "org/eclim/**", excludes: '**/package.html,**/*.java')
+  }
+
+  ant.copy(todir: pluginPath){
+    ant.fileset(dir: "${name}",
+        includes: '**/*', excludes: '*.gant,java/**,scala/**,vim/**,test/**')
+  }
+
+  ant.replace(dir: pluginPath,
+      includes: 'bin/**/*,about.html,plugin.*,META-INF/*'){
+    ant.replacefilter(token: '$${eclim.version}', value: '${eclim.version}')
+  }
+
+  // build list of jar files for main plugin's manifest.
+  libDir = new File("${pluginPath}/lib")
+  if (libDir.exists()){
+    StringBuffer jars = new StringBuffer()
+    libDir.eachFileMatch(~/.*\.jar$/){ file ->
+      if(jars.size() != 0){
+        jars.append(',\n  ')
+      }
+      jars.append('lib/' + file.getName())
+    }
+
+    ant.replace(dir: pluginPath, includes: 'META-INF/MANIFEST.MF'){
+      ant.replacefilter(token: '$${eclim.lib.jars}', value: jars)
+    }
+
+    ant.fixcrlf(srcdir: pluginPath, includes: 'META-INF/MANIFEST.MF', eol: 'unix')
+  }
+
+  // run plugin specific gant target
+  if (hasVariable("${name}.build.eclipse")){
+    binding.getVariable("${name}.build.eclipse")()
+  }
+}
+
+pluginClasspath = { nested ->
+  paths = [getVariable('eclipse')]
+  if (getVariable('eclipse') != getVariable('eclipse.local')){
+    paths << getVariable('eclipse.local')
+  }
+  for (path in paths){
+    ant.fileset(dir: path){
+      nested()
+    }
+  }
+}
+
+runTests = { pluginName, nested ->
+  nested()
+  junit(pluginName)
+  vunit(pluginName)
+  ant.fail(message: 'One or more tests failed.', if: 'junit.failed')
+  ant.fail(message: 'One or more tests failed.', if: 'vunit.failed')
+}
+
+junit = { pluginName ->
+  if (!new File("${pluginName}/test/junit").exists()){
+    return
+  }
+
+  ant.mkdir(dir: "build/test/junit/classes/${pluginName}")
+  compile("org.eclim.core/test/junit", "build/test/junit/classes/${pluginName}"){
+    ant.compilerarg(value: '-Xlint:-options')
+    ant.include(name: '**/*.java')
+    ant.exclude(name: 'org/eclim/plugin/**/*.java')
+    ant.classpath{ant.pathelement(path: '${build.classes}/org.eclim')}
+  }
+  compile("${pluginName}/test/junit", "build/test/junit/classes/${pluginName}"){
+    ant.compilerarg(value: '-Xlint:-options')
+    ant.include(name: '**/*.java')
+    ant.classpath{ant.pathelement(path: '${build.classes}/org.eclim')}
+  }
+
+  ant.path(id: 'junit'){
+    ant.fileset(dir: 'ant/lib', includes: 'junit-*.jar')
+  }
+  ant.taskdef(name: 'junit', classpathref: 'junit',
+      classname: 'org.apache.tools.ant.taskdefs.optional.junit.JUnitTask')
+  ant.taskdef(name: 'junitreport', classpathref: 'junit',
+      classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator')
+
+  ant.mkdir(dir: "build/test/junit/results")
+  ant.junit(printsummary: 'yes', failureproperty: 'junit.failed'){
+    ant.classpath{
+      ant.path(refid: 'junit')
+      ant.pathelement(path: "build/test/junit/classes/${pluginName}")
+      ant.pathelement(path: '${build.classes}/org.eclim')
+      ant.fileset(dir: 'org.eclim/lib', includes: '*.jar', excludes: 'ant-*.jar')
+    }
+    ant.formatter(type: 'xml')
+    ant.batchtest(fork: 'yes', todir: "build/test/junit/results"){
+      ant.fileset(
+        dir: "build/test/junit/classes/${pluginName}",
+        includes: '**/*Test.class')
+    }
+    ant.sysproperty(key: 'eclipse.home', value: '${eclipse}')
+    ant.sysproperty(key: 'eclim.version', value: '${eclim.version}')
+    ant.sysproperty(key: 'eclimd.port', value: '${nailgun.server.port}')
+  }
+}
+
+vunit = { pluginName ->
+  if (!new File("${pluginName}/test/vunit").exists()){
+    return
+  }
+
+  ant.taskdef(resource: 'vunit/ant.properties'){
+    ant.classpath{ant.fileset(dir: 'ant/lib', includes: 'vunit.jar')}
+  }
+
+  ant.mkdir(dir: "build/test/vunit/results")
+  ant.vunit(todir: "build/test/vunit/results",
+      failureproperty: 'vunit.failed'){
+    ant.sysproperty(key: 'g:TestEclimWorkspace', value: '${eclipse.workspace}/')
+    ant.pathelement(path: '${vim.files}')
+    ant.plugin(name: 'plugin/eclim.vim')
+    ant.fileset(dir: "${pluginName}/test/vunit", includes: '**/*Test.vim')
+  }
+}
+
+createProject = { pluginName, project, extra=null ->
+  if (ant.project.getProperty('test.quick') != null){
+    return
+  }
+
+  ant.echo("Creating test project: ${project}...")
+
+  eclim("-command project_delete -p ${project}")
+  workspace = binding.getVariable('eclipse.workspace')
+  ant.delete(dir: "${workspace}/${project}", includeEmptyDirs: true)
+
+  // hack for apparent race condition on delete of files, eclipse syncing, and
+  // project resource creation
+  ant.sleep(seconds: 1)
+
+  ant.copy(todir: '${eclipse.workspace}'){
+    ant.fileset(dir: "${pluginName}/test", includes: "${project}/**/*")
+  }
+  eclim("-command project_import -f \"${workspace}/${project}\"")
+
+  if (extra){
+    extra()
+  }
+
+  // wait for any workspace building to start and then finish
+  Thread.sleep(1000)
+  while(true){
+    eclim("-command jobs")
+    result = new File('build/eclim.log').getText()
+    if (result =~ /- running\b/){
+      Thread.sleep(1000)
+    }else{
+      break
+    }
+  }
+
+  // extra second of sleep for good measure
+  ant.sleep(seconds: 1)
+}
+
+// converts a version string ("3.2.10") to an integer so that it can be
+// compared to other version strings numerically instead of alphabetically so
+// that "3.2.10" would be greater than "3.2.9"
+versionToInt = { version ->
+  result = 0
+  version.tokenize('.').reverse().eachWithIndex { part, index ->
+    result += index > 0 ? (part.toInteger() * (10 ** index)) : part.toInteger()
+  }
+  return result
+}
+
+eclim = { args, port=null, failonerror=true, dir=null ->
+  if (port == null){
+    eclimrc = "${basedir}/org.eclim.core/test/eclimrc.test"
+    new File(eclimrc).eachLine { line ->
+      if (line.startsWith('nailgun.server.port')){
+        port = line.split('=')[1]
+      }
+    }
+  }
+
+  try {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)){
+      if (dir == null){
+        eclimCmd = binding.getVariable('eclipse') + '/eclim.bat'
+      }else{
+        eclimCmd = dir + '/eclim.bat'
+      }
+      drive = eclimCmd.substring(0, 2)
+      ant.exec(executable: 'cmd.exe', failonerror: failonerror,
+          output: 'build/eclim.log', append: false){
+        ant.arg(value: '/c')
+        ant.arg(value: "${drive} && \"${eclimCmd}\" --nailgun-port ${port} ${args}")
+      }
+    }else{
+      if (dir == null){
+        eclimCmd = binding.getVariable('eclipse') + '/eclim'
+      }else{
+        eclimCmd = dir + '/eclim'
+      }
+      ant.exec(executable: eclimCmd, failonerror: failonerror,
+          output: 'build/eclim.log', append: false){
+        ant.arg(line: "--nailgun-port ${port} ${args}")
+      }
+    }
+  }catch(BuildException be){
+    log = new File("${basedir}/build/eclim.log")
+    if (log.exists()){
+      ant.echo(log.getText())
+    }
+    throw be
+  }
+}
+
+def execute(exe, args, failonerror=true, output=null, suppresserror=false){
+  // use a temp file to get a good random property name since ant properties
+  // can only be set once.
+  file = File.createTempFile('gant', '')
+  file.delete()
+  name = file.name
+
+  values = [
+    outputproperty: name,
+    failonerror: failonerror,
+    logError: true,
+  ]
+  values['executable'] = Os.isFamily(Os.FAMILY_WINDOWS) ? 'cmd.exe' : exe
+  if (output != null){
+    values['output'] = output
+  }
+  if (suppresserror){
+    values['errorproperty'] = 'error' + name
+  }
+
+  ant.exec(values){
+    if (Os.isFamily(Os.FAMILY_WINDOWS)){
+      ant.arg(value: '/c')
+      ant.arg(line: "${exe} ${args}")
+    }else{
+      ant.arg(line: args)
+    }
+  }
+
+  return binding.getVariable(name).trim()
+}
+
+def pingEclim(port){
+  try{
+    new Socket('localhost', port).withStreams(){ input, output ->
+      output.write(nailgunPacket('A', '-command'))
+      output.write(nailgunPacket('A', 'ping'))
+      output.write(nailgunPacket('C', 'org.eclim.command.Main'))
+    }
+    return true
+  }catch(IOException ioe){
+    ant.echo("Unable to connect to eclimd on port ${port}: ${ioe.message}")
+    return false
+  }
+}
+
+def nailgunPacket(type, value){
+  length = value.length()
+
+  byte[] packet = new byte[5 + length]
+  packet[0] = (length >> 24) & 0xff;
+  packet[1] = (length >> 16) & 0xff;
+  packet[2] = (length >> 8) & 0xff;
+  packet[3] = length & 0xff;
+  packet[4] = (byte)type;
+  System.arraycopy(value.getBytes(), 0, packet, 5, length)
+  return packet
+}
+
+def getVariable(name, deflt=null){
+  try{
+    return binding.getVariable(name)
+  }catch(MissingPropertyException mpe){
+    return deflt;
+  }
+}
+
+def hasVariable(name){
+  try{
+    binding.getVariable(name)
+    return true;
+  }catch(MissingPropertyException mpe){
+    return false;
+  }
+}
+
+def insertIntoFile(file, text, blockStart, afterStart){
+  def content = file.text
+  def writer = file.newPrintWriter()
+  def found = false
+  def inserted = false
+  content.eachLine { line ->
+    if (!inserted){
+      if (line.trim().matches(afterStart)){
+        found = true;
+      }else if (
+        found &&
+        line.trim().matches(blockStart) &&
+        !line.trim().matches(afterStart))
+      {
+        writer.println(text)
+        found = false
+        inserted = true
+      }
+    }
+    writer.println(line)
+  }
+  writer.close()
+}
+
+def patchPlugins(closure){
+  def plugins = []
+  if (hasVariable('plugin')){
+    plugins.add(getVariable('plugin'))
+  }else{
+    new File('patch').eachDir(){ dir ->
+      plugins.add(dir.name)
+    }
+    if (plugins.size() == 0){
+      fail(message: 'No plugin patch directories found.')
+    }
+  }
+  plugins.each(closure)
+}
+
+def patchPluginResolve(plugin){
+  // try plugin jar
+  ant.path(id: 'plugin_jar' + plugin){
+    ant.fileset(dir: '${eclipse}'){
+      ant.include(name: "plugins/${plugin}_*.jar")
+      ant.include(name: "dropins/**/plugins/${plugin}_*.jar")
+    }
+  }
+  ant.property(name: 'plugin_jar' + plugin, refid: 'plugin_jar' + plugin)
+  pluginJar = binding.getVariable('plugin_jar' + plugin)
+  if (pluginJar != null && pluginJar != ''){
+    return pluginJar
+  }
+
+  // try plugin dir
+  ant.path(id: 'plugin_dir' + plugin){
+    ant.dirset(dir: '${eclipse}'){
+      ant.include(name: "plugins/${plugin}_*")
+      ant.include(name: "dropins/**/plugins/${plugin}_*")
+    }
+  }
+  ant.property(name: 'plugin_dir' + plugin, refid: 'plugin_dir' + plugin)
+  pluginDir = binding.getVariable('plugin_dir' + plugin)
+  if (pluginDir != null && pluginDir != ''){
+    new File("patch/${plugin}").eachDirRecurse{ dir ->
+      subDir = dir.getName()
+      if (!new File("$pluginDir/$subDir").exists()){
+        return;
+      }
+      pluginDir += "/$subDir"
+    }
+    return pluginDir
+  }
+
+  ant.echo(message:
+    "WARN: No plugin jar file or dir found for '${plugin}' in '${eclipseHome}'.")
+  return null
+}

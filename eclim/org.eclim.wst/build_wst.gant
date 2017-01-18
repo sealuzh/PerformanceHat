@@ -1,0 +1,8 @@
+feature_wst = 'org.eclipse.wst.web_ui.feature'
+
+target(name: 'org.eclim.wst.test'){
+  depends('test.init')
+  runTests('org.eclim.wst'){
+    createProject('org.eclim.wst', 'eclim_unit_test_web')
+  }
+}

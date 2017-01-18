@@ -1,0 +1,8 @@
+feature_performancehat = 'eu.cloudwave.wp5.feedback.eclipse.feature'
+
+target(name: 'org.eclim.performancehat.test'){
+  depends('test.init')
+  	runTests('org.eclim.performancehat'){
+    createProject('org.eclim.performancehat', 'FIXME')
+  }
+}
