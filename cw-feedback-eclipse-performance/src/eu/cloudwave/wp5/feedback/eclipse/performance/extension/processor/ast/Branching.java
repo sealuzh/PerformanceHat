@@ -21,6 +21,9 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
 	  private org.eclipse.jdt.core.dom.ConditionalExpression condStat = null;
 	  private org.eclipse.jdt.core.dom.SwitchStatement switchStat = null;
 
+	  //Lazy calced SubNodes
+	  private List<IAstNode> branches = null;
+	  private IAstNode condition = null;
 
 	  Branching(org.eclipse.jdt.core.dom.IfStatement ifStat, AstContext ctx) {
 		 super(ifStat,ctx);
@@ -42,23 +45,26 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
  	  * @return IAstNode representing the Branch
  	  */
  	  public List<IAstNode> getBranches(){
- 		 List<IAstNode> res = Lists.newArrayList();
- 		 if(ifStat != null){
- 			 org.eclipse.jdt.core.dom.Statement sm = ifStat.getThenStatement();
- 			 if(sm != null) res.add(StaticAstFactory.fromEclipseAstNode(sm, ctx));
- 			 sm = ifStat.getElseStatement();
- 			 if(sm != null) res.add(StaticAstFactory.fromEclipseAstNode(sm, ctx));
- 		 } else if (condStat != null) {
- 			 org.eclipse.jdt.core.dom.Expression exp = condStat.getThenExpression();
- 			 if(exp != null) res.add(StaticAstFactory.fromEclipseAstNode(exp, ctx));
- 			 exp = condStat.getElseExpression();
- 			 if(exp != null) res.add(StaticAstFactory.fromEclipseAstNode(exp, ctx));
- 		 } else if (switchStat != null){
- 			 for(Object st:switchStat.statements()){
- 				res.add(StaticAstFactory.fromEclipseAstNode((ASTNode)st, ctx));
- 			 }
- 		 }
- 		 return res;
+ 		  if(branches == null){
+ 			  branches = Lists.newArrayList();
+ 			  if(ifStat != null){
+ 				  org.eclipse.jdt.core.dom.Statement sm = ifStat.getThenStatement();
+ 				  if(sm != null) branches.add(StaticAstFactory.fromEclipseAstNodeOrDefault(sm, ctx));
+ 				  sm = ifStat.getElseStatement();
+ 				  if(sm != null) branches.add(StaticAstFactory.fromEclipseAstNodeOrDefault(sm, ctx));
+ 			  } else if (condStat != null) {
+ 				  org.eclipse.jdt.core.dom.Expression exp = condStat.getThenExpression();
+ 				  if(exp != null) branches.add(StaticAstFactory.fromEclipseAstNodeOrDefault(exp, ctx));
+ 				  exp = condStat.getElseExpression();
+ 				  if(exp != null) branches.add(StaticAstFactory.fromEclipseAstNodeOrDefault(exp, ctx));
+ 			  } else if (switchStat != null){
+ 				  for(Object st:switchStat.statements()){
+ 					  branches.add(StaticAstFactory.fromEclipseAstNodeOrDefault((ASTNode)st, ctx));
+ 				  }
+ 			  }
+ 		  }
+ 		  		 
+ 		  return branches;
  	  }
  	  
  	  /**
@@ -66,14 +72,17 @@ public class Branching extends AAstNode<org.eclipse.jdt.core.dom.ASTNode>{
  	   * @return IAstNode representing the condition
  	   */
  	  public IAstNode getCondition(){
- 		 if(ifStat != null){
- 			return StaticAstFactory.fromEclipseAstNode(ifStat.getExpression(), ctx);
- 		 } else if (condStat != null) {
- 			return StaticAstFactory.fromEclipseAstNode(condStat.getExpression(), ctx);
- 		 } else if (switchStat != null){
-  			return StaticAstFactory.fromEclipseAstNode(switchStat.getExpression(), ctx);
- 		 }
- 		 return null;
+ 		  if(condition == null){
+ 			  if(ifStat != null){
+ 				 condition = StaticAstFactory.fromEclipseAstNodeOrDefault(ifStat.getExpression(), ctx);
+ 			  } else if (condStat != null) {
+ 				 condition = StaticAstFactory.fromEclipseAstNodeOrDefault(condStat.getExpression(), ctx);
+ 			  } else if (switchStat != null){
+ 				 condition = StaticAstFactory.fromEclipseAstNodeOrDefault(switchStat.getExpression(), ctx);
+ 			  }	  
+ 		  }
+ 		
+ 		 return condition;
  	  }
  	  
  	  /**

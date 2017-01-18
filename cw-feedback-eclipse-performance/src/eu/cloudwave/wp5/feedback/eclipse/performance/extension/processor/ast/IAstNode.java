@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 /**
  * The root interface presenting the Ast Structure for Performance Plugins
@@ -27,6 +28,18 @@ public interface IAstNode {
 	 * @return eclipse ASTNode
 	 */
 	public ASTNode getEclipseAstNode();
+	
+	/**
+	 * Get current Ast context
+	 * @return AstContext of node
+	 */
+	public AstContext getContext();
+	
+	/**
+	 * Starts ast traversing with the visitor pattern using the visitor
+	 * @param visitor
+	 */
+	public void accept(PerformanceVisitor visitor);
 	
 	/**
 	 * Attach a tag to the node so it can later be read by getTags

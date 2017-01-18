@@ -15,7 +15,6 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,10 +72,15 @@ public class PerformanceBuilder extends FeedbackBuilder {
  	    		subMonitor.setWorkRemaining(remaining--);
  	    		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
  	    		if(!astRoot.isPresent()) continue;
+ 	    		// Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+ 	    		//Optional<CompilationUnit> oldAstRoot = FeedbackBuilder.loadOldUnit(javaFile);
+ 	    		
  	    		subMonitor.newChild(1);
  	    		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
  	    		for (final FeedbackBuilderParticipant participant : participants) {
- 	    	      participant.buildFile(project, javaFile, astRoot.get());
+ 	    			
+ 	    			
+ 	    	      participant.buildFile(project, javaFile, astRoot.get()/*, oldAstRoot.orNull()*/);
  	    	    }
  	    	}
  	    } finally {

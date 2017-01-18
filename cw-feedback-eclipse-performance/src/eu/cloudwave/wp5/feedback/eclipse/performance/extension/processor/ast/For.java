@@ -25,6 +25,12 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
  */
 public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> implements Loop {
 	
+	//Lazy calced SubNodes
+	private List<IAstNode> initNodes = null;	
+	private List<IAstNode> updaterNodes = null;	
+	private IAstNode condition = null;
+	private IAstNode body = null;
+	
 	For(org.eclipse.jdt.core.dom.ForStatement forStatement, AstContext ctx) {
 		super(forStatement,ctx);
 	}
@@ -132,7 +138,7 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 			if(receiver instanceof org.eclipse.jdt.core.dom.MethodInvocation){
 				return StaticAstFactory.createMethodInvocation((org.eclipse.jdt.core.dom.MethodInvocation)receiver,ctx);
 			}
-			return StaticAstFactory.fromEclipseAstNode(receiver, ctx);
+			return StaticAstFactory.fromEclipseAstNodeOrDefault(receiver, ctx);
 		}
 		return null;
 	}
@@ -288,9 +294,13 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	 */
 	@Override
 	public List<IAstNode> getInitNodes() {
-		@SuppressWarnings("unchecked")
-		List<org.eclipse.jdt.core.dom.Expression> exprs = inner.initializers();
-		return exprs.stream().map(e -> StaticAstFactory.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
+		if(initNodes == null){
+			@SuppressWarnings("unchecked")
+			List<org.eclipse.jdt.core.dom.Expression> exprs = inner.initializers();
+			initNodes = exprs.stream().map(e -> StaticAstFactory.fromEclipseAstNodeOrDefault(e,ctx)).collect(Collectors.toList()); 
+		}
+
+		return initNodes;
 	}
 	
 	/**
@@ -298,9 +308,12 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	 * @return List of IAstNode's representing the updaters
 	 */
 	public List<IAstNode> getUpdaters() {
-		@SuppressWarnings("unchecked")
-		List<org.eclipse.jdt.core.dom.Expression> exprs = inner.updaters();
-		return exprs.stream().map(e -> StaticAstFactory.fromEclipseAstNode(e,ctx)).collect(Collectors.toList());
+		if(updaterNodes == null){
+			@SuppressWarnings("unchecked")
+			List<org.eclipse.jdt.core.dom.Expression> exprs = inner.updaters();
+			updaterNodes = exprs.stream().map(e -> StaticAstFactory.fromEclipseAstNodeOrDefault(e,ctx)).collect(Collectors.toList());		
+		}
+		return updaterNodes;
 	}
 	
 	/**
@@ -308,7 +321,10 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	 * @return the IAstNode representing the condition
 	 */
 	public IAstNode getCondition(){
-		return StaticAstFactory.fromEclipseAstNode(inner.getExpression(), ctx);
+		if(condition == null){
+			condition = StaticAstFactory.fromEclipseAstNodeOrDefault(inner.getExpression(), ctx);
+		}
+		return condition;
 	}
 	
 	/**
@@ -316,7 +332,10 @@ public class For extends AAstNode<org.eclipse.jdt.core.dom.ForStatement> impleme
 	 */
 	@Override
 	public IAstNode getBody(){
-		return StaticAstFactory.fromEclipseAstNode(inner.getBody(), ctx);
+		if(body == null){
+			body = StaticAstFactory.fromEclipseAstNodeOrDefault(inner.getBody(), ctx);
+		}
+		return body;
 	}
 
 	

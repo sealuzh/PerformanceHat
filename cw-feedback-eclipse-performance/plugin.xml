@@ -234,6 +234,9 @@
       <client
             class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin">
       </client>
+      <client
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FlatCallSetChangePredictor">
+      </client>
    </extension>
 
 </plugin>

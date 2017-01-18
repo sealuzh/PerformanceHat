@@ -17,6 +17,10 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
  */
 public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 		
+	//Lazy calced SubNodes
+	private List<IAstNode> initNodes = null;	
+	private IAstNode body = null;
+	
 	ForEach(EnhancedForStatement foreachStatement,AstContext ctx) {
 		super(foreachStatement,ctx);
 	}
@@ -84,7 +88,10 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 	   */
 	  @Override
 	  public List<IAstNode> getInitNodes() {
-		  return Collections.singletonList(StaticAstFactory.fromEclipseAstNode(inner.getExpression(),ctx));
+		  if(initNodes == null){
+			  initNodes = Collections.singletonList(StaticAstFactory.fromEclipseAstNodeOrDefault(inner.getExpression(),ctx)); 
+		  }
+		  return initNodes; 
 	  }
 
 	  /**
@@ -92,8 +99,9 @@ public class ForEach extends AAstNode<EnhancedForStatement> implements Loop{
 	   */
 	  @Override
 	  public IAstNode getBody() {
-		  return StaticAstFactory.fromEclipseAstNode(inner.getBody(), ctx);
+		  if(body == null){
+			  body = StaticAstFactory.fromEclipseAstNodeOrDefault(inner.getBody(), ctx);
+		  }
+		  return body; 
 	  }
-
-	  
 }

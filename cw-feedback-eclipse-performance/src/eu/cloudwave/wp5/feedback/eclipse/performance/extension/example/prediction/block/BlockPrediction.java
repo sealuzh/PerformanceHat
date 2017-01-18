@@ -1,11 +1,20 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import eu.cloudwave.wp5.common.util.TimeValues;
+import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
+import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 
 /**
  * A PredictionNode implementation for a basic unspecified Block
@@ -51,4 +60,8 @@ public class BlockPrediction extends APrediction{
 	public Collection<String> getPredictedText() {
 		return getPredictedTime().stream().map(p -> round(p)+"ms").collect(Collectors.toList());
 	}
+
+
+	
+	
 }

@@ -11,7 +11,9 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFi
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerPosition;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerSpecification;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.AstDelegator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 /**
  * An abstract version of the IAstNode interface that predefine some common Methods
@@ -21,6 +23,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	//the context of the node
 	protected final AstContext ctx;
+	
+
 	//The backing ast
 	protected final T inner;
 	
@@ -45,7 +49,21 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	public MethodDeclaration getCurrentMethod(){
 		return ctx.getCurrentMethod();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */	
+	public AstContext getContext() {
+		return ctx;
+	}
 			
+	
+	
+	@Override
+	public void accept(PerformanceVisitor visitor) {
+		inner.accept(new AstDelegator(visitor,ctx));
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */	
@@ -71,6 +89,7 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 	public void markWarning(String id, FeedbackMarkerType type, String message, Map<String, Object> additionalAttributes){
 		 //get the file
 		 final FeedbackJavaFile javaFile =  ctx.getFile();
+		 if(javaFile == null) throw new IllegalStateException("Can not generate marker on Historic Ast");
 		 //get the position
 		 final int start = getStartPosition();
 		 //create the marker specification
@@ -119,7 +138,5 @@ public abstract class AAstNode<T extends ASTNode> implements IAstNode {
 		// More stabler alternatives would need to traverse the whole sub Ast of the node and compare elem by elem
 		return inner.equals(((AAstNode)obj).inner);
 	}
-	  
-	  
-
+	 
 }

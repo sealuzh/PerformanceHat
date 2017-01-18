@@ -37,6 +37,6 @@ public interface TagRegistry extends TagProvider {
 	 * @param plugin which creates the Tags 
 	 * @return the TagCreator
 	 */
-	public TagCreator getCreatorFor(FeedbackJavaFile file, PerformancePlugin plugin);
+	public TagCreator getCreatorFor(Object identifier, PerformancePlugin plugin);
 	
 }

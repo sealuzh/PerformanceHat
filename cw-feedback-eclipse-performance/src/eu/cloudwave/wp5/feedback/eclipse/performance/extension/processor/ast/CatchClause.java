@@ -9,6 +9,9 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
  */
 public class CatchClause extends AAstNode<org.eclipse.jdt.core.dom.CatchClause> {
 	
+	//Lazy calced SubNodes
+	private Block body = null;
+	
 	CatchClause(org.eclipse.jdt.core.dom.CatchClause catchClause, AstContext ctx) {
 		super(catchClause,ctx);
 	}
@@ -29,7 +32,10 @@ public class CatchClause extends AAstNode<org.eclipse.jdt.core.dom.CatchClause> 
 	 * @return the catch Block
 	 */
 	public Block getBody(){
-		return StaticAstFactory.createBlock(inner.getBody(),ctx);
+		if(body == null){
+			body = StaticAstFactory.createBlock(inner.getBody(),ctx); 
+		}
+		return body;
 	}
 
 }

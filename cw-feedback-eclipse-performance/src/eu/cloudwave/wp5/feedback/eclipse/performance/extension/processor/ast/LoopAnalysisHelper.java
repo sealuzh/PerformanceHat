@@ -79,7 +79,7 @@ class LoopAnalysisHelper {
 
 		      private void setSourceProcedure(final org.eclipse.jdt.core.dom.Expression expression) {
 		        if (expression != null) {
-		        	inv.set(StaticAstFactory.fromEclipseAstNode(expression,ctx));
+		        	inv.set(StaticAstFactory.fromEclipseAstNodeOrDefault(expression,ctx));
 		        }
 		      }
 		    });

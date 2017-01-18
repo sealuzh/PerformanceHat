@@ -19,49 +19,14 @@ public class ExampleController extends AController{
     
     @RequestMapping("/users")
     public String greeting(Model model) {
-    	/*test:for(String u3: getUserInfo()){
-	    	for(String u: getUserInfo()){
-	    		for(String u2: getUserInfo()){
-	    			//# branches: 0.5, 0.5
-	    			blubb:if(true){
-		    			getUserInfo();	    				
-	    			} else {
-		    			getUserInfo();	    					    				
-	    			}
-	        	}
-	    	}
-    	}
-
-    	int x = getUserInfo().size();
-   
-    	for(int i = 0; i < x; i++){
-    		lulo:getUserInfo();	 
-    	}
-   
-    	
-      	for(String u2: getUserInfo()){
-    		lala:try{
-          		getUserInfo();
-    		} catch(Exception e){
-        		getUserInfo();
-    		} finally{
-        		getUserInfo();
-    		}
-    	}*/
-    	test();
     	List<String> userList = getUserInfo();
         model.addAttribute("userList", userList);
         return "users";
         
     }
     
-    
     private List<String> getUserInfo(){
     	IDatabase myDB = new DatabaseStub();
-    	//int x = getUserInfo().size();
-    	//for(int i = 0; i < x; i++){
-    	//	lulo:getUserInfo();	 
-    	//}
     	List<String> userList = myDB.getUserInfo();
     	return userList;
     }

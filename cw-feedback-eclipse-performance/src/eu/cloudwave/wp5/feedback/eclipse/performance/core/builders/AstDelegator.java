@@ -223,6 +223,9 @@ public class AstDelegator extends ASTVisitor  {
 			 //call the visitor
 			 m = visit.apply(cur, node);
 		 }
+		 if(m == null){
+			 m = cur.visit((IAstNode)node); //Last fallback
+		 }
 		 //process the visit return value
 		 return handleVisitReturn(m,node);
 	 }
@@ -238,7 +241,7 @@ public class AstDelegator extends ASTVisitor  {
 	 // or which do not need special handling
 	 private boolean defaultVisit(final ASTNode node){
 		 //just a genericVisit, that uses the generic Factory Method and does not call any visit's
-		 return genericVisit(node, StaticAstFactory::fromEclipseAstNode);
+		 return genericVisit(node, StaticAstFactory::fromEclipseAstNodeOrDefault);
 	 }
 	
 	 /**
@@ -253,6 +256,8 @@ public class AstDelegator extends ASTVisitor  {
 		 if(!handleVisitEnter(decl)) return false;
 		 PerformanceVisitor m = getCurrent().visit(decl);
 		 if(m == null) m = getCurrent().visit((MethodOccurence)decl);
+		 if(m == null) m = getCurrent().visit((IAstNode)decl);
+
 		 return handleVisitReturn(m,decl);
      }
 	 

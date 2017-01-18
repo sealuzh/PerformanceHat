@@ -2,6 +2,10 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor;
 
 import java.util.Collection;
 
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
+
 /**
  * A node to represent a Prediction made by the BlockTimePrediction Framework
  * Each Prediction has a name/text a predicted average Time as well as some Child nodes from which the prediction was made
@@ -46,4 +50,7 @@ public interface PredictionNode {
 	 * @return the children
 	 */
 	public Collection<PredictionNode> getChildren();
+
+
+	public void createCriticalMarker(IAstNode target, AstContext context);
 }

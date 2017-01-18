@@ -3,6 +3,7 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension;
 import java.util.Collections;
 import java.util.List;
 
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 /**
@@ -39,13 +40,11 @@ public interface PerformancePlugin {
 	 * @return a list of desired tag types
 	 */
 	default List<String> getOptionalRequiredTags(){return Collections.emptyList();}
-
+	
 	/**
-	 * Creates the Ast Visitor doing the actual work
-	 * @param rootContext is the visitation context
-	 * @return the Visistor
+	 * Performs the predictions and data loading over the ast
+	 * @param ast the current ast
 	 */
-	//TODO: if we can give better access to some of the elements over the Ast we can remove the AstContext parameter and make this class an implementation detail
-	public PerformanceVisitor createPerformanceVisitor(final AstContext rootContext);	
+	public void processPerformanceAst(final AstRoot newAst);
 	
 }

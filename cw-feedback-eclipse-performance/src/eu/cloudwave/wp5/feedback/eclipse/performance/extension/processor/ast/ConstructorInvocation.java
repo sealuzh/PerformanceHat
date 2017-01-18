@@ -1,7 +1,12 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast;
 
+import java.util.List;
+
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+
+import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
@@ -22,7 +27,9 @@ public class ConstructorInvocation extends AMethodRelated<org.eclipse.jdt.core.d
 	  private org.eclipse.jdt.core.dom.ConstructorInvocation thisCall = null;
 	  private org.eclipse.jdt.core.dom.SuperConstructorInvocation superCall = null;
 
-
+	  //Lazy calced SubNodes
+	  private List<IAstNode> arguments = null;
+	  
 	  ConstructorInvocation(org.eclipse.jdt.core.dom.ClassInstanceCreation newInstance, AstContext ctx) {
 		 super(newInstance,AMethodRelated.Type.CTR_NEW,ctx);
 		 this.newInstance = newInstance;
@@ -62,7 +69,27 @@ public class ConstructorInvocation extends AMethodRelated<org.eclipse.jdt.core.d
  		  return regularName;
  	  }
 
- 	  
+ 	 /**
+ 		 * {@inheritDoc}
+ 		 */
+ 		public List<IAstNode> getArguments(){
+ 			if(arguments == null){
+ 				arguments = Lists.newArrayList();
+ 				List<ASTNode> args = Lists.newArrayList(); 
+ 				if(newInstance != null){
+ 					args = newInstance.arguments();
+ 				} else if(superCall != null) {
+ 					args = superCall.arguments();
+ 				}else if(thisCall != null) {
+ 					args = thisCall.arguments();
+ 				}
+ 				
+ 				for(ASTNode node:args){
+ 					arguments.add(StaticAstFactory.fromEclipseAstNodeOrDefault(node, ctx));
+ 				}
+ 			}
+ 			return arguments;
+ 		}
  	  
  	  /**
  	   * {@inheritDoc}

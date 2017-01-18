@@ -67,7 +67,7 @@ public abstract class AbstractCostFeedbackBuilderParticipant extends AbstractFee
    * {@inheritDoc}
    */
   @Override
-  public abstract void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot);
+  public abstract void buildFile(final FeedbackJavaProject project, final FeedbackJavaFile javaFile, final CompilationUnit astRoot/*, final CompilationUnit oldAstRoot*/);
 
   /**
    * Helper to extract value of annotation attribute from string

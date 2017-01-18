@@ -30,7 +30,7 @@ class TryBlockTimePredictor extends BlockTimePredictor{
 		//all the catches
 		this.catchesStarts = Sets.newHashSet(tryStm.getCactchClauses());
 		//the finally
-		this.finallyBlock = tryStm.getFinally();
+		this.finallyBlock = tryStm.getFinally().orNull();
 		this.tryStm = tryStm;
 	}
 	

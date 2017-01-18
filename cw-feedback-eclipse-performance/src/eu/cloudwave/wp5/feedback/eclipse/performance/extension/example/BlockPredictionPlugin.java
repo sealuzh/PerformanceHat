@@ -21,13 +21,14 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.APrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BlockPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.BranchingPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.LoopPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.MethodCallPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.APrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BlockPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BranchPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BranchingPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.LoopPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.MethodCallPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Invocation;
@@ -73,15 +74,20 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		  return Collections.singletonList(AVG_PRED_TIME_TAG);
 	  }
 	  
+	  
 	  /**
 	   * {@inheritDoc}
 	   */
 	  @Override
-	  public PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {
+	  public void processPerformanceAst(AstRoot ast/*, AstRoot ignoreOldRoot*/) {
+		  ast.accept(createPerformanceVisitor(ast.getContext()));
+	  }
+
+	  private PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {
 		  //Visitor that visits all method declaration and predict excecution times
 		  return new PerformanceVisitor() {
-				@Override
-				public PerformanceVisitor visit(MethodDeclaration method) {
+			  @Override
+			  public PerformanceVisitor visit(MethodDeclaration method) {
 					//Use BlockTimeCollector to measure the method
 					return new BlockTimePredictor(BlockPredictionPlugin.this){
 						@Override
@@ -120,7 +126,8 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		//Consume own Tags, only works over multiple compiles or else we would need complext tag management
 		Collection<Object> predTags = invocation.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
 		//final values once for prediction prefered and once for measurement prefered
-		Collection<Double> predPref = predTags.stream().map(p -> ((APrediction)p).avgTimePred).collect(Collectors.toList());
+		//Only consider other BlockPredictors results
+		Collection<Double> predPref = predTags.stream().filter(p -> p instanceof APrediction).map(p -> ((APrediction)p).avgTimePred).collect(Collectors.toList());
 		Collection<Double> mesPref = null;
 		
 		//if we do not have mesurements use predictions
@@ -204,7 +211,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 		 //calc each branch
 		 for(List<PredictionNode> bet:branchExecutionTimes) {
 			 final double betSumPred = sumPred(bet);
-			 final double betSumMes = sumPred(bet);
+			 final double betSumMes = sumMes(bet);
 			 
 			 branchNodes.add(new BranchPrediction((++i),part, betSumPred/branchCount, betSumMes/branchCount , bet));
 			 totPred+=betSumPred;

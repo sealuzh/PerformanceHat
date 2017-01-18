@@ -10,6 +10,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
@@ -45,11 +46,18 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 		return Lists.asList(COLLECTION_SIZE_TAG,AVG_EXEC_TIME_TAG, new String[]{});
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PerformanceVisitor createPerformanceVisitor(AstContext rootContext) {
+	 
+	 /**
+	  * {@inheritDoc}
+	  */
+	  @Override
+	  public void processPerformanceAst(AstRoot ast/*, AstRoot oldAst*/) {
+		  ast.accept(createPerformanceVisitor(ast.getContext()));
+		  // Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+		  //oldAst.accept(createPerformanceVisitor(oldAst.getContext()));
+	  }
+
+	  private PerformanceVisitor createPerformanceVisitor(AstContext rootContext) {
 		//Creates a visitor, that attaches tags to Method Calls, Method Declaration and Constructor Invocations
 		//  As well as Method parameters
 		return new PerformanceVisitor() {	

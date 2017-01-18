@@ -58,7 +58,7 @@ public class MicroserviceMethodDeclarationParticipant extends AbstractCostFeedba
    * Building files in which microservice endpoints/methods are defined
    */
   @Override
-  public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
+  public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot/*, final CompilationUnit oldAstRoot*/) {
 
     // System.out.println("EndpointParticipant buildFile");
     astRoot.accept(new ASTVisitor() {

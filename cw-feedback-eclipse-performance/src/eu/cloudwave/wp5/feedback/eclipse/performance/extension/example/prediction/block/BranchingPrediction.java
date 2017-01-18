@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block;
 
 import java.util.Collection;
 import java.util.List;

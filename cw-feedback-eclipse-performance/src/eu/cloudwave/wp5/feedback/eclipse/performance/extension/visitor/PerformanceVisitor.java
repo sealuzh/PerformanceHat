@@ -55,9 +55,10 @@ public abstract class PerformanceVisitor {
 		}
 	};
 	
-	protected static PerformanceVisitor USE_NEXT_VISIT = null;
+	private static PerformanceVisitor USE_NEXT_VISIT = null;
 	
 	//All the visit methods
+	public PerformanceVisitor visit(IAstNode node){return USE_NEXT_VISIT;}
 	
 	public PerformanceVisitor visit(Loop loop){return USE_NEXT_VISIT;}
 	public PerformanceVisitor visit(ForEach forEach){return USE_NEXT_VISIT;}

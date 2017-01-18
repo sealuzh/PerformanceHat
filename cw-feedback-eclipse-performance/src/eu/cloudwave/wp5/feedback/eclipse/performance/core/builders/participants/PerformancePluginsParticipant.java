@@ -1,8 +1,12 @@
 package eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants;
 
+import java.util.Scanner;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.builders.participants.AbstractFeedbackBuilderParticipant;
@@ -17,6 +21,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagRegistry;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.StaticAstFactory;
 
 /**
  * A FeedbackBuilderParticipant that enables PerformancePlugins to process FeedbackJavaFile's
@@ -32,6 +38,17 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 		this.ext = ext;
 		this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
 	  }
+	 
+	 private AstRoot createRoot(Object id, CompilationUnit root, FeedbackJavaProject project, FeedbackJavaFile javaFile){
+		 if(root == null) return null;
+		 //Find the Registry where the Plugin can read and attach tags to the ast
+		 TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
+		 //Create the tag creator for this file and plugin, so entries can be differentiated by the creating plugin
+		 TagCreator crea = reg.getCreatorFor(id, ext);
+		 //create the context classe needed by the ast delegator to interact with its enviroment
+		 AstContext rootContext = new ProgrammMarkerContextBase(project, javaFile, root, reg, crea ,templateHandler);
+		 return StaticAstFactory.createAstRoot(root, rootContext);	
+	 }
 
 	 /**
 	  * Delegates buildFile calls from the PerformanceHat framework to the PerformancePlugin.
@@ -42,16 +59,15 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 	  * @param astRoot is abstract syntax tree corresponding to the javaFile
 	  */
 	@Override
-	public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot) {
-		//Find the Registry where the Plugin can read and attach tags to the ast
-		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
-		//Create the tag creator for this file and plugin, so entries can be differentiated by the creating plugin
-		TagCreator crea = reg.getCreatorFor(javaFile, ext);
-		//create the context classe needed by the ast delegator to interact with its enviroment
-		AstContext rootContext = new ProgrammMarkerContextBase(project, javaFile, astRoot, reg, crea ,templateHandler);
+	public void buildFile(FeedbackJavaProject project, FeedbackJavaFile javaFile, CompilationUnit astRoot/*, CompilationUnit oldAstRoot*/) {
+				
+		AstRoot newRoot = createRoot(javaFile.getFullPath(), astRoot, project, javaFile);
+		// Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+		//AstRoot oldRoot = createRoot(new HistoryKey(javaFile.getFullPath()), oldAstRoot, project, null); //History has no file asosiated
+		
 		//Create the AstDelegator which allows the PerformanceVisitor to process the AST and interact with its context
 		//Start the processing
-		astRoot.accept(new AstDelegator(ext.createPerformanceVisitor(rootContext),rootContext) );
+		ext.processPerformanceAst(newRoot/* oldRoot*/);
 	}
 	
 	/**
@@ -66,10 +82,10 @@ public class PerformancePluginsParticipant extends AbstractFeedbackBuilderPartic
 		TagRegistry reg = TagRegistry.getProjectTagRegistry(project);
 		//Clear the local tags of each file
 		for(FeedbackJavaFile javaFile:javaFiles){
-			reg.getCreatorFor(javaFile, ext).clearAssosiatedLocalTags();
+			reg.getCreatorFor(javaFile.getFullPath(), ext).clearAssosiatedLocalTags();
+    		// Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+			//reg.getCreatorFor(new HistoryKey(javaFile.getFullPath()), ext).clearAssosiatedLocalTags();
+
 		}
 	}
-	
-	
-
 }

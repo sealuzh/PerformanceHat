@@ -15,17 +15,28 @@
  ******************************************************************************/
 package eu.cloudwave.wp5.feedback.eclipse.base.core.builders;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.google.common.base.Optional;
@@ -109,10 +120,14 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
     		subMonitor.setWorkRemaining(remaining--);
     		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
     		if(!astRoot.isPresent()) continue;
+    		
+    		// Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+	  		//Optional<CompilationUnit> oldAstRoot = loadOldUnit(javaFile);
+    		
     		subMonitor.newChild(1);
     		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
     		for (final FeedbackBuilderParticipant participant : participants) {
-    	      participant.buildFile(project, javaFile, astRoot.get());
+    	      participant.buildFile(project, javaFile, astRoot.get()/*, oldAstRoot.orNull()*/);
     	    }
     	}
     } finally {
@@ -131,7 +146,6 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
   private void incrementalBuild(final FeedbackJavaProject project, final IProgressMonitor monitor) throws CoreException {
     final IResourceDelta resourceDelta = getDelta(getProject());
     final Optional<? extends FeedbackJavaResourceDelta> feedbackDeltaOptional = this.getFeedbackJavaResourceFactory().create(resourceDelta);
-
     if (feedbackDeltaOptional.isPresent()) {
       final FeedbackJavaResourceDelta delta = feedbackDeltaOptional.get();
       this.getFeedbackCleaner().cleanDelta(delta);
@@ -146,15 +160,20 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 	    	int remaining = files.size();
 	    	final SubMonitor subMonitor = SubMonitor.convert(monitor,remaining);
 
-		  	for(FeedbackJavaFile javaFile:files){
+		  	for(FeedbackJavaFile javaFile:files){		  				  		
+		  		
 		  		if(subMonitor.isCanceled()) throw new OperationCanceledException();
 	    		subMonitor.setWorkRemaining(remaining--);
 		  		Optional<CompilationUnit> astRoot = javaFile.getAstRoot();
 		  		if(!astRoot.isPresent()) continue;
+		  		
+		  		//Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
+		  		//Optional<CompilationUnit> oldAstRoot = loadOldUnit(javaFile);
+		  		
 		  		subMonitor.newChild(1);
 	    		subMonitor.setTaskName("Processing feedback for "+javaFile.getName());
 		  		for (final FeedbackBuilderParticipant participant : participants) {
-		  	      participant.buildFile(project, javaFile, astRoot.get());
+		  	      participant.buildFile(project, javaFile, astRoot.get()/*, oldAstRoot.orNull()*/);
 		  	    }
 		  	}
 	    }finally{
@@ -163,5 +182,22 @@ public abstract class FeedbackBuilder extends IncrementalProjectBuilder {
 		    }
 	    } 	
     }
+   
   }
+  
+  /*
+  public static Optional<CompilationUnit> loadOldUnit(FeedbackJavaFile javaFile) throws CoreException{
+		final ASTParser parser = ASTParser.newParser(AST.JLS4);
+	    parser.setKind(ASTParser.K_COMPILATION_UNIT);
+	    IFileState[] history = javaFile.getHistory(new NullProgressMonitor());
+	    if(history.length == 0) return Optional.absent();
+	    InputStream inp = history[0].getContents();
+	    Scanner scanner  = new Scanner(inp).useDelimiter("\\A");
+	    String result = scanner.hasNext() ? scanner.next() : "";
+	    scanner.close();
+	    parser.setSource(result.toCharArray());
+	    parser.setResolveBindings(true); //does not help, bindings will not be their
+	    return Optional.of((CompilationUnit) parser.createAST(new NullProgressMonitor()));
+	}
+	*/
 }

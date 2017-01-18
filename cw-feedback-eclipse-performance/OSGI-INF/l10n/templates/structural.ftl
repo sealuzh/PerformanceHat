@@ -35,15 +35,13 @@
 	    </#if>
 </#macro>
 
-<p>This method has been identified as critical.</p>
-<p><span class="highlight">The Average Total Time is: ${avgTotal}</span></p>
+<p>This ${nodeName} has been identified as critical.</p>
+<p><span class="highlight">The average total time is: ${avgTotal}</span></p>
 
-
-<div><strong>Measured Operations:</strong></div>
 <table border="0" cellspacing="0">
 		<#if !singleLineMode>
 			<tr>
-				<td><b>Measurements</b></td>
+				<td></td>
 				<#list procedureExecutions.getHeader().getText() as headerText>
 					<td><b>${headerText}</b></td>
 		  		</#list>

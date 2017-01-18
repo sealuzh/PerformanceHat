@@ -29,7 +29,7 @@ public class TagRegistryImpl implements TagRegistry{
 	//For now we only accept exact matches
 	private final Map<CompositeKey,Map<String,Object>> entries = Maps.newHashMap();
 	//will be needed by creator to clean old stuff where object is the feedback file path
-	private final Map<IPath,Set<CompositeKey>> keyAssoc = Maps.newHashMap();
+	private final Map<Object,Set<CompositeKey>> keyAssoc = Maps.newHashMap();
 	
 	//helper to get something out of the map safely
 	private final Collection<Object> extract(CompositeKey key){
@@ -75,10 +75,10 @@ public class TagRegistryImpl implements TagRegistry{
 
 	//Class that provides insert logic
 	private class TagCreatorImpl implements TagCreator{
-		private final IPath fileKey; 			//The File it is for
+		private final Object fileKey; 			//The File it is for
 		private final String pluginId;			//The Plugin it is for
 		
-		public TagCreatorImpl(IPath key, String pluginId) {
+		public TagCreatorImpl(Object key, String pluginId) {
 			this.pluginId = pluginId;
 			this.fileKey = key;
 		}
@@ -143,8 +143,8 @@ public class TagRegistryImpl implements TagRegistry{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public TagCreator getCreatorFor(FeedbackJavaFile file, PerformancePlugin plugin) {
-		return new TagCreatorImpl(file.getFullPath(), plugin.getId());
+	public TagCreator getCreatorFor(Object identifier, PerformancePlugin plugin) {
+		return new TagCreatorImpl(identifier, plugin.getId());
 	}
 
 }
