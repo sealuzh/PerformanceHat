@@ -18,7 +18,6 @@ public class DatabaseStub implements IDatabase {
 		userList.add(new UserStub("tlee", "publisher", "tim.lee@example.com"));
 		userList.add(new UserStub("vmeyer", "publisher", "victoria.mayer@example.com"));
 		userList.add(new UserStub("jstevens", "publisher", "jessica.stevens@example.com"));
-	
 	}
 		
 	public List<String> getUserNames() {

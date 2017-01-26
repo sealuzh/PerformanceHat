@@ -14,6 +14,7 @@ import eu.cloudwave.wp5.feedback.eclipse.base.infrastructure.template.TemplateHa
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.FeedbackMarkerType;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.markers.MarkerAttributes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMarkerTypes;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
@@ -83,7 +84,9 @@ public class HotspotPlugin  implements  PerformancePlugin{
 	  */
 	  @Override
 	  public void processPerformanceAst(AstRoot ast/*, AstRoot ignoreOldRoot*/) {
+		  long t0 = System.nanoTime();
 		  ast.accept(createPerformanceVisitor(ast.getContext()));
+		  PerformanceBuilder.HotspotTime += (System.nanoTime()-t0);		  
 	  }
 
 	  private PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {

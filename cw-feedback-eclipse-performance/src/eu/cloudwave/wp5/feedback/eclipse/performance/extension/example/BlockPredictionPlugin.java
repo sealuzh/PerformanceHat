@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.Modifier;
 
 import com.google.common.collect.Lists;
 
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
@@ -80,7 +81,9 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 	   */
 	  @Override
 	  public void processPerformanceAst(AstRoot ast/*, AstRoot ignoreOldRoot*/) {
+		  long t0 = System.nanoTime();
 		  ast.accept(createPerformanceVisitor(ast.getContext()));
+		  PerformanceBuilder.BlockPredTime += (System.nanoTime()-t0);	
 	  }
 
 	  private PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {

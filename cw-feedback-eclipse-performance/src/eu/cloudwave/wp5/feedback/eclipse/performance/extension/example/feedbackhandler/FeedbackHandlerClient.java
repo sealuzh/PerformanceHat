@@ -83,4 +83,8 @@ public interface FeedbackHandlerClient {
    */
   public Double collectionSize(final String accessToken, final String applicationId, final String className, final String procedureName, String[] arguments, final String number);
 
+  //No Doc yet combined exec time and all collection sizes
+  public Double[] collectionSizesAndExecTime(final String accessToken, final String applicationId, final String className, final String procedureName, String[] arguments);
+
+  
 }

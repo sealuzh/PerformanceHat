@@ -11,35 +11,29 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
 
+/**
+ * Class to make FeedbackProjects known to eclim
+ */
 public class PerformanceHatManager implements ProjectManager{
 
 	public void create(IProject project, CommandLine commandLine) throws Exception {
-		System.out.println("Performance_Hat_Create");
-		// TODO Auto-generated method stub
+		//Nothing Special todo here
 	}
 
 	public List<Error> update(IProject project, CommandLine commandLine) throws Exception {
-		System.out.println("Performance_Hat_Update");
-		// TODO Auto-generated method stub
+		//Nothing Special todo here
 		return null;
 	}
 
 	public void delete(IProject project, CommandLine commandLine) throws Exception {
-		System.out.println("Performance_Hat_Delete");
-		// TODO Auto-generated method stub
-		
+		//Nothing Special todo here
 	}
 
 	public void refresh(IProject project, CommandLine commandLine) throws Exception {
-		System.out.println("Performance_Hat_Refresch_P");
-
-		// TODO Auto-generated method stub
-		
+		//Nothing Special todo here
 	}
 
 	public void refresh(IProject project, IFile file) throws Exception {
-		System.out.println("Performance_Hat_Refresch_F");
-		// TODO Auto-generated method stub
-		
+		//Nothing Special todo here
 	}
 }

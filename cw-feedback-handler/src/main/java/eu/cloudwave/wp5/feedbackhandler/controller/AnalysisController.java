@@ -92,6 +92,34 @@ public class AnalysisController extends AbstractBaseRestController {
     final Optional<Double> averageExecTime = metricRepository.aggregateExecutionTime(application, className, procedureName, Splitters.arrayOnComma(arguments));
     return averageExecTime.isPresent() ? averageExecTime.get() : null;
   }
+  
+  @RequestMapping(Urls.ANALYIS__COMBINED_SIZE_TIME)
+  @ResponseStatus(HttpStatus.OK)
+  public Double[] combined(
+      @RequestHeader(Headers.ACCESS_TOKEN) final String accessToken,
+      @RequestHeader(Headers.APPLICATION_ID) final String applicationId,
+      @RequestParam(Params.CLASS_NAME) final String className,
+      @RequestParam(Params.PROCEDURE_NAME) final String procedureName,
+      @RequestParam(Params.ARGUMENTS) final String arguments) {
+    final DbApplication application = handleUnauthorized(applicationId, accessToken);
+	final String[] args = Splitters.arrayOnComma(arguments);  
+    final Optional<Double> averageExecTime = metricRepository.aggregateExecutionTime(application, className, procedureName, args);
+    final AggregationResults<AggregatedAverage> aggregationResult = metricRepository.aggregateCollectionSizes(application, className, procedureName, args);
+    final Double[] result = new Double[args.length+2];
+    result[0] = averageExecTime.isPresent() ? averageExecTime.get() : null;
+    for (final AggregatedAverage aggregation : aggregationResult) {
+    	String additionalQualifier = aggregation.getAdditionalQualifier();
+    	if(additionalQualifier.equals("")){
+    		result[1] = aggregation.getAverageValue();
+    	} else {
+    		try{
+        		result[Integer.parseInt(additionalQualifier)+2] = aggregation.getAverageValue();    			
+    		} catch (Exception e) {}
+    	}
+      }
+    
+      return result;
+  }
 
   @RequestMapping(Urls.ANALYIS__COLLECTION_SIZE)
   @ResponseStatus(HttpStatus.OK)

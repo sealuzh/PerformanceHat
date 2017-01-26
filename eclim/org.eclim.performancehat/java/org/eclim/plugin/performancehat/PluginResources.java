@@ -21,12 +21,11 @@ import org.eclim.Services;
 import org.eclim.plugin.AbstractPluginResources;
 import org.eclim.plugin.core.project.ProjectManagement;
 import org.eclim.plugin.core.project.ProjectNatureFactory;
-//import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 
 /**
- * Implementation of AbstractPluginResources.
+ * Implementation of AbstractPluginResources for FeedbackNaturePlugin.
  *
- * @author <author>
+ * @author Markus Knecht
  */
 public class PluginResources
   extends AbstractPluginResources
@@ -38,13 +37,16 @@ public class PluginResources
   public static final String NAME = "org.eclim.performancehat";
   public static final String NATURE = "eu.cloudwave.wp5.feedback.eclipse.performance.core.natures.PerformanceProjectNature";//Ids.NATURE;
   
+  /**
+   * Fuction called when eclipse initializes the plugin
+   */
   @Override
   public void initialize(String name)
   {
-	  super.initialize(name);
-
+	super.initialize(name);
     // add the nature alias
     ProjectNatureFactory.addNature("performancehat", NATURE);
+	//Make the nature known to eclim
     ProjectManagement.addProjectManager(NATURE, new PerformanceHatManager());
     
   }

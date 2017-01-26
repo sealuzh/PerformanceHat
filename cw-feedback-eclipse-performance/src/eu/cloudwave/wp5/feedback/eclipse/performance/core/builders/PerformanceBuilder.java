@@ -23,10 +23,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -89,8 +92,8 @@ public class PerformanceBuilder extends FeedbackBuilder {
  		    }
  	    }   
   }
-  
-  /**
+
+/**
    * A static version of the getParticipants function
    * @return list of PerformancePluginParticipants
    */

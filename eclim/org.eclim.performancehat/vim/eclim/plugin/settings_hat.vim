@@ -1,4 +1,4 @@
-" Global Varables {{{
+" Global Variables {{{
 
   call eclim#AddVimSetting(
     \ 'Lang/Hat', 'g:EclimHatValidate', 1,

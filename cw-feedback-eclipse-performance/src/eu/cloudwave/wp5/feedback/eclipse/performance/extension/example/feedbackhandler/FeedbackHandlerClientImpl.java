@@ -76,8 +76,19 @@ public class FeedbackHandlerClientImpl implements FeedbackHandlerClient {
     final Map<String, String> urlVariables = ImmutableMap.of(Params.CLASS_NAME, className, Params.PROCEDURE_NAME, procedureName, Params.ARGUMENTS, Joiners.onComma(arguments), Params.NUMBER, number);
     return restClient.get(url, urlVariables, Double.class, RestRequestHeader.of(Headers.APPLICATION_ID, applicationId), RestRequestHeader.of(Headers.ACCESS_TOKEN, accessToken));
   }
+  
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Double[] collectionSizesAndExecTime(String accessToken, String applicationId, String className, String procedureName, String[] arguments) {
+	  final String url = url(Urls.ANALYIS__COMBINED_SIZE_TIME);
+	  final Map<String, String> urlVariables = ImmutableMap.of(Params.CLASS_NAME, className, Params.PROCEDURE_NAME, procedureName, Params.ARGUMENTS, Joiners.onComma(arguments));
+	  return restClient.get(url, urlVariables, Double[].class, RestRequestHeader.of(Headers.APPLICATION_ID, applicationId), RestRequestHeader.of(Headers.ACCESS_TOKEN, accessToken));
+  }
 
-  private String url(final String urlFragment) {
+private String url(final String urlFragment) {
     return Urls.concatenate(rootUrl, urlFragment);
   }
 }

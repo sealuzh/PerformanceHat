@@ -59,6 +59,6 @@ public interface FeedbackHandlerEclipseClient {
    *          signature (an empty {@link String} means that the collection size of the return value is searched)
    * @return
    */
-  public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, String[] arguments, final String number);
+  public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, String[] arguments, final Integer number);
 
 }

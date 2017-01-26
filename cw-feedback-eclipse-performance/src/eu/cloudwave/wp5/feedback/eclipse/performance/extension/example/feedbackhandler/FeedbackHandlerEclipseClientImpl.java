@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.core.preferences.FeedbackPreferences;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 
 /**
  * Implementation of {@link FeedbackHandlerEclipseClient}.
@@ -103,12 +104,14 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
 	  public final double execTime;
 	  final boolean hasColSize;
 	  public final double colSize;
+	  public final double[] agrColSize; 
 	  
-	  public MethodCacheEntry(Double execTime, Double colSize){
+	  public MethodCacheEntry(Double execTime, Double colSize, double[] argColSize){
 		  this.hasExecTime = execTime != null;
 		  this.execTime = hasExecTime?execTime:0;
 		  this.hasColSize = colSize != null;
 		  this.colSize = hasColSize?colSize:0;
+		  this.agrColSize = argColSize;
 	  }
 
 	public Double getColSize() {
@@ -116,6 +119,11 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
 		return null;
 	}
 
+	public Double getColSize(int i) {
+		if(i < agrColSize.length && agrColSize[i] != -1 ) return agrColSize[i];
+		return null;
+	}
+	
 	public Double getExecTime() {
 		if(hasExecTime) return execTime;
 		return null;
@@ -126,7 +134,7 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
   
   public FeedbackHandlerEclipseClientImpl() {
 	  methodCache = CacheBuilder.newBuilder()
-			    .concurrencyLevel(4)
+			    .concurrencyLevel(1)
 			    .maximumSize(10000)
 			    .expireAfterWrite(10, TimeUnit.MINUTES)
 			    .build(
@@ -138,13 +146,20 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
   }
     
   private MethodCacheEntry fetch(MethodCacheKey key){
-	  Double time = feedbackHandlerClient().avgExecTime(key.token, key.id, key.className, key.procedureName, key.arguments);
-	  Double size = feedbackHandlerClient().collectionSize(key.token, key.id, key.className, key.procedureName, key.arguments, "");
-	  return new MethodCacheEntry(time, size);
+	  PerformanceBuilder.Misses++;
+	  Double[] res = feedbackHandlerClient().collectionSizesAndExecTime(key.token, key.id, key.className, key.procedureName, key.arguments);
+	  Double time = res[0];
+	  Double size = res[1]; 
+	  double[] args = new double[key.arguments.length];
+	  for(int i = 0; i < args.length; i++){
+		  args[i] = (res[i+2]==null)?-1:res[i+2];
+	  }
+	  return new MethodCacheEntry(time, size, args);
   }
 
   @Override
   public Double avgExecTime(final FeedbackProject project, final String className, final String procedureName, final String[] arguments) {
+	  PerformanceBuilder.QueriesTime++;
 	  try {
 		  return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getExecTime();
 	  } catch (ExecutionException e) {
@@ -157,10 +172,10 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    * {@inheritDoc}
    */
   @Override
-  public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, final String[] arguments, final String number) {
-	  	//cache
-	  	if(!number.equals("")) return feedbackHandlerClient().collectionSize(project.getAccessToken(), project.getApplicationId(), className, procedureName, arguments, number);
+  public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, final String[] arguments, final Integer number) {
+	  	PerformanceBuilder.QueriesSize++;
 	  	try {
+		  	if(number != null) return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize(number);
 	  		return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize();
 	  	} catch (ExecutionException e) {
 	  		e.printStackTrace();

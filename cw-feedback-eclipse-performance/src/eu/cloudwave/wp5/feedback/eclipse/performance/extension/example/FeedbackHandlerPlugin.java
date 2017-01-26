@@ -3,14 +3,19 @@ package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+
 import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodDeclaration;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.MethodOccurence;
@@ -52,7 +57,9 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 	  */
 	  @Override
 	  public void processPerformanceAst(AstRoot ast/*, AstRoot oldAst*/) {
+		  long t0 = System.nanoTime();
 		  ast.accept(createPerformanceVisitor(ast.getContext()));
+		  PerformanceBuilder.FeedbackLoadTime += (System.nanoTime()-t0);
 		  // Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
 		  //oldAst.accept(createPerformanceVisitor(oldAst.getContext()));
 	  }
@@ -66,12 +73,14 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			public PerformanceVisitor visit(MethodDeclaration method) {
 				//Find the Definition location of the Method
 				MethodLocator loc = method.createCorrespondingMethodLocation();
+				long t0 = System.nanoTime();
 				//get the average Excecution Time for the Method
 				Double measure = fddClient.avgExecTime(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes);
+				//get the collection Size of the return value
+				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, null);
+			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
 				//Attach the result if data is provided
 				if(measure != null) method.attachPublicTag(AVG_EXEC_TIME_TAG, measure);
-				//get the collection Size of the return value
-			    Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, "");
 			    //Attach the result if data is provided
 			    if(averageSize != null) method.attachPublicTag(COLLECTION_SIZE_TAG, averageSize);
 			    return CONTINUE;
@@ -81,12 +90,15 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			public PerformanceVisitor visit(MethodOccurence method) {
 				//Find the Definition location of the Method
 				MethodLocator loc = method.createCorrespondingMethodLocation();
+				long t0 = System.nanoTime();
 				//get the average Excecution Time for the Method
 				Double measure = fddClient.avgExecTime(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes);
-				//Attach the result if data is provided
-				if(measure != null) method.attachTag(AVG_EXEC_TIME_TAG, measure);
 				//get the collection Size of the return value
-			    Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, "");
+			    Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, null);
+			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
+
+			    //Attach the result if data is provided
+				if(measure != null) method.attachTag(AVG_EXEC_TIME_TAG, measure);	
 			    //Attach the result if data is provided
 			    if(averageSize != null) method.attachTag(COLLECTION_SIZE_TAG, averageSize);
 			    return CONTINUE;
@@ -97,8 +109,10 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 				//Find the current Method the parameter belongs to
 				MethodLocator loc = decl.getCurrentMethod().createCorrespondingMethodLocation();
 				//get the collection Size of the parameter				
-				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, decl.getPosition()+"");
-			    //Attach the result if data is provided
+				long t0 = System.nanoTime();
+				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, decl.getPosition());
+			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
+				//Attach the result if data is provided
 				if(averageSize != null) decl.attachTag(COLLECTION_SIZE_TAG, averageSize); 
 			    return CONTINUE;
 			}		

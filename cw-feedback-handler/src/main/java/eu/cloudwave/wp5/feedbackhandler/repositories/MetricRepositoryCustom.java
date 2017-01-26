@@ -115,7 +115,7 @@ public interface MetricRepositoryCustom {
    *         database
    */
   public Optional<Double> aggregateExecutionTime(DbApplication application, final String className, final String name, final String[] arguments);
-
+  
   /**
    * Aggregates the collection sizes of the procedure with the given properties.
    * 
@@ -145,4 +145,5 @@ public interface MetricRepositoryCustom {
    * @return the aggregated collection size
    */
   public AggregationResults<AggregatedAverage> aggregateCollectionSizes(DbApplication application, final String className, final String name, final String[] arguments);
+
 }

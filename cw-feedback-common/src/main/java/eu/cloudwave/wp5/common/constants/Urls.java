@@ -49,6 +49,7 @@ public class Urls {
   public static final String ANALYIS__PROCEDURE = ANALYSIS__QUALIFIER + "procedure";
   public static final String ANALYIS__AVG_EXEC_TIME = ANALYSIS__QUALIFIER + "avgexectime";
   public static final String ANALYIS__COLLECTION_SIZE = ANALYSIS__QUALIFIER + "collectionsize";
+  public static final String ANALYIS__COMBINED_SIZE_TIME = ANALYSIS__QUALIFIER + "combined";
 
   /*
    * Cost

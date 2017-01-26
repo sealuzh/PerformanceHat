@@ -11,16 +11,16 @@ import uzh.ifi.seal.performancehat.example.stubs.DatabaseStub;
 
 @Controller
 public class ExampleController extends AController{
-
+ 
     @RequestMapping("/example")
     public String example(Model model){
         return "example";
     }
-    
+
     @RequestMapping("/users")
     public String greeting(Model model) {
     	List<String> userList = getUserInfo();
-        model.addAttribute("userList", userList);
+    	model.addAttribute("userList", userList);
         return "users";
         
     }
