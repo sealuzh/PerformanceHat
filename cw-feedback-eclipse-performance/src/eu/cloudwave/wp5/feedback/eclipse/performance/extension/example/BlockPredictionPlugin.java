@@ -83,7 +83,6 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 	  public void processPerformanceAst(AstRoot ast/*, AstRoot ignoreOldRoot*/) {
 		  long t0 = System.nanoTime();
 		  ast.accept(createPerformanceVisitor(ast.getContext()));
-		  PerformanceBuilder.BlockPredTime += (System.nanoTime()-t0);	
 	  }
 
 	  private PerformanceVisitor createPerformanceVisitor(final AstContext rootContext) {

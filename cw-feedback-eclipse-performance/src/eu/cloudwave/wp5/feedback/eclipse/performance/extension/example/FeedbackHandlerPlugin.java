@@ -57,9 +57,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 	  */
 	  @Override
 	  public void processPerformanceAst(AstRoot ast/*, AstRoot oldAst*/) {
-		  long t0 = System.nanoTime();
 		  ast.accept(createPerformanceVisitor(ast.getContext()));
-		  PerformanceBuilder.FeedbackLoadTime += (System.nanoTime()-t0);
 		  // Vom Gescheiterten Versuch einen zweiten Ast zu erhalten um differenz basierte analysen zu machen
 		  //oldAst.accept(createPerformanceVisitor(oldAst.getContext()));
 	  }
@@ -73,12 +71,10 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			public PerformanceVisitor visit(MethodDeclaration method) {
 				//Find the Definition location of the Method
 				MethodLocator loc = method.createCorrespondingMethodLocation();
-				long t0 = System.nanoTime();
 				//get the average Excecution Time for the Method
 				Double measure = fddClient.avgExecTime(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes);
 				//get the collection Size of the return value
 				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, null);
-			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
 				//Attach the result if data is provided
 				if(measure != null) method.attachPublicTag(AVG_EXEC_TIME_TAG, measure);
 			    //Attach the result if data is provided
@@ -90,12 +86,10 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 			public PerformanceVisitor visit(MethodOccurence method) {
 				//Find the Definition location of the Method
 				MethodLocator loc = method.createCorrespondingMethodLocation();
-				long t0 = System.nanoTime();
 				//get the average Excecution Time for the Method
 				Double measure = fddClient.avgExecTime(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes);
 				//get the collection Size of the return value
 			    Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, null);
-			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
 
 			    //Attach the result if data is provided
 				if(measure != null) method.attachTag(AVG_EXEC_TIME_TAG, measure);	
@@ -109,9 +103,7 @@ public class FeedbackHandlerPlugin implements PerformancePlugin{
 				//Find the current Method the parameter belongs to
 				MethodLocator loc = decl.getCurrentMethod().createCorrespondingMethodLocation();
 				//get the collection Size of the parameter				
-				long t0 = System.nanoTime();
 				Double averageSize = fddClient.collectionSize(rootContext.getProject(),loc.className, loc.methodName, loc.argumentTypes, decl.getPosition());
-			    PerformanceBuilder.NetworkTime+=(System.nanoTime()-t0);
 				//Attach the result if data is provided
 				if(averageSize != null) decl.attachTag(COLLECTION_SIZE_TAG, averageSize); 
 			    return CONTINUE;

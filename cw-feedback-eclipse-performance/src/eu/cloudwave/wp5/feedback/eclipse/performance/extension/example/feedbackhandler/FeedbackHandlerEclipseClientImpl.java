@@ -146,7 +146,6 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
   }
     
   private MethodCacheEntry fetch(MethodCacheKey key){
-	  PerformanceBuilder.Misses++;
 	  Double[] res = feedbackHandlerClient().collectionSizesAndExecTime(key.token, key.id, key.className, key.procedureName, key.arguments);
 	  Double time = res[0];
 	  Double size = res[1]; 
@@ -159,7 +158,6 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
 
   @Override
   public Double avgExecTime(final FeedbackProject project, final String className, final String procedureName, final String[] arguments) {
-	  PerformanceBuilder.QueriesTime++;
 	  try {
 		  return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getExecTime();
 	  } catch (ExecutionException e) {
@@ -173,7 +171,6 @@ public class FeedbackHandlerEclipseClientImpl implements FeedbackHandlerEclipseC
    */
   @Override
   public Double collectionSize(final FeedbackProject project, final String className, final String procedureName, final String[] arguments, final Integer number) {
-	  	PerformanceBuilder.QueriesSize++;
 	  	try {
 		  	if(number != null) return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize(number);
 	  		return methodCache.get(new MethodCacheKey(project, className, procedureName, arguments)).getColSize();
