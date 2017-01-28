@@ -7,7 +7,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IPath;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
 
 /**
  * Tag provider that also allows to generate a TagCreator
@@ -37,6 +37,6 @@ public interface TagRegistry extends TagProvider {
 	 * @param plugin which creates the Tags 
 	 * @return the TagCreator
 	 */
-	public TagCreator getCreatorFor(Object identifier, PerformancePlugin plugin);
+	public TagCreator getCreatorFor(Object identifier, PerformanceHatExtension plugin);
 	
 }

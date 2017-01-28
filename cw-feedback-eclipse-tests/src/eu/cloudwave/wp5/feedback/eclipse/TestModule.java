@@ -18,7 +18,7 @@ package eu.cloudwave.wp5.feedback.eclipse;
 import com.google.inject.Singleton;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.ProductionModule;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.tests.mocks.FeedbackHandlerEclipseClientMock;
 
 public class TestModule extends ProductionModule {

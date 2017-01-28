@@ -20,7 +20,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.ProgrammMarke
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagRegistry;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.StaticAstFactory;
 
@@ -32,9 +32,9 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Sta
 public class PerformancePluginsParticipant extends AbstractFeedbackBuilderParticipant implements FeedbackBuilderParticipant{
 
 	 private TemplateHandler templateHandler;
-	 private final PerformancePlugin ext;
+	 private final PerformanceHatExtension ext;
 
-	 public PerformancePluginsParticipant(PerformancePlugin ext) {
+	 public PerformancePluginsParticipant(PerformanceHatExtension ext) {
 		this.ext = ext;
 		this.templateHandler = PerformancePluginActivator.instance(TemplateHandler.class);
 	  }

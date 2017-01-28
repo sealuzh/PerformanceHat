@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin" name="PerformancePlugin" schema="schema/eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin.exsd"/>
+   <extension-point id="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension" name="PerformanceHatExtension" schema="schema/eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension.exsd"/>
 
    <!-- Marker Subtype of FeedbackMarker in Base Plugin -->
    <extension
@@ -224,18 +224,15 @@
       </perspectiveExtension>
    </extension>
    <extension
-         point="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin">
+         point="eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension">
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.HotspotExtension">
       </client>
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.BlockPredictionExtension">
       </client>
       <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin">
-      </client>
-      <client
-            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FlatCallSetChangePredictor">
+            class="eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.FeedbackHandlerExtension">
       </client>
    </extension>
 

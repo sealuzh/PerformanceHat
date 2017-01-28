@@ -38,7 +38,7 @@ public class Ids {
 
   public static final String BUILDER = CORE_QUALIFIER + "builders.PerformanceBuilder"; //$NON-NLS-1$
 
-  public static final String EXTENSION = BASE_QUALIFIER + "extension.PerformancePlugin";
+  public static final String EXTENSION = BASE_QUALIFIER + "extension.PerformanceHatExtension";
   
   public static final String PROJECT_NATURE_ENABLED_DECORATOR = UI_QUALIFIER + "decorators.FeedbackProjectNatureEnabledDecorator"; //$NON-NLS-1$
 

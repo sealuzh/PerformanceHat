@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic;
 
 import java.util.Collection;
 

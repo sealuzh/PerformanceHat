@@ -15,7 +15,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
  * @author Markus Knecht
  *
  */
-public interface PerformancePlugin {
+public interface PerformanceHatExtension {
 
 	/**
 	 * Gets the Id of the plugin to identify it

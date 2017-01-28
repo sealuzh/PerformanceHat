@@ -16,7 +16,7 @@ public class ExampleController extends AController{
     public String example(Model model){
         return "example";
     }
-
+ 
     @RequestMapping("/users")
     public String greeting(Model model) {
     	List<String> userList = getUserInfo();

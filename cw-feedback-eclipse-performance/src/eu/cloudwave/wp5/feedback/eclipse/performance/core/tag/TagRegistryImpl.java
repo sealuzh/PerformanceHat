@@ -16,7 +16,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaFile;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 
 /**
@@ -143,7 +143,7 @@ public class TagRegistryImpl implements TagRegistry{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public TagCreator getCreatorFor(Object identifier, PerformancePlugin plugin) {
+	public TagCreator getCreatorFor(Object identifier, PerformanceHatExtension plugin) {
 		return new TagCreatorImpl(identifier, plugin.getId());
 	}
 

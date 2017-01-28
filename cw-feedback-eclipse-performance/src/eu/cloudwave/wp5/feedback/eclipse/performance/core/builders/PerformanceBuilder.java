@@ -44,7 +44,7 @@ import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.java.FeedbackJavaRe
 import eu.cloudwave.wp5.feedback.eclipse.performance.Ids;
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.participants.PerformancePluginsParticipant;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
 
 /**
  * The feedback Builder for the plugin based Performance Builder
@@ -98,13 +98,13 @@ public class PerformanceBuilder extends FeedbackBuilder {
    * @return list of PerformancePluginParticipants
    */
   private static List<FeedbackBuilderParticipant> getParticipantsStatic(){
-	    List<PerformancePlugin> markers  = Lists.newArrayList();
+	    List<PerformanceHatExtension> markers  = Lists.newArrayList();
 	    IExtensionRegistry reg = Platform.getExtensionRegistry();
 	    
 	    //looks up all Plugins registered over extension points
 	    for(IConfigurationElement elem: reg.getConfigurationElementsFor(Ids.EXTENSION)){
 	    	try {
-	    		markers.add((PerformancePlugin) elem.createExecutableExtension("class"));
+	    		markers.add((PerformanceHatExtension) elem.createExecutableExtension("class"));
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}

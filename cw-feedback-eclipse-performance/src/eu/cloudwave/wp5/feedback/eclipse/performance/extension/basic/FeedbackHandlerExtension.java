@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,8 +12,8 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.ImplementorTagLookupHelper;
@@ -27,7 +27,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
  * to connect to generate tags from data collected by the fdd server
  * @author Markus Knecht
  */
-public class FeedbackHandlerPlugin implements PerformancePlugin{
+public class FeedbackHandlerExtension implements PerformanceHatExtension{
 	 
 	private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin";
 	private static final String COLLECTION_SIZE_TAG = "CollectionSize";

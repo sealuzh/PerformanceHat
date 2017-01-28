@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,13 +21,13 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagCreator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.TagProvider;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.APrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BlockPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BranchPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BranchingPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.LoopPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.MethodCallPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.APrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.BlockPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.BranchPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.BranchingPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.LoopPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.MethodCallPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.Branching;
@@ -45,7 +45,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.Performan
  * @author Markus Knecht
  *
  */
-public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredictorCallback{
+public class BlockPredictionExtension implements PerformanceHatExtension, BlockTimePredictorCallback{
 
 	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin";
 	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
@@ -91,7 +91,7 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 			  @Override
 			  public PerformanceVisitor visit(MethodDeclaration method) {
 					//Use BlockTimeCollector to measure the method
-					return new BlockTimePredictor(BlockPredictionPlugin.this){
+					return new BlockTimePredictor(BlockPredictionExtension.this){
 						@Override
 						public PredictionNode generateResults() {
 							//simply sum up contributions
@@ -124,9 +124,9 @@ public class BlockPredictionPlugin implements PerformancePlugin, BlockTimePredic
 	 */
 	@Override
 	public PredictionNode invocationEncountered(Invocation invocation) {
-		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionPlugin.AVG_EXEC_TIME_TAG);
+		Collection<Double> measurements = invocation.getDoubleTags(BlockPredictionExtension.AVG_EXEC_TIME_TAG);
 		//Consume own Tags, only works over multiple compiles or else we would need complext tag management
-		Collection<Object> predTags = invocation.getTags(BlockPredictionPlugin.AVG_PRED_TIME_TAG);
+		Collection<Object> predTags = invocation.getTags(BlockPredictionExtension.AVG_PRED_TIME_TAG);
 		//final values once for prediction prefered and once for measurement prefered
 		//Only consider other BlockPredictors results
 		Collection<Double> predPref = predTags.stream().filter(p -> p instanceof APrediction).map(p -> ((APrediction)p).avgTimePred).collect(Collectors.toList());

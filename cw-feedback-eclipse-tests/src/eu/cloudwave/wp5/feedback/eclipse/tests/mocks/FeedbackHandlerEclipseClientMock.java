@@ -23,7 +23,7 @@ import eu.cloudwave.wp5.common.error.RequestException;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.FeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.base.core.preferences.FeedbackPreferences;
 import eu.cloudwave.wp5.feedback.eclipse.base.resources.core.FeedbackProject;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler.FeedbackHandlerEclipseClient;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.feedbackhandler.FeedbackHandlerEclipseClient;
 import eu.cloudwave.wp5.feedback.eclipse.tests.stubs.Stubs;
 
 /**

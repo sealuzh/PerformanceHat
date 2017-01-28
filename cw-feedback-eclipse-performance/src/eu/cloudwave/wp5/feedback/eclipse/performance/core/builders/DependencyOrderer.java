@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
 
 /**
  * This class provides functionality to make a topological ordering on a dependency graph.
@@ -37,17 +37,17 @@ public class DependencyOrderer {
 	//orders a list of dependency so that if a needs something provided in b, b is before a in the list
 	//if possible it takes optional dependencies into account, if they lead to a cycle or are not present, they may be ignored
 	//its basically a topological search
-	public static List<PerformancePlugin> order(List<PerformancePlugin> input){
+	public static List<PerformanceHatExtension> order(List<PerformanceHatExtension> input){
 		int markers = input.size();
 		
 		//Check if everithing is avaiable
 		Set<String> allProvided = Sets.newHashSet();
-		for(PerformancePlugin m:input) allProvided.addAll(m.getProvidedTags());
-		for(PerformancePlugin m:input) if(!allProvided.containsAll(m.getRequiredTags())) throw new UnsatisfiedDependencyGraphException();
+		for(PerformanceHatExtension m:input) allProvided.addAll(m.getProvidedTags());
+		for(PerformanceHatExtension m:input) if(!allProvided.containsAll(m.getRequiredTags())) throw new UnsatisfiedDependencyGraphException();
 		
 		//build the graph structure (only the necessary parts)
 		//We use ints to identify nodes, makes it easier, in addition this represents the nodes not yet removed from the graph
-		Map<Integer, PerformancePlugin> nodes = Maps.newHashMap();
+		Map<Integer, PerformanceHatExtension> nodes = Maps.newHashMap();
 		//out degrees of the nodes
 		int[] outDegree = new int[markers];
 		int[] optionalOutDegree = new int[markers];
@@ -58,7 +58,7 @@ public class DependencyOrderer {
 		
 		//Calculate initial nodes and its dependencies
 		int c = 0;
-		for(PerformancePlugin m:input) {
+		for(PerformanceHatExtension m:input) {
 	    	final int cur = c;
 		    for(String dep: m.getRequiredTags()) dependencies.compute(dep, (String k, List<Integer> list) -> addOrCreateList(list,cur));
 		    for(String dep: m.getOptionalRequiredTags()) optionalDependencies.compute(dep, (String k, List<Integer> list) -> addOrCreateList(list,cur));
@@ -66,7 +66,7 @@ public class DependencyOrderer {
 		}
 		
 		//Calculate each nodes out degree (splited in optional and mandatory)
-		for(PerformancePlugin m: nodes.values()){
+		for(PerformanceHatExtension m: nodes.values()){
 			 for(String prov: m.getProvidedTags()){
 				 for(int d: dependencies.getOrDefault(prov, Collections.emptyList())) outDegree[d]++;
 				 for(int d: optionalDependencies.getOrDefault(prov, Collections.emptyList())) optionalOutDegree[d]++;
@@ -74,7 +74,7 @@ public class DependencyOrderer {
 		}
 		
 		//do the topological search
-		List<PerformancePlugin> sortedNodes = Lists.newArrayList();
+		List<PerformanceHatExtension> sortedNodes = Lists.newArrayList();
 		while (!nodes.isEmpty()) {
 			int cand = -1;					//canditate for removal
 			int optOut = Integer.MAX_VALUE; //curents candidates optional outdegree
@@ -88,7 +88,7 @@ public class DependencyOrderer {
 			//if they is no node with out degree 0 (in mandatory part) then we have a cycle and need to throw
 			if(cand == -1) throw new UnsatisfiedDependencyGraphException();
 			//remove the candidate from the graph and add it to the sorted List
-			PerformancePlugin m = nodes.remove(cand);
+			PerformanceHatExtension m = nodes.remove(cand);
 			sortedNodes.add(m);
 			//Update outDegree of all nodes, which depend on the current node
 			for(String prov: m.getProvidedTags()){

@@ -1,4 +1,4 @@
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -19,10 +19,10 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.core.markers.PerformanceMar
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.properties.PerformanceFeedbackProperties;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformancePlugin;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.APrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.BlockPrediction;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.prediction.block.LoopPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.APrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.BlockPrediction;
+import eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.prediction.block.LoopPrediction;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.PredictionNode;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.IAstNode;
@@ -39,7 +39,7 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.infrastructure.config.Perfo
  *
  */
 //Todo: Note not Flexibel Enough, needs way to present arbitary tags
-public class HotspotPlugin  implements  PerformancePlugin{
+public class HotspotExtension  implements  PerformanceHatExtension{
 	
 	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.HotspotPlugin";
 	

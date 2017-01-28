@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.feedbackhandler;
+package eu.cloudwave.wp5.feedback.eclipse.performance.extension.basic.feedbackhandler;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
