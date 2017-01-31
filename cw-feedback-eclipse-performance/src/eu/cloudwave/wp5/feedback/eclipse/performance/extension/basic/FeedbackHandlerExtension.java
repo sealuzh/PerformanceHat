@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.builders.PerformanceBuilder;
+import eu.cloudwave.wp5.feedback.eclipse.performance.core.handlers.ImpactPropagationHandler;
 import eu.cloudwave.wp5.feedback.eclipse.performance.core.tag.MethodLocator;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.AstContext;
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.PerformanceHatExtension;
@@ -31,7 +32,7 @@ public class FeedbackHandlerExtension implements PerformanceHatExtension{
 	 
 	private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.FeedbackHandlerPlugin";
 	private static final String COLLECTION_SIZE_TAG = "CollectionSize";
-	private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+	private static final String AVG_EXEC_TIME_TAG = "AvgExecutionTime";
 	  
 	//The fdd client to conect to the Server
 	private final FeedbackHandlerEclipseClient fddClient = PerformancePluginActivator.instance(FeedbackHandlerEclipseClient.class);

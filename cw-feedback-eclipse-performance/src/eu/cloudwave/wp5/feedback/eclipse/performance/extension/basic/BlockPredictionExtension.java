@@ -49,7 +49,7 @@ public class BlockPredictionExtension implements PerformanceHatExtension, BlockT
 
 	  private static final String ID = "eu.cloudwave.wp5.feedback.eclipse.performance.extension.example.BlockPredictionPlugin";
 	  private static final String COLLECTION_SIZE_TAG = "CollectionSize";
-	  private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+	  private static final String AVG_EXEC_TIME_TAG = "AvgExecutionTime";
 	  public static final String AVG_PRED_TIME_TAG = "AvgPredictionTime";
 	  
 	  /**

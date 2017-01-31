@@ -138,4 +138,7 @@ public class PerformanceBuilder extends FeedbackBuilder {
   protected FeedbackCleaner getFeedbackCleaner() {
     return PerformancePluginActivator.instance(FeedbackCleaner.class);
   }
+  
+
+  
 }

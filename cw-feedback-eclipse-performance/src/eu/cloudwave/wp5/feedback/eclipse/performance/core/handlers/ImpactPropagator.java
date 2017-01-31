@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -60,17 +61,19 @@ public class ImpactPropagator {
 		 //just an association between Paths and Files (we work on paths because I do not know how equality on Ifile is defined)
 		 Map<IPath,IFile> targets = Maps.newHashMap(); 
 		 SubMonitor subMonitor = SubMonitor.convert(monitor);
+		 //Create the internal CallHierarchy Lookup class
+		 CallHierarchy hierarchy = new CallHierarchy();
+		 //Limit the search Space to workspace
+		 IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
+		 hierarchy.setSearchScope(searchScope);
+		 
 		 //As long as more dependencies are found continue
 		 while(!open.isEmpty()){
 			 //get next
 			 IMember cur = open.poll();
 			 //check if already done
 			 if(visited.contains(cur)) continue;
-			 //Create the internal CallHierarchy Lookup class
-			 CallHierarchy hierarchy = new CallHierarchy();
-			 //Limit the search Space to eorkspace
-			 IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
-			 hierarchy.setSearchScope(searchScope);
+
 			 //Look up Callers
 			 MethodWrapper[] callerWrapper = hierarchy.getCallerRoots(new IMember[]{cur});
 			 
@@ -98,8 +101,10 @@ public class ImpactPropagator {
 			 //mark as visited
 			 visited.add(cur);
 			 //mark for further resolving
-			 open.addAll(methodCalls);
+			 open.addAll(methodCalls);				 
+				 
 		 }
+		 
 		 
 		 //Calc Outdegrees from in degrees
 		 Map<IPath,Integer> outDegree = Maps.newHashMap(); 
@@ -148,6 +153,7 @@ public class ImpactPropagator {
 	
 	//Helper for reanalyzing a file
 	private static void analyze(List<IFile> files, IProgressMonitor monitor) throws CoreException{
+		
 		FeedbackJavaResourceFactory factory = PerformancePluginActivator.instance(FeedbackJavaResourceFactory.class);
 		//lookup File
 		List<FeedbackJavaFile> jfiles = files.stream().map(f -> factory.create(f)).filter(f -> f.isPresent()).map(f -> f.get()).collect(Collectors.toList());
@@ -161,5 +167,6 @@ public class ImpactPropagator {
 				
 		//Do the analyzing
 		PerformanceBuilder.processFile(fjp, jfiles, monitor);
+		
 	}
 }

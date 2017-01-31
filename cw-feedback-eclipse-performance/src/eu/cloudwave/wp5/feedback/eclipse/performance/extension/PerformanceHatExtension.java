@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import eu.cloudwave.wp5.feedback.eclipse.performance.extension.processor.ast.AstRoot;
-import eu.cloudwave.wp5.feedback.eclipse.performance.extension.visitor.PerformanceVisitor;
 
 /**
  * The Plugin interface for Performace Plugins

@@ -50,7 +50,7 @@ public class HotspotExtension  implements  PerformanceHatExtension{
 	  private static final String HOTSPOT = "hotspot";
 	  private static final String MESSAGE_PATTERN = "Hotspot %s: Average Execution Time of %s is %s.";
 	  private static final int DECIMAL_PLACES = 3;
-	  private static final String AVG_EXEC_TIME_TAG = "AvgExcecutionTime";
+	  private static final String AVG_EXEC_TIME_TAG = "AvgExecutionTime";
 	  public static final String AVG_PRED_TIME_TAG = "AvgPredictionTime";
 
 	  /**

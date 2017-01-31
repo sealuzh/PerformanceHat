@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.google.common.base.Optional;
 
@@ -45,13 +46,14 @@ import eu.cloudwave.wp5.feedback.eclipse.performance.PerformancePluginActivator;
  * Handler for the Propagate Feedback Context menu action
  */
 public class ImpactPropagationHandler extends AbstractHandler {
-
+	
   /**
    * {@inheritDoc}
    */
   @Override
   public Object execute(final ExecutionEvent event) throws ExecutionException {
 	  new Job("Feedback propagator"){
+		  
 		@Override
 		protected IStatus run(final IProgressMonitor monitor) {
 			  //Get the currently selected Text
@@ -90,7 +92,7 @@ public class ImpactPropagationHandler extends AbstractHandler {
 					return false;
 				} 
 			  });
-			 	        
+			 
 			  return new Status(Status.OK,Ids.PLUGIN,"");
 		}
 		  
